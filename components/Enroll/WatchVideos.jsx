@@ -41,7 +41,7 @@ function WatchVideos() {
   }
 
   const goToRegister = () => {
-    router.push('/register') // change this to your actual route
+    router.push('/enroll/quiz') // change this to your actual route
   }
 
   return (

@@ -3,6 +3,8 @@ import React from 'react';
 import { IoMenu } from "react-icons/io5";
 import { FaPhoneFlip } from "react-icons/fa6";
 import { PiSignInBold } from "react-icons/pi";
+import Image from 'next/image';
+import Link from 'next/link';
 
 
 
@@ -27,17 +29,21 @@ function Navbar() {
       <IoMenu className='text-4xl text-white' />
         </div>
 
-      <div className="flex items-center space-x-3 text-white cursor-pointer  text-xl">
+      <Link href={"/"} >
+      <div className="flex items-center space-x-3 text-white cursor-pointer text-xl" >
          <span className='text-secondery '>روبه راه</span>
       <span className=" ">خانواده</span>
      
-        <img
-          src="vercel.svg"
-          alt="Logo"
-          className="h-10 w-10 rounded-full"
+        <Image
+        width={40}
+        height={40}
+         src="/logo.png"
+         alt="Logo"
+         className="rounded-full"
         />
        
       </div>
+      </Link>
     </nav>
   );
 }

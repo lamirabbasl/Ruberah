@@ -1,15 +1,14 @@
-
 import Navbar from '@/components/common/Navbar'
-import WatchVideos from '@/components/Enroll/WatchVideos'
+import QuizEnroll from '@/components/Enroll/QuizEnroll'
 import React from 'react'
 
-function EnrollVideos() {
+function Quiz() {
   return (
     <div className=' w-screen h-screen overflow-hidden '>
-     <Navbar />
-      <WatchVideos />
+    <Navbar />
+    <QuizEnroll />
     </div>
   )
 }
 
-export default EnrollVideos
+export default Quiz

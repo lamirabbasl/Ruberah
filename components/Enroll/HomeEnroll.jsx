@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import React from 'react'
 
 function Home() {
@@ -17,9 +18,11 @@ function Home() {
             <li>پس از تکمیل ثبت نام زمان های در درسترس برای شرکت در جلسه مصاحبه در اختیار شما قرار میگیرد</li>
           </ul>
         </div>
+        <Link href={"/enroll/watch"}>
         <div className='self-start max-md:self-center mt-4 bg-secondery px-2 py-1 rounded-md font-bold hover:opacity-80 cursor-pointer text-center'>
           ادامه ثبت نام
         </div>
+        </Link>
       </div>
     </div>
   )
