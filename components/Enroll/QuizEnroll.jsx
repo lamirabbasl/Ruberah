@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 const quizData = [
@@ -31,6 +32,7 @@ export default function QuizEnroll() {
   const handleSelect = (option) => {
     setSelected(option);
     if (option === currentQuiz.answer) {
+      setWrong(false); 
       if (currentIndex === quizData.length - 1) {
         setCompleted(true);
       } else {
@@ -46,7 +48,7 @@ export default function QuizEnroll() {
 
   return (
     <div className="h-full flex items-center justify-center font-noto">
-      <div className="bg-gray-950 h-[440px] mb-[140px] flex flex-col gap-8  border-2 border-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+      <div className="bg-gray-950 max-md:w-[95%] h-[440px] mb-[140px] flex flex-col gap-8  border-2 border-white p-8 rounded-2xl shadow-xl w-full max-w-md  text-center">
         {!completed ? (
           <>
             <h2 className="text-2xl font-bold mb-4 text-white">{currentQuiz.question}</h2>
@@ -69,9 +71,11 @@ export default function QuizEnroll() {
         ) : (
           <div>
             <h2 className="text-2xl font-bold mb-4 text-white">آزمون با موفقیت انجام شد</h2>
+            <Link href={"/"}>
             <button className="mt-[280px] px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600">
-              آدامه روند ثبت نام
+              ادامه روند ثبت نام
             </button>
+            </Link>
           </div>
         )}
       </div>
