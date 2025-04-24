@@ -46,20 +46,20 @@ function WatchVideos() {
 
   return (
     <div
-      className="w-full h-9/10  bg-gray-950 text-white p-0 flex justify-center items-start pt-10 font-noto"
+      className="w-full h-screen pt-[140px] bg-primary text-white p-0 flex justify-center items-start font-noto"
       dir="rtl"
     >
       <div className="w-full max-w-4xl flex flex-col gap-8 items-center max-md:w-9/10">
         <h1 className="text-3xl font-bold text-center">ویدیوهای آموزشی</h1>
 
-        <div className="w-full relative">
+        <div className="w-full relative ">
           <div className="mb-4 text-center text-xl">
             {videos[currentIndex].title}
           </div>
 
           <video
             key={videos[currentIndex].url}
-            className="w-full h-[340px] rounded-lg"
+            className="w-full h-[340px] rounded-lg "
             controls
             onEnded={handleVideoEnd}
           >

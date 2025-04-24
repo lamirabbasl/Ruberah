@@ -3,8 +3,8 @@ import React from "react";
 
 function Home() {
   return (
-    <div className="w-full h-8/10 flex items-center justify-center font-noto max-md:mt-10">
-      <div className="flex flex-col items-end gap-8 w-3/7 h-4/5 border-2 border-white rounded-lg bg-gray-950 p-8 max-md:w-[95%] max-md:h-auto">
+    <div className="w-full h-8/10 pt-[140px] flex items-center justify-center font-noto max-md:mt-10">
+      <div className="flex flex-col items-end gap-8 w-3/7 h-full border-2 border-white rounded-lg bg-gray-950 p-8 max-md:w-[95%] max-md:h-auto">
         <div>
           <span className="text-2xl">روند ثبت نام</span>
         </div>

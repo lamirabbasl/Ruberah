@@ -47,8 +47,8 @@ export default function QuizEnroll() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center font-noto">
-      <div className="bg-gray-950 max-md:w-[95%] h-[440px] mb-[140px] flex flex-col gap-8  border-2 border-white p-8 rounded-2xl shadow-xl w-full max-w-md  text-center">
+    <div className="h-full flex items-center justify-center font-noto pt-[200px]">
+      <div className="bg-gray-950 max-md:w-[95%] h-[440px] mb-[140px] flex flex-col gap-8 border-2 border-white p-8 rounded-2xl shadow-xl w-full max-w-md  text-center">
         {!completed ? (
           <>
             <h2 className="text-2xl font-bold mb-4 text-white">
