@@ -1,56 +1,61 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const videos = [
   {
     id: 1,
-    title: 'معرفی پلتفرم',
-    url: 'https://www.w3schools.com/html/movie.mp4',
+    title: "معرفی پلتفرم",
+    url: "https://www.w3schools.com/html/movie.mp4",
   },
   {
     id: 2,
-    title: 'نحوه ثبت نام',
-    url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    title: "نحوه ثبت نام",
+    url: "https://www.w3schools.com/html/mov_bbb.mp4",
   },
-]
+];
 
 function WatchVideos() {
-  const router = useRouter()
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [watched, setWatched] = useState(Array(videos.length).fill(false))
-  const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [watched, setWatched] = useState(Array(videos.length).fill(false));
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleVideoEnd = () => {
-    const updated = [...watched]
-    updated[currentIndex] = true
-    setWatched(updated)
-  }
+    const updated = [...watched];
+    updated[currentIndex] = true;
+    setWatched(updated);
+  };
 
   const goToNext = () => {
     if (currentIndex < videos.length - 1) {
-      setCurrentIndex(currentIndex + 1)
+      setCurrentIndex(currentIndex + 1);
     }
-  }
+  };
 
   const goToPrev = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
+      setCurrentIndex(currentIndex - 1);
     }
-  }
+  };
 
   const goToRegister = () => {
-    router.push('/enroll/quiz') // change this to your actual route
-  }
+    router.push("/enroll/quiz"); // change this to your actual route
+  };
 
   return (
-    <div className="w-full h-9/10  bg-gray-950 text-white p-0 flex justify-center items-start pt-10 font-noto" dir="rtl">
+    <div
+      className="w-full h-9/10  bg-gray-950 text-white p-0 flex justify-center items-start pt-10 font-noto"
+      dir="rtl"
+    >
       <div className="w-full max-w-4xl flex flex-col gap-8 items-center max-md:w-9/10">
         <h1 className="text-3xl font-bold text-center">ویدیوهای آموزشی</h1>
 
         <div className="w-full relative">
-          <div className="mb-4 text-center text-xl">{videos[currentIndex].title}</div>
+          <div className="mb-4 text-center text-xl">
+            {videos[currentIndex].title}
+          </div>
 
           <video
             key={videos[currentIndex].url}
@@ -73,7 +78,7 @@ function WatchVideos() {
             </button>
 
             {/* Left-side: ویدیو بعدی or ادامه روند ثبت نام */}
-            {currentIndex === videos.length - 1 && watched.every(w => w) ? (
+            {currentIndex === videos.length - 1 && watched.every((w) => w) ? (
               <button
                 onClick={goToRegister}
                 className="bg-green-600 px-4 py-2 rounded-lg cursor-pointer"
@@ -105,7 +110,7 @@ function WatchVideos() {
           </div>
 
           {/* Optional: Completion Message */}
-          {currentIndex === videos.length - 1 && watched.every(w => w) && (
+          {currentIndex === videos.length - 1 && watched.every((w) => w) && (
             <div className="mt-6 text-green-400 text-center font-bold">
               🎉 همه ویدیوها با موفقیت تماشا شده‌اند!
             </div>
@@ -113,7 +118,7 @@ function WatchVideos() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default WatchVideos
+export default WatchVideos;

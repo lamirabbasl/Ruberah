@@ -1,19 +1,13 @@
-import React from 'react'
+import React from "react";
 import { FaLocationDot } from "react-icons/fa6";
 import { FaPhoneVolume } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { FaInstagram } from "react-icons/fa";
 import { FaTelegramPlane } from "react-icons/fa";
 
-
-
-
-
-
 function Footer() {
   return (
     <div className="flex flex-col lg:flex-row-reverse items-center lg:items-start justify-center lg:justify-between font-noto pt-10 px-6 lg:pr-[200px] w-full bg-[#2A2B2D] text-white space-y-8 lg:space-y-0 h-auto lg:h-[350px]">
-      
       {/* Right Side - Description and Location */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6 text-right select-none">
         <div className="flex items-center justify-end space-x-3 text-2xl">

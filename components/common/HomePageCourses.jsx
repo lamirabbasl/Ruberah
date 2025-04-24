@@ -53,7 +53,9 @@ export default function HomePageCourses() {
       <div className="flex items-center h-auto w-full p-8">
         <FaChevronLeft
           className={`text-secondery text-4xl ${
-            currentIndex === 0 ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-700"
+            currentIndex === 0
+              ? "opacity-40 cursor-not-allowed"
+              : "hover:bg-gray-700"
           }`}
           onClick={slideLeft}
         />
@@ -61,7 +63,9 @@ export default function HomePageCourses() {
           <div
             ref={sliderRef}
             className="flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)` }}
+            style={{
+              transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+            }}
           >
             {images.map((src, index) => (
               <div
