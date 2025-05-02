@@ -10,7 +10,6 @@ import Footer from "@/components/common/Footer";
 
 export default function Home() {
   const pathname = usePathname();
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hash = window.location.hash;

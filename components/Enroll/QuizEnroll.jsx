@@ -79,8 +79,8 @@ export default function QuizEnroll() {
             <h2 className="text-2xl font-bold mb-4 text-white">
               آزمون با موفقیت انجام شد
             </h2>
-            <Link href={"/"}>
-              <button className="mt-[280px] px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600">
+            <Link href={"/enroll/sessions"}>
+              <button className="mt-[280px] px-6 py-2 cursor-pointer bg-green-500 text-white rounded-xl hover:bg-green-600">
                 ادامه روند ثبت نام
               </button>
             </Link>

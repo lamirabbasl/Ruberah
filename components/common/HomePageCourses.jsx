@@ -52,10 +52,8 @@ export default function HomePageCourses() {
       </div>
       <div className="flex items-center h-auto w-full p-8">
         <FaChevronLeft
-          className={`text-secondery text-4xl ${
-            currentIndex === 0
-              ? "opacity-40 cursor-not-allowed"
-              : "hover:bg-gray-700"
+          className={`text-secondery text-4xl cursor-pointer ${
+            currentIndex === 0 ? "opacity-40 cursor-not-allowed" : ""
           }`}
           onClick={slideLeft}
         />
@@ -82,10 +80,10 @@ export default function HomePageCourses() {
           </div>
         </div>
         <FaChevronRight
-          className={`text-secondery text-4xl ${
+          className={`text-secondery text-4xl cursor-pointer ${
             currentIndex >= images.length - itemsPerView
               ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-gray-700"
+              : ""
           }`}
           onClick={slideRight}
         />
