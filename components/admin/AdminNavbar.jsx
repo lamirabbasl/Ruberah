@@ -1,34 +1,96 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import { FaRegCalendarCheck } from "react-icons/fa";
+import { BiExit } from "react-icons/bi";
+import { FaListUl } from "react-icons/fa";
+import { VscSignIn } from "react-icons/vsc";
+import { useRouter, usePathname } from "next/navigation";
 
-export default function AdminNavbar() {
+function AdminNavbar() {
+  const [activeTab, setActiveTab] = useState(null);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const segments = pathname.split("/").filter((segment) => segment !== "");
+    if (segments[1] === "dashboard") {
+      setActiveTab(segments[2]);
+    } else {
+      setActiveTab(null);
+    }
+  }, [pathname]);
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    router.push(`/admin/dashboard/${tab}`);
+  };
+
   return (
-    <nav className="flex justify-between fixed top-0 z-50 bg-gray-50 items-center h-18  px-6 w-screen border-b border-gray-300 font-noto font-semibold text-gray-900">
-      <div className="flex items-center space-x-4">
-        <Link
-          href="/login"
-          className="flex border-2 rounded-lg py-2 px-3 border-secondery bg-white text-secondery cursor-pointer gap-1 transition hover:bg-secondery hover:text-white"
-        >
-          <span>خروج</span>
-        </Link>
-      </div>
-      <Link href="/admin/dashboard">
-        <div className="flex items-center space-x-3 text-white cursor-pointer text-xl">
-          <span className="flex gap-1">
-            <span className="text-secondery">روبه راه</span>
-            <span className="text-black">مدیریت</span>
-          </span>
+    <aside className=" max-md:hidden fixed right-0 flex text-lg font-noto text-white flex-col gap-6 justify-start items-end p-4 h-screen w-64 bg-gray-900 shadow-md z-10 transition-transform duration-300 ease-in-out">
+      {/* Header Section */}
+      <div className="flex justify-end items-center gap-2 pb-4 border-b border-gray-800 w-full">
+        <div className="flex flex-col items-end">
+          <p className="font-semibold">امیرعباس غلامی</p>
+          <p className="text-sm text-gray-400">ادمین</p>
+        </div>
+        <div className="relative w-12 h-12 rounded-full overflow-hidden">
           <Image
-            width={40}
-            height={40}
-            src="/logo.png"
-            alt="Logo"
-            className="rounded-full"
+            src={"/user.png"}
+            alt="user avatar"
+            layout="fill"
+            objectFit="cover"
           />
         </div>
-      </Link>
-    </nav>
+      </div>
+
+      {/* Navigation Links */}
+      <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
+        <NavItem
+          label="دوره ها"
+          icon={<FaListUl className="text-xl ml-2" />}
+          onClick={() => handleTabClick("courses")}
+          isActive={activeTab === "courses"}
+        />
+        <NavItem
+          label="رزرو شده ها"
+          icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+          onClick={() => handleTabClick("reserve")}
+          isActive={activeTab === "reserve"}
+        />
+        <NavItem
+          label="فرآیند ثبت نام"
+          icon={<VscSignIn className="text-xl ml-2" />}
+          onClick={() => handleTabClick("signup")}
+          isActive={activeTab === "signup"}
+        />
+      </nav>
+
+      {/* Logout Button */}
+      <button className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200">
+        <p>خارج شوید</p>
+        <BiExit className="text-xl" />
+      </button>
+    </aside>
   );
 }
+
+function NavItem({ label, icon, onClick, isActive }) {
+  return (
+    <div
+      className={`relative flex justify-end items-center gap-3 w-full cursor-pointer rounded-md transition-colors duration-200 ${
+        isActive ? "bg-gray-800" : "hover:bg-gray-800/50"
+      } p-2`}
+      onClick={onClick}
+    >
+      <p>{label}</p>
+      {icon}
+      {isActive && (
+        <div className="absolute top-0 right-0 h-full w-1 bg-indigo-500 rounded-r-md shadow-md"></div>
+      )}
+    </div>
+  );
+}
+
+export default AdminNavbar;

@@ -7,6 +7,7 @@ import { FaPhoneFlip } from "react-icons/fa6";
 import { PiSignInBold } from "react-icons/pi";
 import Image from "next/image";
 import Link from "next/link";
+import Menu from "./Menu";
 
 export default function Navbar() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function Navbar() {
         </div>
       </div>
       <div className="md:hidden">
-        <IoMenu className="text-4xl text-white" />
+        <Menu />
       </div>
       <div className="flex items-center justify-center gap-8">
         <div className="flex items-center justify-center gap-6  max-md:hidden">
