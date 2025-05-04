@@ -26,10 +26,12 @@ export default function Navbar() {
   return (
     <nav className="flex justify-between fixed z-99 bg-primary items-center h-20 px-6 max-md:px-2 w-full border-b font-semibold font-noto border-gray-400">
       <div className="flex items-center space-x-4 max-md:hidden">
-        <div className="flex border-2 rounded-md py-1 px-2 border-secondery text-secondery cursor-pointer gap-1 transition hover:text-white hover:border-white">
-          <span>ورود/عضویت</span>
-          <PiSignInBold className="text-2xl" />
-        </div>
+        <Link href={"/api/auth/login"}>
+          <div className="flex border-2 rounded-md py-1 px-2 border-secondery text-secondery cursor-pointer gap-1 transition hover:text-white hover:border-white">
+            <span>ورود/عضویت</span>
+            <PiSignInBold className="text-2xl" />
+          </div>
+        </Link>
       </div>
       <div className="md:hidden">
         <Menu />
