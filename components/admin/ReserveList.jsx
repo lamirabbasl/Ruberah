@@ -98,7 +98,7 @@ const ReserveList = () => {
       </div>
 
       {Object.keys(groupedReservations).length === 0 ? (
-        <p className="text-gray-600">هیچ رزروی ثبت نشده است.</p>
+        <p className="text-gray-600">هیچ رزروی ثبت نشده است</p>
       ) : (
         Object.entries(groupedReservations).map(
           ([date, reservationsForDate]) => (
