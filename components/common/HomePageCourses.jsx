@@ -10,11 +10,10 @@ export default function HomePageCourses() {
   const sliderRef = useRef(null);
 
   const images = [
-    "/testimages/c1.jpg",
-    "/testimages/c2.jpg",
-    "/testimages/c3.jpg",
-    "/testimages/c4.jpg",
-    "/testimages/c6.jpg",
+    "/testimages/n1.jpg",
+    "/testimages/n2.jpg",
+    "/testimages/n3.jpg",
+    "/testimages/n4.jpg",
   ];
 
   const totalItems = images.length;
