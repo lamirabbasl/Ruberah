@@ -1,31 +1,41 @@
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AiOutlineImport } from "react-icons/ai";
 
 function Hero() {
+  // State to track the current image index
+  const [currentImage, setCurrentImage] = useState(0);
+
+  // Array of image URLs (replace with your actual image URLs)
+  const images = ["hero/m1.jpg", "hero/m2.jpg", "hero/m3.jpg"];
+
+  // Effect to cycle through images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [images.length]);
+
   return (
-    <div className="relative flex flex-col w-screen  h-screen justify-between items-center bg-amber-50 p-4 overflow-hidden">
-      {/* Background Video */}
-      <video
-        className="absolute top-0 left-0 w-full h-full object-cover opacity-50 "
-        width="1200"
-        height="720"
-        autoPlay
-        muted
-        loop
-        playsInline
-      >
-        <source
-          src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
-          type="video/mp4"
+    <div className="relative flex flex-col w-screen h-screen justify-between items-center bg-amber-50 p-4 overflow-hidden">
+      {/* Background Image Slider */}
+      {images.map((image, index) => (
+        <img
+          key={index}
+          src={image}
+          alt={`Background ${index + 1}`}
+          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            index === currentImage ? "opacity-50" : "opacity-0"
+          }`}
         />
-        Your browser does not support the video tag.
-      </video>
+      ))}
       {/* Overlay for better contrast */}
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-70 z-2"></div>
 
       {/* Text Div */}
-      <div className="relative font-noto text-2xl rounded-full cursor-default p-2 bg-black max-md:rounded-[10px] bg-opacity-80 max-md:w-9/10  mt-[180px] w-1/3 text-white text-center max-md:text-md z-10">
+      <div className="relative font-noto text-2xl rounded-full cursor-default p-2 bg-black max-md:rounded-[10px] bg-opacity-80 max-md:w-9/10 mt-[180px] w-1/3 text-white text-center max-md:text-md z-10">
         <span>
           به دنبال کشف گنجینه‌های معنوی موجود در فرهنگ سرزمین مادری‌مان ایران و
           بازآفرینی به زبان امروزی
