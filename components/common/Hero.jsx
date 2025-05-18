@@ -44,8 +44,8 @@ function Hero() {
 
       {/* Button */}
       <Link href={"/enroll"}>
-        <button className="relative flex items-center text-xl cursor-pointer mb-10 gap-1 bg-[#37B360] py-1 px-4 rounded-full z-10">
-          <span className="font-noto font-bold">فرآیند ثبت نام</span>
+        <button className="relative font-mitra flex items-center text-xl cursor-pointer mb-10 gap-1 bg-[#37B360] py-1 px-4 rounded-full z-10">
+          <span className=" text-3xl ">فرآیند ثبت نام</span>
           <AiOutlineImport className="text-xl" />
         </button>
       </Link>

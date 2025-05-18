@@ -15,7 +15,11 @@ function Footer() {
             <span className="text-secondery">روبه راه</span>
             <h1>خانواده</h1>
           </p>
-          <img src="logo.png" alt="Logo" className="h-10 w-10 rounded-full" />
+          <img
+            src="logo-white.png"
+            alt="Logo"
+            className="h-10 w-10 rounded-full"
+          />
         </div>
         <div className="flex flex-col text-xl leading-relaxed">
           <span>به دنبال کشف گنجینه‌های معنوی موجود در فرهنگ</span>
