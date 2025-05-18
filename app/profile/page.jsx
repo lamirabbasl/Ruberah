@@ -1,6 +1,6 @@
 import React from "react";
 
-function Dashboard() {
+function Profile() {
   return (
     <div className="w-5/6 max-md:w-screen h-screen font-mitra flex justify-center items-center bg-white text-black">
       <div>
@@ -10,4 +10,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default Profile;

@@ -80,8 +80,8 @@ const ReserveList = () => {
   };
 
   return (
-    <div className="text-right">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+    <div className="text-right font">
+      <div className="flex flex-col  sm:flex-row justify-between items-start sm:items-center mb-4">
         <button
           onClick={() => setShowAddForm(true)}
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mb-4 sm:mb-0"

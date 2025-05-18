@@ -7,6 +7,13 @@
 
 @config "../tailwind.config.js";
 
+@font-face {
+  font-family: "Mitra";
+  src: url("/fonts/Far_Mitra.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body,
 html {
   width: 100%;

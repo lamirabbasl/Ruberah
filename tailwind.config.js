@@ -23,6 +23,7 @@ module.exports = {
         noto: ["Noto Naskh Arabic", "sans-serif"],
         vazir: ["Vazir", "sans-serif"],
         notonas: ["Noto Nastaliq Urdu", "sans-serif"],
+        mitra: ["Mitra", "sans-serif"],
       },
       keyframes: {
         borderExpand: {

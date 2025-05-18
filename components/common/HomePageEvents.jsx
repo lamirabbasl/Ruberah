@@ -72,7 +72,7 @@ export default function HomePageEvents() {
   return (
     <div className="flex flex-col items-center justify-center pt-4 border-b border-white">
       <div className="text-center select-none">
-        <h1 className="font-noto text-4xl mt-4">دوره ها</h1>
+        <h1 className="font-noto text-4xl mt-4">رویداد ها</h1>
       </div>
       <div className="flex items-center h-auto w-full p-8">
         <FaChevronLeft

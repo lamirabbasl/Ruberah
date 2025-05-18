@@ -19,7 +19,7 @@ function Hero() {
   }, [images.length]);
 
   return (
-    <div className="relative flex flex-col w-screen h-screen justify-between items-center bg-amber-50 p-4 overflow-hidden">
+    <div className="relative flex flex-col w-screen h-screen justify-between font-iransas  items-center bg-amber-50 p-4 overflow-hidden">
       {/* Background Image Slider */}
       {images.map((image, index) => (
         <img
@@ -35,7 +35,7 @@ function Hero() {
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-70 z-2"></div>
 
       {/* Text Div */}
-      <div className="relative font-noto text-2xl rounded-full cursor-default p-2 bg-black max-md:rounded-[10px] bg-opacity-80 max-md:w-9/10 mt-[180px] w-1/3 text-white text-center max-md:text-md z-10">
+      <div className="relative font-mitra text-2xl rounded-full cursor-default p-2 bg-black max-md:rounded-[10px] bg-opacity-80 max-md:w-9/10 mt-[180px] w-1/3 text-white text-center max-md:text-md z-10">
         <span>
           به دنبال کشف گنجینه‌های معنوی موجود در فرهنگ سرزمین مادری‌مان ایران و
           بازآفرینی به زبان امروزی
