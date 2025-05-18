@@ -4,7 +4,7 @@ import Navbar from "@/components/common/Navbar";
 
 function Enroll() {
   return (
-    <div className=" w-screen h-screen ">
+    <div className=" w-screen h-screen  ">
       <Navbar />
       <HomeEnroll />
     </div>

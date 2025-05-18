@@ -46,7 +46,7 @@ function WatchVideos() {
 
   return (
     <div
-      className="w-full h-screen pt-[140px] bg-primary text-white p-0 flex justify-center items-start font-noto"
+      className="w-full h-screen pt-[140px] bg-primary  text-white p-0 flex justify-center items-start font-noto"
       dir="rtl"
     >
       <div className="w-full max-w-4xl flex flex-col gap-8 items-center max-md:w-9/10">

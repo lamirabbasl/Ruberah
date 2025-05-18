@@ -4,7 +4,7 @@ import React from "react";
 
 function EnrollVideos() {
   return (
-    <div className=" w-screen h-screen overflow-hidden ">
+    <div className=" w-screen h-screen overflow-hidden  ">
       <Navbar />
       <WatchVideos />
     </div>

@@ -67,11 +67,14 @@ export default function SessionsPage() {
   };
 
   const confirmAndRedirect = () => {
-    router.push("/enroll/session-detail");
+    router.push("/enroll/session-signup");
   };
 
   return (
-    <div dir="rtl" className="min-h-screen p-6 font-mitra bg-primary pt-24">
+    <div
+      dir="rtl"
+      className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
+    >
       <motion.h1
         className="text-2xl sm:text-4xl font-bold text-center mb-4 text-white"
         initial={{ opacity: 0, y: -20 }}
