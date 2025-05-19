@@ -94,7 +94,8 @@ export default function StaticSessionDetail() {
           <p className="mb-2">کد اختصاصی شما برای جلسه:</p>
           <p className="text-2xl tracking-widest text-black">{code}</p>
           <p className="text-sm sm:text-base mt-2 font-normal">
-            لطفاً این کد را در زمان حضور در جلسه همراه داشته باشید.
+            کد اختصاصی برای شما پیامک شده. لطفاً این کد را در زمان حضور در جلسه
+            همراه داشته باشید.
           </p>
         </div>
       </div>

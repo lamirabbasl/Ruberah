@@ -7,7 +7,16 @@ function Hero() {
   const [currentImage, setCurrentImage] = useState(0);
 
   // Array of image URLs (replace with your actual image URLs)
-  const images = ["hero/m1.jpg", "hero/m2.jpg", "hero/m3.jpg"];
+  const images = [
+    "hero/n7.jpg",
+    "hero/n8.jpg",
+    "hero/n6.jpg",
+    "hero/n5.jpg",
+    "hero/n4.jpg",
+    "hero/n3.jpg",
+    "hero/n2.jpg",
+    "hero/n1.jpg",
+  ];
 
   // Effect to cycle through images every 5 seconds
   useEffect(() => {
