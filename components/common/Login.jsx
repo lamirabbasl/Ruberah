@@ -3,21 +3,46 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { login } from "@/lib/api/api";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { login: authLogin } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!phone.trim() || !password.trim()) {
       alert("لطفاً همه فیلدها را پر کنید.");
       return;
     }
-    // Mock login logic (replace with actual authentication)
-    alert(`ورود با شماره ${phone} انجام شد!`);
-    setPhone("");
-    setPassword("");
+    setLoading(true);
+    try {
+      const data = await login(phone, password);
+
+      if (data.access) {
+        // Use AuthContext login function which handles token storage
+        const userData = await authLogin(data.access);
+
+        // Redirect based on user group
+        if (userData.groups.includes("manager")) {
+          router.push("/admin");
+        } else {
+          router.push("/profile");
+        }
+      } else {
+        alert("ورود ناموفق بود.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("خطا در ورود: " + (error.response?.data?.detail || error.message));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formVariants = {
@@ -77,9 +102,10 @@ const Login = () => {
         </div>
         <button
           onClick={handleLogin}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md w-full shadow-md hover:shadow-lg transition-all duration-200"
+          disabled={loading}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md w-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
         >
-          ورود
+          {loading ? "در حال ورود..." : "ورود"}
         </button>
         <p className="mt-4 text-center text-gray-600">
           حساب کاربری ندارید؟{" "}

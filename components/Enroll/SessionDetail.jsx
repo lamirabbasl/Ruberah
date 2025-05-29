@@ -1,31 +1,57 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function StaticSessionDetail() {
-  const [code, setCode] = useState("");
+export default function SessionDetail() {
+  const router = useRouter();
+  const [data, setData] = useState({
+    code: "",
+    user: null,
+    session: null,
+  });
 
   useEffect(() => {
-    const generatedCode = Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase();
-    setCode(generatedCode);
-  }, []);
+    // Get all required data from localStorage
+    const code = localStorage.getItem("reservationCode");
+    const formData = localStorage.getItem("formData");
+    const sessionData = localStorage.getItem("selectedSession");
 
-  const user = {
-    fullName: "علیرضا حسینی",
-    phone: "09121234567",
-    email: "alireza@example.com",
-    childName: "آرمین حسینی",
-    childAge: 10,
+    if (!code || !formData || !sessionData) {
+      // If any data is missing, redirect to sessions page
+      router.push("/enroll/sessions");
+      return;
+    }
+
+    setData({
+      code,
+      user: JSON.parse(formData),
+      session: JSON.parse(sessionData),
+    });
+  }, [router]);
+
+  const formatDateTime = (dateTimeStr) => {
+    const date = new Date(dateTimeStr);
+    return {
+      date: date.toLocaleDateString("fa-IR"),
+      time: date.toLocaleTimeString("fa-IR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
   };
 
-  const session = {
-    date: "1403/03/03",
-    location: "کلاس 103",
-    startTime: "16:30",
-    endTime: "18:00",
-  };
+  if (!data.code || !data.user || !data.session) {
+    return (
+      <div
+        dir="rtl"
+        className="min-h-screen bg-gradient-to-b from-primary to-gray-600 pt-24 p-6 font-mitra"
+      >
+        <div className="text-white text-center">در حال بارگذاری اطلاعات...</div>
+      </div>
+    );
+  }
+
+  const { date, time } = formatDateTime(data.session.date_time);
 
   return (
     <div
@@ -47,20 +73,14 @@ export default function StaticSessionDetail() {
             <ul className="space-y-2 text-base sm:text-lg">
               <li>
                 نام و نام خانوادگی:{" "}
-                <span className="font-semibold">{user.fullName}</span>
+                <span className="font-semibold">{data.user.name}</span>
               </li>
               <li>
-                شماره تماس: <span className="font-semibold">{user.phone}</span>
+                شماره تماس:{" "}
+                <span className="font-semibold">{data.user.phone}</span>
               </li>
               <li>
-                ایمیل: <span className="font-semibold">{user.email}</span>
-              </li>
-              <li>
-                نام فرزند:{" "}
-                <span className="font-semibold">{user.childName}</span>
-              </li>
-              <li>
-                سن فرزند: <span className="font-semibold">{user.childAge}</span>
+                ایمیل: <span className="font-semibold">{data.user.email}</span>
               </li>
             </ul>
           </div>
@@ -72,30 +92,29 @@ export default function StaticSessionDetail() {
             </h2>
             <ul className="space-y-2 text-base sm:text-lg">
               <li>
-                تاریخ: <span className="font-semibold">{session.date}</span>
+                تاریخ: <span className="font-semibold">{date}</span>
               </li>
               <li>
-                مکان: <span className="font-semibold">{session.location}</span>
+                ساعت: <span className="font-semibold">{time}</span>
               </li>
               <li>
-                ساعت شروع:{" "}
-                <span className="font-semibold">{session.startTime}</span>
+                مکان:{" "}
+                <span className="font-semibold">{data.session.address}</span>
               </li>
               <li>
-                ساعت پایان:{" "}
-                <span className="font-semibold">{session.endTime}</span>
+                ظرفیت کل:{" "}
+                <span className="font-semibold">{data.session.capacity}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Unique Code */}
+        {/* Reservation Code */}
         <div className="bg-yellow-100 text-yellow-900 rounded-xl p-6 text-center font-bold text-lg sm:text-xl shadow-inner border border-yellow-300">
           <p className="mb-2">کد اختصاصی شما برای جلسه:</p>
-          <p className="text-2xl tracking-widest text-black">{code}</p>
+          <p className="text-2xl tracking-widest text-black">{data.code}</p>
           <p className="text-sm sm:text-base mt-2 font-normal">
-            کد اختصاصی برای شما پیامک شده. لطفاً این کد را در زمان حضور در جلسه
-            همراه داشته باشید.
+            لطفاً این کد را در زمان حضور در جلسه همراه داشته باشید.
           </p>
         </div>
       </div>

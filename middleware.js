@@ -1,36 +1,83 @@
-export async function middleware() {}
+import { NextResponse } from "next/server";
 
-// import { NextResponse } from 'next/server';
+function normalizeUrl(url) {
+  url = url.replace(/\/+$/, "");
+  if (url.endsWith("/api")) {
+    url = url.slice(0, -4);
+  }
+  return url;
+}
 
-// export async function middleware(request) {
-//   const { pathname } = request.nextUrl;
-//   const token = request.cookies.get('auth_token')?.value;
+export async function middleware(request) {
+  const { pathname } = request.nextUrl;
 
-//   // Protect admin routes
-//   if (pathname.startsWith('/admin')) {
-//     if (!token) {
-//       return NextResponse.redirect(new URL('/api/auth/login', request.url));
-//     }
-//     const response = await fetch(`${process.env.API_BASE_URL}/api/auth/verify`, {
-//       headers: { Authorization: `Bearer ${token}` },
-//     });
-//     if (!response.ok) {
-//       return NextResponse.redirect(new URL('/api/auth/login', request.url));
-//     }
-//     const { role } = await response.json();
-//     if (role !== 'admin') {
-//       return NextResponse.redirect(new URL('/', request.url));
-//     }
-//   }
+  // Check both cookie and Authorization header
+  const token =
+    request.cookies.get("auth_token")?.value ||
+    request.headers.get("Authorization");
 
-//   // Protect dashboard routes
-//   if (pathname.startsWith('/dashboard') && !token) {
-//     return NextResponse.redirect(new URL('/api/auth/login', request.url));
-//   }
+  // Protect /admin and /profile routes only
+  if (pathname.startsWith("/admin") || pathname.startsWith("/profile")) {
+    if (!token) {
+      const callbackUrl = encodeURIComponent(pathname);
+      return NextResponse.redirect(
+        new URL(`/api/auth/login?callbackUrl=${callbackUrl}`, request.url)
+      );
+    }
 
-//   return NextResponse.next();
-// }
+    // If token exists but doesn't have Bearer prefix, add it
+    const tokenWithBearer = token.startsWith("Bearer ")
+      ? token
+      : `Bearer ${token}`;
 
-// export const config = {
-//   matcher: ['/admin/:path*', '/dashboard/:path*'],
-// };
+    // For admin routes, verify user is in manager group
+    if (pathname.startsWith("/admin")) {
+      try {
+        // Use proxy route for verification
+        const response = await fetch(
+          new URL("/api/proxy/users/me", request.url),
+          {
+            headers: {
+              Authorization: tokenWithBearer,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to verify user");
+        }
+
+        const userData = await response.json();
+
+        // Check if user is in manager group
+        const isManager =
+          Array.isArray(userData.groups) && userData.groups.includes("manager");
+
+        if (!isManager) {
+          // Redirect non-manager users to home page
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      } catch (error) {
+        console.error("Error verifying user groups:", error.message);
+        return NextResponse.redirect(new URL("/api/auth/login", request.url));
+      }
+    }
+
+    // Clone the request headers and add the token
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("Authorization", tokenWithBearer);
+
+    // Return response with modified headers
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/admin/:path*", "/profile/:path*"],
+};

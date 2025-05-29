@@ -1,58 +1,45 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-
-const sessions = [
-  {
-    id: 1,
-    date: "1403/03/01",
-    location: "کلاس 101",
-    startTime: "10:00",
-    endTime: "12:00",
-    capacity: 0,
-  },
-  {
-    id: 2,
-    date: "1403/03/02",
-    location: "کلاس 102",
-    startTime: "14:00",
-    endTime: "16:00",
-    capacity: 5,
-  },
-  {
-    id: 3,
-    date: "1403/03/03",
-    location: "کلاس 103",
-    startTime: "16:30",
-    endTime: "18:00",
-    capacity: 0,
-  },
-  {
-    id: 4,
-    date: "1403/03/04",
-    location: "کلاس 104",
-    startTime: "08:00",
-    endTime: "10:00",
-    capacity: 7,
-  },
-  {
-    id: 5,
-    date: "1403/03/05",
-    location: "کلاس 105",
-    startTime: "18:00",
-    endTime: "20:00",
-    capacity: 1,
-  },
-];
+import { getSessions } from "@/lib/api/api";
 
 export default function SessionsPage() {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    async function fetchSessions() {
+      try {
+        const data = await getSessions();
+        setSessions(data);
+        setLoading(false);
+      } catch (err) {
+        setError("خطا در دریافت جلسات");
+        setLoading(false);
+      }
+    }
+
+    fetchSessions();
+  }, []);
+
+  const formatDateTime = (dateTimeStr) => {
+    const date = new Date(dateTimeStr);
+    return {
+      date: date.toLocaleDateString("fa-IR"),
+      time: date.toLocaleTimeString("fa-IR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+  };
+
   const handleSelect = (session) => {
-    if (session.capacity === 0) {
+    if (session.available_slots === 0) {
       return;
     }
     setSelectedId(session.id);
@@ -67,8 +54,35 @@ export default function SessionsPage() {
   };
 
   const confirmAndRedirect = () => {
+    const selectedSession = sessions.find((s) => s.id === selectedId);
+    // Store session data in localStorage
+    localStorage.setItem("selectedSession", JSON.stringify(selectedSession));
     router.push("/enroll/session-signup");
   };
+
+  if (loading) {
+    return (
+      <div
+        dir="rtl"
+        className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
+      >
+        <div className="text-white text-center text-xl">
+          در حال بارگذاری جلسات...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        dir="rtl"
+        className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
+      >
+        <div className="text-red-500 text-center text-xl">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -85,18 +99,19 @@ export default function SessionsPage() {
 
       {/* Header - Only for larger screens */}
       <div className="max-w-3xl mx-auto hidden sm:grid sm:grid-cols-5 gap-4 text-white text-sm font-bold p-3 mb-3 border-b-2 border-gray-100">
-        <div>🗓 زمان</div>
+        <div>🗓 تاریخ</div>
+        <div>⏰ زمان</div>
         <div>📍 مکان</div>
-        <div>🕒 شروع</div>
-        <div>🕒 پایان</div>
         <div>👥 ظرفیت</div>
+        <div>✅ ظرفیت باقیمانده</div>
       </div>
 
       {/* Sessions List */}
       <div className="max-w-3xl mx-auto space-y-2 sm:space-y-4">
         {sessions.map((s) => {
-          const isFull = s.capacity === 0;
+          const isFull = s.available_slots === 0;
           const isSelected = selectedId === s.id;
+          const { date, time } = formatDateTime(s.date_time);
 
           return (
             <motion.div
@@ -114,31 +129,33 @@ export default function SessionsPage() {
               onClick={() => handleSelect(s)}
             >
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-lg text-black">
+                {/* تاریخ */}
+                <div className="flex items-center sm:block gap-1">
+                  <span className="text-gray-500 sm:hidden">🗓 تاریخ:</span>
+                  <span>{date}</span>
+                </div>
                 {/* زمان */}
                 <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">🗓 زمان:</span>
-                  <span>{s.date}</span>
+                  <span className="text-gray-500 sm:hidden">⏰ زمان:</span>
+                  <span>{time}</span>
                 </div>
                 {/* مکان */}
                 <div className="flex items-center sm:block gap-1">
                   <span className="text-gray-500 sm:hidden">📍 مکان:</span>
-                  <span>{s.location}</span>
+                  <span>{s.address}</span>
                 </div>
-                {/* شروع */}
+                {/* ظرفیت کل */}
                 <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">🕒 شروع:</span>
-                  <span>{s.startTime}</span>
+                  <span className="text-gray-500 sm:hidden">👥 ظرفیت کل:</span>
+                  <span>{s.capacity}</span>
                 </div>
-                {/* پایان */}
+                {/* ظرفیت باقیمانده */}
                 <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">🕒 پایان:</span>
-                  <span>{s.endTime}</span>
-                </div>
-                {/* ظرفیت */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">👥 ظرفیت:</span>
+                  <span className="text-gray-500 sm:hidden">
+                    ✅ ظرفیت باقیمانده:
+                  </span>
                   <span className={isFull ? "text-red-500" : ""}>
-                    {isFull ? "ظرفیت تکمیل" : s.capacity}
+                    {isFull ? "ظرفیت تکمیل" : s.available_slots}
                   </span>
                 </div>
               </div>

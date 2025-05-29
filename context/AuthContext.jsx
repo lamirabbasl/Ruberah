@@ -10,37 +10,53 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
 
+  const verifyUser = async (token) => {
+    try {
+      const response = await fetch("/api/proxy/users/me/", {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to verify user");
+      }
+
+      const data = await response.json();
+
+      setIsAuthenticated(true);
+      setIsAdmin(data.groups.includes("manager"));
+      setUser({
+        id: data.id,
+        name: data.username,
+        phone: data.phone_number,
+        groups: data.groups,
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Verification error:", error.message);
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      setUser(null);
+      removeToken();
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const token = getToken();
     if (token) {
-      fetch("/api/auth/verify", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setIsAuthenticated(true);
-          setIsAdmin(data.role === "admin");
-          setUser({ name: data.name, email: data.email, phone: data.phone });
-        })
-        .catch(() => {
-          setIsAuthenticated(false);
-          setIsAdmin(false);
-          setUser(null);
-        });
+      verifyUser(token).catch((error) =>
+        console.error("Auto-verification error:", error.message)
+      );
     }
   }, []);
 
-  const login = (token) => {
+  const login = async (token) => {
     setToken(token);
-    fetch("/api/auth/verify", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setIsAuthenticated(true);
-        setIsAdmin(data.role === "admin");
-        setUser({ name: data.name, email: data.email, phone: data.phone });
-      });
+    const userData = await verifyUser(`Bearer ${token}`);
+    return userData;
   };
 
   const logout = () => {
@@ -52,7 +68,14 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isAdmin, user, login, logout }}
+      value={{
+        isAuthenticated,
+        isAdmin,
+        user,
+        login,
+        logout,
+        userGroups: user?.groups || [],
+      }}
     >
       {children}
     </AuthContext.Provider>
