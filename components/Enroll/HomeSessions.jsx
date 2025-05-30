@@ -30,11 +30,8 @@ export default function SessionsPage() {
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return {
-      date: date.toLocaleDateString("fa-IR"),
-      time: date.toLocaleTimeString("fa-IR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      date: date.toLocaleDateString('fa-IR'),
+      time: date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
     };
   };
 
@@ -54,31 +51,23 @@ export default function SessionsPage() {
   };
 
   const confirmAndRedirect = () => {
-    const selectedSession = sessions.find((s) => s.id === selectedId);
+    const selectedSession = sessions.find(s => s.id === selectedId);
     // Store session data in localStorage
-    localStorage.setItem("selectedSession", JSON.stringify(selectedSession));
+    localStorage.setItem('selectedSession', JSON.stringify(selectedSession));
     router.push("/enroll/session-signup");
   };
 
   if (loading) {
     return (
-      <div
-        dir="rtl"
-        className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
-      >
-        <div className="text-white text-center text-xl">
-          در حال بارگذاری جلسات...
-        </div>
+      <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24">
+        <div className="text-white text-center text-xl">در حال بارگذاری جلسات...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div
-        dir="rtl"
-        className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
-      >
+      <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24">
         <div className="text-red-500 text-center text-xl">{error}</div>
       </div>
     );
@@ -151,9 +140,7 @@ export default function SessionsPage() {
                 </div>
                 {/* ظرفیت باقیمانده */}
                 <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">
-                    ✅ ظرفیت باقیمانده:
-                  </span>
+                  <span className="text-gray-500 sm:hidden">✅ ظرفیت باقیمانده:</span>
                   <span className={isFull ? "text-red-500" : ""}>
                     {isFull ? "ظرفیت تکمیل" : s.available_slots}
                   </span>

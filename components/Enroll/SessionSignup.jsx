@@ -46,17 +46,14 @@ export default function SessionSignup() {
         session: sessionId,
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone
       };
 
       // Submit to API
       const response = await createReservation(reservationData);
 
       // Check for already reserved message
-      if (
-        response.message ===
-        "You have already reserved a seat for this session."
-      ) {
+      if (response.message === "You have already reserved a seat for this session.") {
         setError("شما قبلاً برای این جلسه ثبت نام کرده‌اید.");
         return;
       }

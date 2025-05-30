@@ -30,9 +30,9 @@ export default function QuizEnroll() {
 
   const handleSelect = async (questionId, answer) => {
     // Store the answer
-    setUserAnswers((prev) => ({
+    setUserAnswers(prev => ({
       ...prev,
-      [questionId]: answer,
+      [questionId]: answer
     }));
 
     // If this was the last question, validate all answers
@@ -40,16 +40,14 @@ export default function QuizEnroll() {
       setValidating(true);
       try {
         // Format answers for API
-        const formattedAnswers = Object.entries(userAnswers).map(
-          ([qId, answer]) => ({
-            question_id: parseInt(qId),
-            answer,
-          })
-        );
+        const formattedAnswers = Object.entries(userAnswers).map(([qId, answer]) => ({
+          question_id: parseInt(qId),
+          answer
+        }));
         // Add the current answer
         formattedAnswers.push({
           question_id: questionId,
-          answer,
+          answer
         });
 
         const result = await validateQuizAnswers(formattedAnswers);
@@ -96,9 +94,7 @@ export default function QuizEnroll() {
       <div className="h-full flex items-center justify-center font-noto pt-[200px]">
         <div className="bg-gray-950 max-md:w-[95%] h-[440px] mb-[140px] flex flex-col gap-8 border-2 border-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
           <h2 className="text-2xl font-bold mb-4 text-white">
-            {quizResult.result === "passed"
-              ? "آزمون با موفقیت انجام شد"
-              : "متاسفانه در آزمون قبول نشدید"}
+            {quizResult.result === "passed" ? "آزمون با موفقیت انجام شد" : "متاسفانه در آزمون قبول نشدید"}
           </h2>
           <div className="text-lg text-gray-300">
             <p>تعداد پاسخ‌های درست: {quizResult.correct_answers}</p>
@@ -111,7 +107,7 @@ export default function QuizEnroll() {
               </button>
             </Link>
           ) : (
-            <button
+            <button 
               onClick={() => {
                 setCurrentIndex(0);
                 setUserAnswers({});
@@ -141,11 +137,9 @@ export default function QuizEnroll() {
               key={choice}
               onClick={() => handleSelect(currentQuestion.id, choice)}
               className={`w-full py-2 px-4 rounded-xl border text-lg transition-all
-                ${
-                  userAnswers[currentQuestion.id] === choice
-                    ? "bg-blue-500 text-white"
-                    : "hover:bg-gray-800"
-                }`}
+                ${userAnswers[currentQuestion.id] === choice 
+                  ? "bg-blue-500 text-white" 
+                  : "hover:bg-gray-800"}`}
             >
               {choice}
             </button>

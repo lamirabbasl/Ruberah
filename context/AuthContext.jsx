@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = getToken();
     if (token) {
-      verifyUser(token).catch((error) =>
+      verifyUser(token).catch((error) => 
         console.error("Auto-verification error:", error.message)
       );
     }

@@ -182,6 +182,12 @@ function AdminMenu() {
             onClick={() => handleTabClick("signup")}
             isActive={activeTab === "signup"}
           />
+          <NavItem
+            label="کاربران"
+            icon={<FaListUl className="text-xl ml-2" />}
+            onClick={() => handleTabClick("users")}
+            isActive={activeTab === "users"}
+          />
         </nav>
 
         {/* Logout Button */}

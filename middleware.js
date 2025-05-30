@@ -10,7 +10,7 @@ function normalizeUrl(url) {
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-
+  
   // Check both cookie and Authorization header
   const token =
     request.cookies.get("auth_token")?.value ||
@@ -26,22 +26,17 @@ export async function middleware(request) {
     }
 
     // If token exists but doesn't have Bearer prefix, add it
-    const tokenWithBearer = token.startsWith("Bearer ")
-      ? token
-      : `Bearer ${token}`;
+    const tokenWithBearer = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 
     // For admin routes, verify user is in manager group
     if (pathname.startsWith("/admin")) {
       try {
         // Use proxy route for verification
-        const response = await fetch(
-          new URL("/api/proxy/users/me", request.url),
-          {
-            headers: {
-              Authorization: tokenWithBearer,
-            },
-          }
-        );
+        const response = await fetch(new URL("/api/proxy/users/me", request.url), {
+          headers: {
+            Authorization: tokenWithBearer,
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to verify user");
@@ -50,8 +45,8 @@ export async function middleware(request) {
         const userData = await response.json();
 
         // Check if user is in manager group
-        const isManager =
-          Array.isArray(userData.groups) && userData.groups.includes("manager");
+        const isManager = Array.isArray(userData.groups) && 
+                        userData.groups.includes("manager");
 
         if (!isManager) {
           // Redirect non-manager users to home page

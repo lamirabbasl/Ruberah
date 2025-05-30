@@ -1,103 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, Trash2 } from "lucide-react";
-
-// Mock quiz data for demonstration
-const initialQuizzes = [
-  {
-    id: "1",
-    question: "پایتخت ایران کجاست؟",
-    answers: [
-      { text: "تهران", isCorrect: true },
-      { text: "اصفهان", isCorrect: false },
-      { text: "شیراز", isCorrect: false },
-      { text: "مشهد", isCorrect: false },
-    ],
-  },
-  {
-    id: "2",
-    question: "بزرگترین اقیانوس جهان کدام است؟",
-    answers: [
-      { text: "آرام", isCorrect: true },
-      { text: "اطلس", isCorrect: false },
-      { text: "هند", isCorrect: false },
-      { text: "منجمد شمالی", isCorrect: false },
-    ],
-  },
-];
+import { getQuizQuestions, addQuizQuestion, deleteQuizQuestion } from "@/lib/api/api";
 
 const AdminSignupQuiz = () => {
-  const [quizzes, setQuizzes] = useState(initialQuizzes);
+  const [quizzes, setQuizzes] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState(null);
   const [newQuiz, setNewQuiz] = useState({
-    question: "",
-    answers: [
-      { text: "", isCorrect: false },
-      { text: "", isCorrect: false },
-      { text: "", isCorrect: false },
-      { text: "", isCorrect: false },
-    ],
+    question_text: "",
+    choices: ["", "", "", ""],
+    correct_answer: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleAnswerTextChange = (index, text) => {
-    setNewQuiz((prev) => ({
-      ...prev,
-      answers: prev.answers.map((ans, i) =>
-        i === index ? { ...ans, text } : ans
-      ),
-    }));
+  useEffect(() => {
+    fetchQuizzes();
+  }, []);
+
+  const fetchQuizzes = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getQuizQuestions();
+      setQuizzes(data);
+    } catch (err) {
+      setError(err.message || "Error fetching quiz questions");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCorrectAnswerChange = (index) => {
-    setNewQuiz((prev) => ({
-      ...prev,
-      answers: prev.answers.map((ans, i) => ({
-        ...ans,
-        isCorrect: i === index,
-      })),
-    }));
+  const handleChoiceChange = (index, value) => {
+    setNewQuiz((prev) => {
+      const newChoices = [...prev.choices];
+      newChoices[index] = value;
+      return { ...prev, choices: newChoices };
+    });
   };
 
-  const handleAddQuiz = () => {
-    if (!newQuiz.question.trim()) {
+  const handleAddQuiz = async () => {
+    if (!newQuiz.question_text.trim()) {
       alert("لطفاً سوال را وارد کنید.");
       return;
     }
-    const filledAnswers = newQuiz.answers.filter((ans) => ans.text.trim());
-    if (filledAnswers.length !== 4) {
+    if (newQuiz.choices.some((choice) => !choice.trim())) {
       alert("لطفاً هر چهار گزینه را وارد کنید.");
       return;
     }
-    const correctAnswers = newQuiz.answers.filter((ans) => ans.isCorrect);
-    if (correctAnswers.length !== 1) {
-      alert("لطفاً دقیقاً یک گزینه را به عنوان پاسخ صحیح انتخاب کنید.");
+    if (!newQuiz.correct_answer.trim()) {
+      alert("لطفاً پاسخ صحیح را انتخاب کنید.");
       return;
     }
-    const newId = String(Date.now());
-    setQuizzes([...quizzes, { id: newId, ...newQuiz }]);
-    setNewQuiz({
-      question: "",
-      answers: [
-        { text: "", isCorrect: false },
-        { text: "", isCorrect: false },
-        { text: "", isCorrect: false },
-        { text: "", isCorrect: false },
-      ],
-    });
-    setIsAddModalOpen(false);
+    setLoading(true);
+    setError(null);
+    try {
+      await addQuizQuestion(newQuiz);
+      setNewQuiz({ question_text: "", choices: ["", "", "", ""], correct_answer: "" });
+      setIsAddModalOpen(false);
+      fetchQuizzes();
+    } catch (err) {
+      setError(err.message || "Error adding quiz question");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemoveQuiz = (id, question) => {
-    setQuizToDelete({ id, question });
+  const handleRemoveQuiz = (id, question_text) => {
+    setQuizToDelete({ id, question_text });
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    setQuizzes(quizzes.filter((quiz) => quiz.id !== quizToDelete.id));
-    setIsDeleteModalOpen(false);
-    setQuizToDelete(null);
+  const confirmDelete = async () => {
+    if (!quizToDelete) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteQuizQuestion(quizToDelete.id);
+      setQuizzes(quizzes.filter((quiz) => quiz.id !== quizToDelete.id));
+      setIsDeleteModalOpen(false);
+      setQuizToDelete(null);
+    } catch (err) {
+      setError(err.message || "Error deleting quiz question");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Animation variants
@@ -163,28 +152,33 @@ const AdminSignupQuiz = () => {
                 <input
                   type="text"
                   id="question"
-                  value={newQuiz.question}
+                  value={newQuiz.question_text}
                   onChange={(e) =>
-                    setNewQuiz({ ...newQuiz, question: e.target.value })
+                    setNewQuiz({ ...newQuiz, question_text: e.target.value })
                   }
                   placeholder="سوال"
                   className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
                 />
               </div>
-              {newQuiz.answers.map((ans, i) => (
+              {newQuiz.choices.map((choice, i) => (
                 <div key={i} className="mb-2 flex items-center space-x-2">
                   <input
                     type="text"
-                    value={ans.text}
-                    onChange={(e) => handleAnswerTextChange(i, e.target.value)}
+                    value={choice}
+                    onChange={(e) => handleChoiceChange(i, e.target.value)}
                     placeholder={`گزینه ${i + 1}`}
                     className="flex-1 appearance-none border border-gray-300 text-right rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
                   />
                   <input
                     type="radio"
                     name="correctAnswer"
-                    checked={ans.isCorrect}
-                    onChange={() => handleCorrectAnswerChange(i)}
+                    checked={newQuiz.correct_answer === choice}
+                    onChange={() =>
+                      setNewQuiz((prev) => ({
+                        ...prev,
+                        correct_answer: choice,
+                      }))
+                    }
                     className="form-radio h-5 w-5 text-blue-600"
                   />
                 </div>
@@ -232,7 +226,7 @@ const AdminSignupQuiz = () => {
                 حذف سوال
               </h2>
               <p className="text-gray-700 mb-4 sm:mb-6 text-right">
-                آیا مطمئن هستید که می‌خواهید سوال "{quizToDelete?.question}" را
+                آیا مطمئن هستید که می‌خواهید سوال "{quizToDelete?.question_text}" را
                 حذف کنید؟
               </p>
               <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
@@ -268,10 +262,10 @@ const AdminSignupQuiz = () => {
               <div className="bg-white border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-all duration-200 p-4">
                 <div className="flex justify-between items-center mb-2">
                   <h2 className="text-base sm:text-lg font-semibold text-black text-right">
-                    {quiz.question}
+                    {quiz.question_text}
                   </h2>
                   <button
-                    onClick={() => handleRemoveQuiz(quiz.id, quiz.question)}
+                    onClick={() => handleRemoveQuiz(quiz.id, quiz.question_text)}
                     className="text-red-500 hover:text-red-600 transition-colors"
                     title="حذف سوال"
                   >
@@ -279,16 +273,16 @@ const AdminSignupQuiz = () => {
                   </button>
                 </div>
                 <ul className="space-y-1">
-                  {quiz.answers.map((ans, index) => (
+                  {quiz.choices.map((choice, index) => (
                     <li
                       key={index}
                       className={`text-right ${
-                        ans.isCorrect
+                        choice === quiz.correct_answer
                           ? "text-green-600 font-bold"
                           : "text-gray-700"
                       }`}
                     >
-                      {ans.text}
+                      {choice}
                     </li>
                   ))}
                 </ul>

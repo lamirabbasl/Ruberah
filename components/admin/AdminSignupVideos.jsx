@@ -1,45 +1,38 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, UploadCloud, Trash2 } from "lucide-react";
-
-// Mock video data for demonstration
-const initialVideos = [
-  {
-    id: "1",
-    title: "معرفی موسسه",
-    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-  },
-  {
-    id: "2",
-    title: "دوره ها",
-    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-  },
-  {
-    id: "3",
-    title: "معلم ها",
-    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-  },
-  {
-    id: "4",
-    title: "محیط بازی",
-    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-  },
-  {
-    id: "5",
-    title: "بچه ها",
-    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-  },
-];
+import { getIntroVideos, addIntroVideo, deleteIntroVideo } from "@/lib/api/api";
 
 const AdminSignupVideos = () => {
-  const [videos, setVideos] = useState(initialVideos);
+  const [videos, setVideos] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState("");
+  const [videoDescription, setVideoDescription] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [videoToDelete, setVideoToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const fetchVideos = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getIntroVideos();
+      console.log("Fetched videos:", data);
+      setVideos(data);
+    } catch (err) {
+      setError(err.message || "Error fetching videos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -51,7 +44,7 @@ const AdminSignupVideos = () => {
     }
   };
 
-  const handleUpload = (e) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !videoTitle.trim()) {
       alert("لطفاً عنوان ویدیو و فایل ویدیویی را وارد کنید.");
@@ -59,20 +52,28 @@ const AdminSignupVideos = () => {
     }
 
     setIsUploading(true);
-    setTimeout(() => {
-      const newVideo = {
-        id: String(Date.now()),
-        title: videoTitle,
-        src: URL.createObjectURL(file),
-      };
-      setVideos([...videos, newVideo]);
-      setIsUploading(false);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("title", videoTitle);
+      formData.append("description", videoDescription);
+      formData.append("video", file);
+
+      await addIntroVideo(formData);
+
+      alert("ویدیو با موفقیت بارگذاری شد!");
       setVideoTitle("");
+      setVideoDescription("");
       setFile(null);
       fileInputRef.current.value = "";
       setIsAddModalOpen(false);
-      alert(`ویدیو "${newVideo.title}" با موفقیت بارگذاری شد!`);
-    }, 2000);
+      fetchVideos();
+    } catch (err) {
+      setError(err.message || "Error uploading video");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveVideo = (id, title) => {
@@ -80,10 +81,21 @@ const AdminSignupVideos = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    setVideos(videos.filter((video) => video.id !== videoToDelete.id));
-    setIsDeleteModalOpen(false);
-    setVideoToDelete(null);
+  const confirmDelete = async () => {
+    if (!videoToDelete) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteIntroVideo(videoToDelete.id);
+      // Removed alert on successful deletion as per user request
+      setVideos(videos.filter((video) => video.id !== videoToDelete.id));
+      setIsDeleteModalOpen(false);
+      setVideoToDelete(null);
+    } catch (err) {
+      setError(err.message || "Error deleting video");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Animation variants
@@ -117,6 +129,12 @@ const AdminSignupVideos = () => {
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 text-red-600 font-semibold text-center">
+          {error}
+        </div>
+      )}
+
       {/* Modal for Adding Video */}
       <AnimatePresence>
         {isAddModalOpen && (
@@ -139,66 +157,85 @@ const AdminSignupVideos = () => {
               <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
                 افزودن ویدیو جدید
               </h2>
-              <div className="mb-4">
-                <label
-                  htmlFor="videoTitle"
-                  className="block text-gray-700 text-sm font-bold mb-2 text-right"
-                >
-                  عنوان ویدیو:
-                </label>
-                <input
-                  type="text"
-                  id="videoTitle"
-                  name="videoTitle"
-                  value={videoTitle}
-                  onChange={(e) => setVideoTitle(e.target.value)}
-                  placeholder="عنوان ویدیو"
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label
-                  htmlFor="videoFile"
-                  className="block text-gray-700 text-sm font-bold mb-2 text-right"
-                >
-                  انتخاب فایل ویدیویی:
-                </label>
-                <input
-                  type="file"
-                  id="videoFile"
-                  accept="video/*"
-                  onChange={handleFileChange}
-                  ref={fileInputRef}
-                  className="appearance-none border border-gray-300 rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
-                  required
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
-                >
-                  لغو
-                </button>
-                <button
-                  onClick={handleUpload}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto ${
-                    isUploading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <>
-                      <UploadCloud className="animate-spin w-5 h-5" />
-                      در حال بارگذاری...
-                    </>
-                  ) : (
-                    "بارگذاری"
-                  )}
-                </button>
-              </div>
+              <form onSubmit={handleUpload}>
+                <div className="mb-4">
+                  <label
+                    htmlFor="videoTitle"
+                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                  >
+                    عنوان ویدیو:
+                  </label>
+                  <input
+                    type="text"
+                    id="videoTitle"
+                    name="videoTitle"
+                    value={videoTitle}
+                    onChange={(e) => setVideoTitle(e.target.value)}
+                    placeholder="عنوان ویدیو"
+                    className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="videoDescription"
+                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                  >
+                    توضیحات:
+                  </label>
+                  <textarea
+                    id="videoDescription"
+                    name="videoDescription"
+                    value={videoDescription}
+                    onChange={(e) => setVideoDescription(e.target.value)}
+                    placeholder="توضیحات ویدیو"
+                    className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    rows={3}
+                  />
+                </div>
+                <div className="mb-6">
+                  <label
+                    htmlFor="videoFile"
+                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                  >
+                    انتخاب فایل ویدیویی:
+                  </label>
+                  <input
+                    type="file"
+                    id="videoFile"
+                    accept="video/*"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    className="appearance-none border border-gray-300 rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  >
+                    لغو
+                  </button>
+                  <button
+                    type="submit"
+                    className={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto ${
+                      isUploading ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <>
+                        <UploadCloud className="animate-spin w-5 h-5" />
+                        در حال بارگذاری...
+                      </>
+                    ) : (
+                      "بارگذاری"
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
@@ -277,7 +314,7 @@ const AdminSignupVideos = () => {
                   <div className="relative w-full h-0 pb-[56.25%]">
                     <video
                       controls
-                      src={video.src}
+                      src={video.video.startsWith("http") ? video.video : `${process.env.NEXT_PUBLIC_API_URL}${video.video}`}
                       className="absolute top-0 left-0 w-full h-full rounded-md object-cover border border-gray-300"
                     >
                       مرورگر شما از تگ ویدیو پشتیبانی نمی‌کند.

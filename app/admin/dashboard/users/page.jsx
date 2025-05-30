@@ -2,47 +2,48 @@
 
 import React, { useState, useEffect } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
-import AddTimeForm from "./AddTimeForm";
-import { getSessions, addSession, deleteSession } from "@/lib/api/api";
 
-const ReserveTimes = () => {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [sessionToDelete, setSessionToDelete] = useState(null);
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+import AddUserForm from "@/components/admin/AddUserForm";
+import { getUsers, addUser, deleteUser } from "@/lib/api/api";
 
-  useEffect(() => {
-    fetchSessions();
+const UsersPage = () => {
+  const [users, setUsers] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+  const [showAddForm, setShowAddForm] = React.useState(false);
+  const [userToDelete, setUserToDelete] = React.useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
+
+  React.useEffect(() => {
+    fetchUsers();
   }, []);
 
-  const fetchSessions = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getSessions();
-      setSessions(data);
+      const data = await getUsers();
+      setUsers(data);
     } catch (err) {
-      setError(err.message || "Error fetching sessions");
+      setError(err.message || "Error fetching users");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddItem = () => {
+  const handleAddUser = () => {
     setShowAddForm(true);
   };
 
-  const handleSaveNewItem = async (newItem) => {
+  const handleSaveNewUser = async (newUser) => {
     setLoading(true);
     setError(null);
     try {
-      await addSession(newItem);
+      await addUser(newUser);
       setShowAddForm(false);
-      await fetchSessions();
+      await fetchUsers();
     } catch (err) {
-      setError(err.message || "Error adding session");
+      setError(err.message || "Error adding user");
     } finally {
       setLoading(false);
     }
@@ -53,51 +54,51 @@ const ReserveTimes = () => {
   };
 
   const openConfirmDelete = (id) => {
-    setSessionToDelete(id);
+    setUserToDelete(id);
     setShowConfirmDelete(true);
   };
 
   const closeConfirmDelete = () => {
-    setSessionToDelete(null);
+    setUserToDelete(null);
     setShowConfirmDelete(false);
   };
 
-  const handleRemoveItem = async () => {
-    if (!sessionToDelete) return;
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
     setLoading(true);
     setError(null);
     try {
-      await deleteSession(sessionToDelete);
+      await deleteUser(userToDelete);
       setShowConfirmDelete(false);
-      setSessionToDelete(null);
-      await fetchSessions();
+      setUserToDelete(null);
+      await fetchUsers();
     } catch (err) {
-      setError(err.message || "Error deleting session");
+      setError(err.message || "Error deleting user");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-md:w-screen min-h-screen bg-white text-black p-6 text-right">
+    <div className="max-md:w-screen w-5/6 min-h-screen bg-white text-black p-6 text-right">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
         <button
-          onClick={handleAddItem}
+          onClick={handleAddUser}
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mb-4 sm:mb-0"
         >
           <FaPlus className="mr-2" />
-          افزودن جلسه
+          افزودن کاربر
         </button>
         {showAddForm && (
-          <AddTimeForm onSave={handleSaveNewItem} onCancel={handleCancelAdd} />
+          <AddUserForm onSave={handleSaveNewUser} onCancel={handleCancelAdd} />
         )}
       </div>
 
       {loading && <p>در حال بارگذاری...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {sessions.length === 0 ? (
-        <p className="text-gray-600">هیچ جلسه‌ای وجود ندارد</p>
+      {users.length === 0 ? (
+        <p className="text-gray-600">هیچ کاربری وجود ندارد</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -110,7 +111,7 @@ const ReserveTimes = () => {
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  ظرفیت
+                  کد ملی
                 </th>
                 <th
                   scope="col"
@@ -122,38 +123,50 @@ const ReserveTimes = () => {
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  زمان معارفه
+                  نقش
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  عنوان
+                  شماره تلفن
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  نام کاربری
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sessions.map((session) => (
-                <tr key={session.id}>
+              {users.map((user) => (
+                <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-left">
                     <button
-                      onClick={() => openConfirmDelete(session.id)}
+                      onClick={() => openConfirmDelete(user.id)}
                       className="text-red-500 hover:text-red-700 focus:outline-none"
+                      type="button"
                     >
                       <FaTrash />
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.capacity}
+                    {user.national_id || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.address}
+                    {user.address || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {new Date(session.date_time).toLocaleString("fa-IR")}
+                    {user.groups && user.groups.length > 0
+                      ? user.groups.join(", ")
+                      : "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.title}
+                    {user.phone_number || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    {user.username}
                   </td>
                 </tr>
               ))}
@@ -167,7 +180,7 @@ const ReserveTimes = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative border border-gray-300">
             <h2 className="text-lg font-semibold mb-4 text-right text-gray-800">
-              آیا مطمئن هستید که می‌خواهید این جلسه را حذف کنید؟
+              آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟
             </h2>
             <div className="flex justify-between mt-4">
               <button
@@ -177,8 +190,12 @@ const ReserveTimes = () => {
                 لغو
               </button>
               <button
-                onClick={handleRemoveItem}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeleteUser();
+                }}
                 className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
+                type="button"
               >
                 حذف
               </button>
@@ -190,4 +207,4 @@ const ReserveTimes = () => {
   );
 };
 
-export default ReserveTimes;
+export default UsersPage;
