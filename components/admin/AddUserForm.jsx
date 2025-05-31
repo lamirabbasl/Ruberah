@@ -42,7 +42,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed inset-0 flex items-center justify-center font-mitra text-lg z-50 bg-black bg-opacity-50 p-4"
+        className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4"
       >
         <motion.form
           onSubmit={handleSubmit}
@@ -54,7 +54,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
         >
           <h2 className="text-lg font-semibold mb-4">افزودن کاربر جدید</h2>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">نام کاربری</label>
+            <label className="block mb-1 font-semibold">نام کاربری:</label>
             <input
               type="text"
               value={username}
@@ -64,7 +64,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">شماره تلفن</label>
+            <label className="block mb-1 font-semibold">شماره تلفن:</label>
             <input
               type="text"
               value={phoneNumber}
@@ -73,7 +73,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">رمز عبور</label>
+            <label className="block mb-1 font-semibold">رمز عبور:</label>
             <input
               type="password"
               value={password}
@@ -83,7 +83,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">نقش</label>
+            <label className="block mb-1 font-semibold">نقش:</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -91,12 +91,12 @@ const AddUserForm = ({ onSave, onCancel }) => {
               required
             >
               <option value="">انتخاب نقش</option>
-              <option value="manager">ادمین</option>
-              <option value="parent">کاربر</option>
+              <option value="admin">ادمین</option>
+              <option value="user">کاربر</option>
             </select>
           </div>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">آدرس</label>
+            <label className="block mb-1 font-semibold">آدرس:</label>
             <input
               type="text"
               value={address}
@@ -106,7 +106,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1 font-semibold">کد ملی</label>
+            <label className="block mb-1 font-semibold">کد ملی:</label>
             <input
               type="text"
               value={nationalId}
@@ -116,7 +116,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
             />
           </div>
           <div className="mb-4 flex items-center justify-between">
-            <label className="font-semibold">همکار</label>
+            <label className="font-semibold">همکار:</label>
             <input
               type="checkbox"
               checked={isColleague}

@@ -7,45 +7,39 @@ export default function SessionDetail() {
   const [data, setData] = useState({
     code: "",
     user: null,
-    session: null,
+    session: null
   });
 
   useEffect(() => {
     // Get all required data from localStorage
-    const code = localStorage.getItem("reservationCode");
-    const formData = localStorage.getItem("formData");
-    const sessionData = localStorage.getItem("selectedSession");
+    const code = localStorage.getItem('reservationCode');
+    const formData = localStorage.getItem('formData');
+    const sessionData = localStorage.getItem('selectedSession');
 
     if (!code || !formData || !sessionData) {
       // If any data is missing, redirect to sessions page
-      router.push("/enroll/sessions");
+      router.push('/enroll/sessions');
       return;
     }
 
     setData({
       code,
       user: JSON.parse(formData),
-      session: JSON.parse(sessionData),
+      session: JSON.parse(sessionData)
     });
   }, [router]);
 
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return {
-      date: date.toLocaleDateString("fa-IR"),
-      time: date.toLocaleTimeString("fa-IR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      date: date.toLocaleDateString('fa-IR'),
+      time: date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
     };
   };
 
   if (!data.code || !data.user || !data.session) {
     return (
-      <div
-        dir="rtl"
-        className="min-h-screen bg-gradient-to-b from-primary to-gray-600 pt-24 p-6 font-mitra"
-      >
+      <div dir="rtl" className="min-h-screen bg-gradient-to-b from-primary to-gray-600 pt-24 p-6 font-mitra">
         <div className="text-white text-center">در حال بارگذاری اطلاعات...</div>
       </div>
     );
@@ -80,7 +74,8 @@ export default function SessionDetail() {
                 <span className="font-semibold">{data.user.phone}</span>
               </li>
               <li>
-                ایمیل: <span className="font-semibold">{data.user.email}</span>
+                ایمیل:{" "}
+                <span className="font-semibold">{data.user.email}</span>
               </li>
             </ul>
           </div>
@@ -98,12 +93,10 @@ export default function SessionDetail() {
                 ساعت: <span className="font-semibold">{time}</span>
               </li>
               <li>
-                مکان:{" "}
-                <span className="font-semibold">{data.session.address}</span>
+                مکان: <span className="font-semibold">{data.session.address}</span>
               </li>
               <li>
-                ظرفیت کل:{" "}
-                <span className="font-semibold">{data.session.capacity}</span>
+                ظرفیت کل: <span className="font-semibold">{data.session.capacity}</span>
               </li>
             </ul>
           </div>

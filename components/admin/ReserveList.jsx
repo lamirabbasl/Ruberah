@@ -293,7 +293,7 @@ const ReserveList = () => {
         Object.entries(groupedReservations).map(
           ([date, reservationsForDate]) => (
             <div key={date} className="mb-6">
-              <div className="flex items-center border-b-2 border-gray-200 justify-between mb-2">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold">{date}</h3>
                 <button
                   onClick={() =>

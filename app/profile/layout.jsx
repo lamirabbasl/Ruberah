@@ -3,7 +3,7 @@ import ProfileNavbar from "@/components/profile/ProfileNavbar";
 
 export default function Layout({ children }) {
   return (
-    <div>
+    <div className="bg-gray-200">
       <ProfileNavbar />
       <ProfileMenu />
       {children}

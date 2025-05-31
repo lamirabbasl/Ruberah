@@ -26,7 +26,7 @@ function ProfileMenu() {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
-    router.push(`/profile/amirabbas/${tab}`);
+    router.push(`/profile/${tab}`);
     setIsMenuOpen(false); // Close menu after item click on mobile
   };
 
@@ -115,10 +115,16 @@ function ProfileMenu() {
                   isActive={activeTab === "information"}
                 />
                 <NavItem
-                  label="دوره ها"
+                  label="دوره های من"
                   icon={<FaRegCalendarCheck className="text-xl ml-2" />}
                   onClick={() => handleTabClick("courses")}
                   isActive={activeTab === "courses"}
+                />
+                <NavItem
+                  label="دوره ها"
+                  icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+                  onClick={() => handleTabClick("allcourses")}
+                  isActive={activeTab === "allcrouses"}
                 />
               </nav>
 

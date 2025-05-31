@@ -23,7 +23,7 @@ async function handleRequest(request, params, method) {
     const token = request.headers.get("Authorization");
 
     let body;
-    if (method === "POST") {
+    if (method === "POST" || method === "PATCH") {
       // Check if request has body before parsing
       const contentLength = request.headers.get("content-length");
       if (contentLength && parseInt(contentLength) > 0) {
@@ -54,7 +54,7 @@ async function handleRequest(request, params, method) {
     };
 
     // Only add Content-Type for JSON requests
-    if (method === "POST" && body) {
+    if ((method === "POST" || method === "PATCH") && body) {
       requestOptions.headers["Content-Type"] = "application/json";
       requestOptions.body = JSON.stringify(body);
     }
@@ -120,4 +120,8 @@ export async function DELETE(request, { params }) {
 
 export async function POST(request, { params }) {
   return handleRequest(request, params, "POST");
+}
+
+export async function PATCH(request, { params }) {
+  return handleRequest(request, params, "PATCH");
 }

@@ -1,6 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import {
+  getRegistrations,
+  getChildById,
+  getBatchById,
+  getSeasons,
+  uploadInstallmentPayment,
+} from "@/lib/api/api";
 
 const mockChildren = [
   {
@@ -58,6 +65,13 @@ const mockChildren = [
 
 function CoursesPage() {
   const [openCourseIdx, setOpenCourseIdx] = useState({});
+  const [registrations, setRegistrations] = useState([]);
+  const [childrenMap, setChildrenMap] = useState({});
+  const [batchesMap, setBatchesMap] = useState({});
+  const [seasons, setSeasons] = useState([]);
+  const [expandedChildId, setExpandedChildId] = useState(null);
+  const [expandedBatchId, setExpandedBatchId] = useState(null);
+  const [uploadingInstallmentId, setUploadingInstallmentId] = useState(null);
 
   const toggleCourse = (childIndex, courseIndex) => {
     const key = `${childIndex}-${courseIndex}`;

@@ -89,7 +89,10 @@ const ReserveTimes = () => {
           افزودن جلسه
         </button>
         {showAddForm && (
-          <AddTimeForm onSave={handleSaveNewItem} onCancel={handleCancelAdd} />
+          <AddTimeForm
+            onSave={handleSaveNewItem}
+            onCancel={handleCancelAdd}
+          />
         )}
       </div>
 
