@@ -314,7 +314,7 @@ const AdminSignupVideos = () => {
                   <div className="relative w-full h-0 pb-[56.25%]">
                     <video
                       controls
-                      src={video.video.startsWith("http") ? video.video : `${process.env.NEXT_PUBLIC_API_URL}${video.video}`}
+                      src={`http://127.0.0.1:8000/${video.video}`}
                       className="absolute top-0 left-0 w-full h-full rounded-md object-cover border border-gray-300"
                     >
                       مرورگر شما از تگ ویدیو پشتیبانی نمی‌کند.

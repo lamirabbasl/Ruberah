@@ -1,14 +1,15 @@
 "use client";
 import { motion } from "framer-motion";
 import { Pencil, Check } from "lucide-react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
+
 import {
   getUserMe,
   patchUserMe,
-  patchUserMeJson,
   getChildren,
   addChild,
   patchChild,
+  getProfilePhotoUrl,
 } from "@/lib/api/api";
 
 // EditableField component for user info fields
@@ -87,40 +88,14 @@ const EditableField = ({ label, value, onChange }) => {
 };
 
 // EditableChild component for each child with edit functionality
-import React, { useState, useEffect } from "react";
-import { getChildPhotoUrls, patchChildPhotos } from "@/lib/api/api";
-
 const EditableChild = ({ child, onUpdate }) => {
   const [editing, setEditing] = useState(false);
   const [tempFullName, setTempFullName] = useState(child.full_name);
   const [tempGender, setTempGender] = useState(child.gender);
-  const [photoChildUrl, setPhotoChildUrl] = useState("");
-  const [photoWithParentUrl, setPhotoWithParentUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
 
   useEffect(() => {
     setTempFullName(child.full_name);
     setTempGender(child.gender);
-
-    // Fetch child photos with credentials and convert to blob URLs for display
-    const fetchPhoto = async (url, setPhotoUrl) => {
-      try {
-        const response = await fetch(url, { credentials: "include" });
-        if (!response.ok) throw new Error("Failed to fetch photo");
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        setPhotoUrl(objectUrl);
-      } catch (error) {
-        setPhotoUrl(""); // Clear photo on error
-      }
-    };
-
-    const photoChildApiUrl = `/api/proxy/children/${child.id}/photo/photo_child`;
-    const photoWithParentApiUrl = `/api/proxy/children/${child.id}/photo/photo_with_parent`;
-
-    fetchPhoto(photoChildApiUrl, setPhotoChildUrl);
-    fetchPhoto(photoWithParentApiUrl, setPhotoWithParentUrl);
   }, [child]);
 
   const handleEditToggle = () => {
@@ -140,80 +115,12 @@ const EditableChild = ({ child, onUpdate }) => {
     setEditing(false);
   };
 
-  const handlePhotoChange = async (e, photoType) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const formData = new FormData();
-      if (photoType === "photo_child") {
-        formData.append("photo_child", file);
-      } else if (photoType === "photo_with_parent") {
-        formData.append("photo_with_parent", file);
-      }
-      await patchChildPhotos(child.id, formData);
-      // Update photo URLs to force reload
-      const urls = getChildPhotoUrls(child.id);
-      setPhotoChildUrl(urls.photo_child + "?t=" + Date.now());
-      setPhotoWithParentUrl(urls.photo_with_parent + "?t=" + Date.now());
-    } catch (error) {
-      setUploadError("خطا در آپلود عکس");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <motion.div
       layout
       className="flex flex-row items-center gap-4 bg-gray-100 rounded-md p-2 w-96"
       dir="rtl"
     >
-      <div className="flex flex-row gap-4 order-last items-center">
-        <div className="flex flex-col items-center">
-          <img
-            src={photoChildUrl}
-            alt="عکس فرزند"
-            className="w-12 h-12 object-cover rounded-md"
-          />
-          <label
-            htmlFor={`photo_child_input_${child.id}`}
-            className="mt-1 cursor-pointer text-sm text-blue-600 hover:underline"
-          >
-            انتخاب تصویر
-          </label>
-          <input
-            id={`photo_child_input_${child.id}`}
-            type="file"
-            accept="image/*"
-            disabled={uploading}
-            onChange={(e) => handlePhotoChange(e, "photo_child")}
-            className="hidden"
-          />
-        </div>
-        <div className="flex flex-col items-center">
-          <img
-            src={photoWithParentUrl}
-            alt="عکس با والدین"
-            className="w-12 h-12 object-cover rounded-md"
-          />
-          <label
-            htmlFor={`photo_with_parent_input_${child.id}`}
-            className="mt-1 cursor-pointer text-sm text-blue-600 hover:underline"
-          >
-            انتخاب تصویر
-          </label>
-          <input
-            id={`photo_with_parent_input_${child.id}`}
-            type="file"
-            accept="image/*"
-            disabled={uploading}
-            onChange={(e) => handlePhotoChange(e, "photo_with_parent")}
-            className="hidden"
-          />
-        </div>
-      </div>
       <div className="flex flex-col flex-1 text-right">
         {editing ? (
           <>
@@ -263,8 +170,10 @@ const InformationPage = () => {
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [error, setError] = useState(null);
   const [profilePhotoFile, setProfilePhotoFile] = useState(null);
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState("/user.png");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const [showAddChildForm, setShowAddChildForm] = useState(false);
+  const [profilePhotoVersion, setProfilePhotoVersion] = useState(0);
 
   // Fetch user info and children on mount
   useEffect(() => {
@@ -273,13 +182,6 @@ const InformationPage = () => {
       try {
         const data = await getUserMe();
         setUser(data);
-        if (data.profile_photo) {
-          setProfilePhotoUrl(
-            `/api/proxy/users/secure/profile-photo/${data.id}`
-          );
-        } else {
-          setProfilePhotoUrl("/user.png");
-        }
       } catch (err) {
         setError("خطا در دریافت اطلاعات کاربر");
       } finally {
@@ -303,39 +205,36 @@ const InformationPage = () => {
     fetchChildren();
   }, []);
 
-  // Handle profile photo change
+  // Handle profile photo change on file select
   const handleProfilePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setProfilePhotoFile(file);
-    setProfilePhotoUrl(URL.createObjectURL(file));
+    setUploadError(null);
   };
 
-  // Save profile photo to server
+  // Upload and save profile photo
   const saveProfilePhoto = async () => {
     if (!profilePhotoFile) return;
-    const formData = new FormData();
-    formData.append("profile_photo", profilePhotoFile);
+    setUploadingPhoto(true);
+    setUploadError(null);
     try {
+      const formData = new FormData();
+      formData.append("profile_photo", profilePhotoFile);
       const updatedUser = await patchUserMe(formData);
       setUser(updatedUser);
-      if (updatedUser.profile_photo) {
-        setProfilePhotoUrl(
-          `/api/proxy/users/secure/profile-photo/${updatedUser.id}/`
-        );
-      } else {
-        setProfilePhotoUrl("/user.png");
-      }
       setProfilePhotoFile(null);
+      setProfilePhotoVersion((v) => v + 1);
     } catch (err) {
-      setError("خطا در آپلود عکس پروفایل");
+      setUploadError("خطا در آپلود عکس پروفایل");
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
   // Handle user info field change and save
   const handleUserFieldChange = async (field, value) => {
     if (!user) return;
-    // Build full user object with updated field
     const updatedUser = {
       id: user.id,
       username: field === "username" ? value : user.username,
@@ -346,7 +245,6 @@ const InformationPage = () => {
       groups: user.groups,
     };
     try {
-      // Patch user info with JSON body
       const patchedUser = await patchUserMeJson(updatedUser);
       setUser(patchedUser);
     } catch (err) {
@@ -401,27 +299,30 @@ const InformationPage = () => {
     >
       {/* Profile photo */}
       <div className="relative flex flex-col items-center">
-        <Image
-          width={200}
-          height={200}
-          src={profilePhotoUrl}
+        <img
+          key={profilePhotoVersion}
+          src={`${getProfilePhotoUrl(user.id)}&v=${profilePhotoVersion}`}
           alt="پروفایل"
           className="w-32 h-32 rounded-full object-cover border-3 border-blue-500 shadow"
-          priority
         />
         <input
           type="file"
           accept="image/*"
           onChange={handleProfilePhotoChange}
           className="mt-2"
+          disabled={uploadingPhoto}
         />
         {profilePhotoFile && (
           <button
             onClick={saveProfilePhoto}
+            disabled={uploadingPhoto}
             className="mt-2 bg-green-500 text-white px-4 py-1 rounded-md hover:bg-green-600"
           >
-            ذخیره عکس
+            {uploadingPhoto ? "در حال آپلود..." : "ذخیره عکس"}
           </button>
+        )}
+        {uploadError && (
+          <p className="text-red-600 text-sm mt-1">{uploadError}</p>
         )}
       </div>
 
