@@ -28,11 +28,17 @@ const BatchesTab = () => {
     allow_installment: false,
     price_gateway: "",
     price_receipt: "",
+    price_installment: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState(null);
+
+  // New state for search and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  // Removed selectedSeason state as per user request
+  // const [selectedSeason, setSelectedSeason] = useState("");
 
   const fetchBatches = async () => {
     setLoading(true);
@@ -141,6 +147,31 @@ const BatchesTab = () => {
           افزودن بچه
         </button>
       </div>
+
+      {/* Search and filter controls */}
+      <div className="flex space-x-4 mb-4">
+        <input
+          type="text"
+          placeholder="جستجو بر اساس عنوان"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border rounded px-3 py-2 flex-grow"
+        />
+        {/* Removed season filter select as per user request */}
+        {/* <select
+          value={selectedSeason}
+          onChange={(e) => setSelectedSeason(e.target.value)}
+          className="border rounded px-3 py-2"
+        >
+          <option value="">فیلتر بر اساس فصل</option>
+          {seasons.map((season) => (
+            <option key={season.id} value={season.id}>
+              {season.name}
+            </option>
+          ))}
+        </select> */}
+      </div>
+
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
           <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg relative">
@@ -320,6 +351,17 @@ const BatchesTab = () => {
                   className="w-full border rounded px-3 py-2"
                 />
               </div>
+              <div className="flex-1">
+                <label className="block mb-1">قیمت اقساط</label>
+                <input
+                  type="number"
+                  value={newBatch.price_installment}
+                  onChange={(e) =>
+                    setNewBatch({ ...newBatch, price_installment: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
             </div>
             {error && <p className="text-red-600 mb-2">{error}</p>}
             <button
@@ -375,48 +417,63 @@ const BatchesTab = () => {
         <p>هیچ بچه‌ای یافت نشد.</p>
       ) : (
         <div className="grid grid-cols-3 gap-4">
-          {batches.map((batch) => (
-            <div
-              key={batch.id}
-              className="relative border rounded p-4 shadow hover:shadow-lg transition bg-white"
-            >
-              <button
-                onClick={() => confirmDeleteBatch(batch)}
-                className="absolute top-2 left-2 text-red-600 hover:text-red-900"
-                aria-label={`حذف بچه ${batch.title}`}
+          {batches
+            .filter((batch) => {
+              const matchesTitle = batch.title
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase());
+              // Removed season filter condition as per user request
+              // const matchesSeason = selectedSeason
+              //   ? batch.season === selectedSeason
+              //   : true;
+              // return matchesTitle && matchesSeason;
+              return matchesTitle;
+            })
+            .map((batch) => (
+              <div
+                key={batch.id}
+                className="relative border rounded p-4 shadow hover:shadow-lg transition bg-white"
               >
-                <IoClose size={20} />
-              </button>
-              <h3 className="text-lg font-semibold">{batch.title}</h3>
-              <p className="text-gray-700 mt-1">
-                دوره: {courses.find((c) => c.id === batch.course)?.name || ""}
-              </p>
-              <p className="text-gray-700 mt-1">
-                فصل: {seasons.find((s) => s.id === batch.season)?.name || ""}
-              </p>
-              <p className="text-gray-700 mt-1">
-                سن: {batch.min_age} - {batch.max_age}
-              </p>
-              <p className="text-gray-700 mt-1">برنامه: {batch.schedule}</p>
-              <p className="text-gray-700 mt-1">مکان: {batch.location}</p>
-              <p className="text-gray-700 mt-1">ظرفیت: {batch.capacity}</p>
-              <p className="text-gray-700 mt-1">
-                اجازه درگاه: {batch.allow_gateway ? "بله" : "خیر"}
-              </p>
-              <p className="text-gray-700 mt-1">
-                اجازه رسید: {batch.allow_receipt ? "بله" : "خیر"}
-              </p>
-              <p className="text-gray-700 mt-1">
-                اجازه اقساط: {batch.allow_installment ? "بله" : "خیر"}
-              </p>
-              <p className="text-gray-700 mt-1">
-                قیمت درگاه: {batch.price_gateway || "-"}
-              </p>
-              <p className="text-gray-700 mt-1">
-                قیمت رسید: {batch.price_receipt || "-"}
-              </p>
-            </div>
-          ))}
+                <button
+                  onClick={() => confirmDeleteBatch(batch)}
+                  className="absolute top-2 left-2 text-red-600 hover:text-red-900"
+                  aria-label={`حذف بچه ${batch.title}`}
+                >
+                  <IoClose size={20} />
+                </button>
+                <h3 className="text-lg font-semibold">{batch.title}</h3>
+                <p className="text-gray-700 mt-1">
+                  دوره: {courses.find((c) => c.id === batch.course)?.name || ""}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  فصل: {seasons.find((s) => s.id === batch.season)?.name || ""}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  سن: {batch.min_age} - {batch.max_age}
+                </p>
+                <p className="text-gray-700 mt-1">برنامه: {batch.schedule}</p>
+                <p className="text-gray-700 mt-1">مکان: {batch.location}</p>
+                <p className="text-gray-700 mt-1">ظرفیت: {batch.capacity}</p>
+                <p className="text-gray-700 mt-1">
+                  اجازه درگاه: {batch.allow_gateway ? "بله" : "خیر"}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  اجازه رسید: {batch.allow_receipt ? "بله" : "خیر"}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  اجازه اقساط: {batch.allow_installment ? "بله" : "خیر"}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  قیمت درگاه: {batch.price_gateway || "-"}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  قیمت رسید: {batch.price_receipt || "-"}
+                </p>
+                <p className="text-gray-700 mt-1">
+                  قیمت اقساط: {batch.price_installment || "-"}
+                </p>
+              </div>
+            ))}
         </div>
       )}
     </div>

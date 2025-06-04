@@ -13,6 +13,7 @@ const UsersPage = () => {
   const [showAddForm, setShowAddForm] = React.useState(false);
   const [userToDelete, setUserToDelete] = React.useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   React.useEffect(() => {
     fetchUsers();
@@ -94,6 +95,16 @@ const UsersPage = () => {
         )}
       </div>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="جستجو بر اساس نام یا شماره تلفن"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        />
+      </div>
+
       {loading && <p>در حال بارگذاری...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
@@ -140,36 +151,43 @@ const UsersPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">
-                    <button
-                      onClick={() => openConfirmDelete(user.id)}
-                      className="text-red-500 hover:text-red-700 focus:outline-none"
-                      type="button"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {user.national_id || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {user.address || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {user.groups && user.groups.length > 0
-                      ? user.groups.join(", ")
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {user.phone_number || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {user.username}
-                  </td>
-                </tr>
-              ))}
+              {users
+                .filter(
+                  (user) =>
+                    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (user.phone_number &&
+                      user.phone_number.toLowerCase().includes(searchTerm.toLowerCase()))
+                )
+                .map((user) => (
+                  <tr key={user.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-left">
+                      <button
+                        onClick={() => openConfirmDelete(user.id)}
+                        className="text-red-500 hover:text-red-700 focus:outline-none"
+                        type="button"
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {user.national_id || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {user.address || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {user.groups && user.groups.length > 0
+                        ? user.groups.join(", ")
+                        : "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {user.phone_number || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {user.username}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

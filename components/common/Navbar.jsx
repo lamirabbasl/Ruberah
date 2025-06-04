@@ -78,10 +78,10 @@ export default function Navbar() {
         </div>
         <Link href="/">
           <div className="flex items-center self-center space-x-3 text-white cursor-pointer text-xl">
-            <p className="flex gap-1">
+            <h1 className="flex gap-1">
               <span className="text-secondery">روبه راه</span>
               <span>خانواده</span>
-            </p>
+              </h1> 
             <Image
               width={40}
               height={40}

@@ -16,16 +16,7 @@ const AdminSignUpPage = () => {
     <div className="w-5/6 max-md:w-screen min-h-screen bg-white text-black">
       <div className="p-6">
         <div className="text-right border-b border-gray-200 mb-4 ">
-          <button
-            className={`px-4 py-2 -mb-px font-semibold ${
-              activeTab === "terms"
-                ? "border-b-2 border-indigo-500 text-indigo-500"
-                : "text-gray-500 hover:text-indigo-500"
-            }`}
-            onClick={() => handleTabChange("terms")}
-          >
-            قوانین
-          </button>
+        
           <button
             className={`px-4 py-2 -mb-px font-semibold ${
               activeTab === "quiz"

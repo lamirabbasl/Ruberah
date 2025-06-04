@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import CoursesTab from "@/components/admin/CoursesTab";
 import SeasonsTab from "@/components/admin/SeasonsTab";
 import BatchesTab from "@/components/admin/BatchesTab";
+import InstallmentsTab from "@/components/admin/InstallmentsTab";
+import PaymentsTab from "@/components/admin/PaymentsTab";
 
 const tabLabels = [
   "دوره‌ها",
@@ -24,10 +26,9 @@ const AdminCoursesPage = () => {
       case 2:
         return <BatchesTab />;
       case 3:
-        return <div className="p-4">محتوای ایجاد اقساط</div>;
-
-      case 5:
-        return <div className="p-4">محتوای پرداخت‌ها</div>;
+        return <InstallmentsTab />;
+      case 4:
+        return <PaymentsTab />;
       default:
         return null;
     }
@@ -36,7 +37,7 @@ const AdminCoursesPage = () => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen w-5/6 p-6 font-noto bg-white text-black"
+      className="min-h-screen w-5/6 max-md:w-screen p-6 font-noto bg-white text-black"
     >
       <div className="flex border-b border-gray-300 mb-4">
         {tabLabels.map((label, index) => (

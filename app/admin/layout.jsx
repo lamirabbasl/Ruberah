@@ -5,8 +5,7 @@ import AdminNavbar from "@/components/admin/AdminNavbar";
 
 export default function RootLayout({ children }) {
   return (
-    <div>
-      <AdminNavbar />
+    <div className="w-screen h-screen">
       <AdminMenu />
       {children}
     </div>

@@ -11,10 +11,10 @@ function Footer() {
       {/* Right Side - Description and Location */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6 text-right select-none">
         <div className="flex items-center justify-end space-x-3 text-3xl">
-          <p className="flex gap-2">
+          <h1 className="flex gap-2">
             <span className="text-secondery">روبه راه</span>
-            <h1>خانواده</h1>
-          </p>
+            <span>خانواده</span>
+          </h1>
           <img
             src="logo-white.png"
             alt="Logo"

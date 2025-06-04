@@ -25,6 +25,7 @@ const ReserveList = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchReservations();
@@ -32,7 +33,15 @@ const ReserveList = () => {
   }, []);
 
   useEffect(() => {
-    const grouped = reservations.reduce((acc, reservation) => {
+    const filteredReservations = reservations.filter((reservation) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        reservation.registration_code.toLowerCase().includes(term) ||
+        reservation.name.toLowerCase().includes(term)
+      );
+    });
+
+    const grouped = filteredReservations.reduce((acc, reservation) => {
       const date = new Date(reservation.reserved_at).toLocaleDateString(
         "fa-IR"
       );
@@ -50,7 +59,7 @@ const ReserveList = () => {
       initialExpanded[date] = false;
     });
     setExpandedDates(initialExpanded);
-  }, [reservations]);
+  }, [reservations, searchTerm]);
 
   const fetchReservations = async () => {
     setLoading(true);
@@ -159,6 +168,15 @@ const ReserveList = () => {
     >
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-black">رزروها</h1>
+      </div>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+        <input
+          type="text"
+          placeholder="جستجو بر اساس کد یا نام"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border rounded px-3 py-2 w-full text-right"
+        />
         <button
           onClick={() => setShowAddForm(true)}
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2 w-full sm:w-auto"

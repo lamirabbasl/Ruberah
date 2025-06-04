@@ -126,6 +126,12 @@ function AdminMenu() {
                   onClick={() => handleTabClick("signup")}
                   isActive={activeTab === "signup"}
                 />
+                 <NavItem
+                          label="کاربران"
+                          icon={<FaListUl className="text-xl ml-2" />}
+                          onClick={() => handleTabClick("users")}
+                          isActive={activeTab === "users"}
+                        />
               </nav>
 
               {/* Logout Button */}
@@ -145,7 +151,7 @@ function AdminMenu() {
       </AnimatePresence>
 
       {/* Desktop Sidebar */}
-      <aside className="max-md:hidden fixed right-0 flex text-lg font-noto text-white flex-col gap-6 justify-start items-end p-4 h-screen w-64 bg-gray-900 shadow-md z-10 transition-transform duration-300 ease-in-out">
+      <aside className="max-md:hidden fixed right-0 flex text-lg font-noto text-white flex-col gap-6 justify-start items-end p-4 h-screen w-1/6 bg-gray-900 shadow-md z-10 transition-transform duration-300 ease-in-out">
         {/* Header Section */}
         <div className="flex justify-end items-center gap-2 pb-4 border-b border-gray-800 w-full">
           <div className="flex flex-col items-end">
