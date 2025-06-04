@@ -115,7 +115,7 @@ const Signup = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-primary mt-10 to-gray-600  flex items-center justify-center p-4 font-noto"
+      className="min-h-screen bg-gradient-to-b from-primary mt-16 to-gray-600  flex items-center justify-center p-4 font-noto"
       dir="rtl"
     >
       <motion.div
@@ -124,7 +124,7 @@ const Signup = () => {
         animate="visible"
         className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-[90%] sm:max-w-md shadow-2xl border border-gray-300"
       >
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-right text-gray-800">
+        <h2 className="text-xl sm:text-3xl font-bold mb-4 text-right text-gray-800">
           ثبت‌نام
         </h2>
         <div className="mb-4">
@@ -169,9 +169,9 @@ const Signup = () => {
             type="button"
             onClick={handleRequestCode}
             disabled={isRequestingCode}
-            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200"
+            className="bg-green-500 hover:bg-green-600 text-white text-sm mt-6 font-semibold py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200"
           >
-            {isRequestingCode ? "در حال ارسال..." : "اعتبارسنجی شماره"}
+            {isRequestingCode ? "در حال ارسال..." : "اعتبارسنجی "}
           </button>
         </div>
         {showValidationInput && (
@@ -188,9 +188,9 @@ const Signup = () => {
               type="button"
               onClick={handleVerifyCode}
               disabled={isVerifyingCode}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-blue-500 hover:bg-blue-600 text-white w-24 font-semibold py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200"
             >
-              {isVerifyingCode ? "در حال تایید..." : "تایید کد من"}
+              {isVerifyingCode ? "در حال تایید..." : "تایید کد "}
             </button>
           </div>
         )}
@@ -257,6 +257,14 @@ const Signup = () => {
         >
           ثبت‌نام
         </button>
+        <p className="mt-4 text-center text-gray-600">
+قبلا ثبت نام کرده اید؟          <Link
+            href={"/api/auth/login"}
+            className="text-blue-500 hover:text-blue-600 font-semibold"
+          >
+           ورود
+          </Link>
+        </p>
       </motion.div>
     </div>
   );

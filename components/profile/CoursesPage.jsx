@@ -20,6 +20,7 @@ function CoursesPage() {
   const [expandedChildId, setExpandedChildId] = useState(null);
   const [expandedBatchId, setExpandedBatchId] = useState(null);
   const [uploadingInstallmentId, setUploadingInstallmentId] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const toggleCourse = (childIndex, courseIndex) => {
     const key = `${childIndex}-${courseIndex}`;
@@ -276,40 +277,80 @@ function CoursesPage() {
                                         className="h-12 rounded-md"
                                       />
                                     ) : null}
-                                    <button
-                                      onClick={() => setUploadingInstallmentId(inst.id)}
-                                      className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
-                                    >
-                                      بارگذاری رسید
-                                    </button>
+                                      {uploadingInstallmentId !== inst.id && (
+                                        <button
+                                          onClick={() => {
+                                            setUploadingInstallmentId(inst.id);
+                                            setPreviewImage(null);
+                                          }}
+                                          className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
+                                        >
+                                          بارگذاری رسید
+                                        </button>
+                                      )}
                                     {uploadingInstallmentId === inst.id && (
                                       <div>
-                                        <input
-                                          type="file"
-                                          accept="image/*"
-                                          onChange={async (e) => {
-                                            if (e.target.files.length > 0) {
-                                              try {
-                                                console.log("Uploading installment payment", inst.id, e.target.files[0]);
-                                                await uploadInstallmentPayment(inst.id, e.target.files[0]);
-                                                setUploadingInstallmentId(null);
-                                                // Refresh installments after upload
-                                                const updatedInstallments = await getRegistrationInstallments(course.id);
-                                                course.installments = updatedInstallments;
-                                                setOpenCourseIdx((prev) => ({ ...prev }));
-                                              } catch (error) {
-                                                alert("خطا در بارگذاری تصویر پرداخت");
-                                                console.log("Uploading installment payment", inst.id, e.target.files[0]);
-                                              }
-                                            }
-                                          }}
+                                    <form
+                                      onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const fileInput = e.target.elements.receipt_image;
+                                        if (fileInput.files.length > 0) {
+                                          try {
+                                            await uploadInstallmentPayment(inst.id, fileInput.files[0]);
+                                            setUploadingInstallmentId(null);
+                                            // Refresh installments after upload
+                                            const updatedInstallments = await getRegistrationInstallments(course.id);
+                                            course.installments = updatedInstallments;
+                                            setOpenCourseIdx((prev) => ({ ...prev }));
+                                          } catch (error) {
+                                            alert("خطا در بارگذاری تصویر پرداخت");
+                                          }
+                                        } else {
+                                          alert("لطفا یک فایل تصویر انتخاب کنید");
+                                        }
+                                      }}
+                                    >
+                                      <input
+                                        type="file"
+                                        name="receipt_image"
+                                        accept="image/*"
+                                        className="mb-2"
+                                        onChange={(e) => {
+                                          const file = e.target.files[0];
+                                          if (file) {
+                                            const previewUrl = URL.createObjectURL(file);
+                                            setPreviewImage(previewUrl);
+                                          } else {
+                                            setPreviewImage(null);
+                                          }
+                                        }}
+                                      />
+                                      {previewImage && (
+                                        <img
+                                          src={previewImage}
+                                          alt="Preview"
+                                          className="mb-2 h-24 rounded-md object-cover"
                                         />
+                                      )}
+                                      <div className="flex gap-2">
                                         <button
-                                          onClick={() => setUploadingInstallmentId(null)}
+                                          type="submit"
+                                          className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
+                                        >
+                                          بارگذاری رسید
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setUploadingInstallmentId(null);
+                                            setPreviewImage(null);
+                                          }}
                                           className="text-red-500 text-sm mt-1"
                                         >
                                           لغو
                                         </button>
+                                      </div>
+                                    </form>
                                       </div>
                                     )}
                                   </span>
