@@ -21,23 +21,40 @@ async function handleRequest(request, params, method) {
 
     const normalizedPath = ensureTrailingSlash(pathString);
     const token = request.headers.get("Authorization");
+    const contentType = request.headers.get("Content-Type");
 
-    let body;
+    let requestBody;
+    let requestHeaders = {};
+
     if (method === "POST" || method === "PATCH") {
-      // Check if request has body before parsing
-      const contentLength = request.headers.get("content-length");
-      if (contentLength && parseInt(contentLength) > 0) {
-        body = await request.json();
+      if (contentType && contentType.includes("application/json")) {
+        // Handle JSON body
+        const contentLength = request.headers.get("content-length");
+        if (contentLength && parseInt(contentLength) > 0) {
+          requestBody = await request.json();
+          requestHeaders["Content-Type"] = "application/json";
+          requestBody = JSON.stringify(requestBody); // Stringify for fetch
+        }
+      } else if (contentType && contentType.includes("multipart/form-data")) {
+        // Handle FormData body (for file uploads)
+        requestBody = await request.formData(); // Use request.formData() for FormData
+        // When sending FormData, DO NOT set Content-Type header manually.
+        // fetch will automatically set the correct 'Content-Type: multipart/form-data; boundary=...'
+        // and handle the serialization of the FormData object.
+      } else {
+        // Handle other content types if needed, or assume no body
+        const contentLength = request.headers.get("content-length");
+        if (contentLength && parseInt(contentLength) > 0) {
+            requestBody = await request.text(); // Or handle as raw text if unsure
+        }
       }
     }
 
     const baseUrl = normalizeUrl(process.env.NEXT_PUBLIC_API_URL);
-    // If the path is for static video files (has file extension), do not add /api/ prefix
     const isStaticVideoPath =
       normalizedPath.startsWith("intro/video") &&
       /\.[a-zA-Z0-9]+$/.test(normalizedPath);
 
-    // Avoid double /api/ if baseUrl already ends with /api
     const baseUrlEndsWithApi = baseUrl.endsWith("/api");
 
     const backendUrl = isStaticVideoPath
@@ -50,34 +67,26 @@ async function handleRequest(request, params, method) {
       method,
       headers: {
         ...(token && { Authorization: token }),
+        ...requestHeaders, // Apply Content-Type here if set for JSON
       },
+      // Only add body if it exists and is for POST/PATCH
+      ...(requestBody && (method === "POST" || method === "PATCH") && { body: requestBody }),
     };
-
-    // Only add Content-Type for JSON requests
-    if ((method === "POST" || method === "PATCH") && body) {
-      requestOptions.headers["Content-Type"] = "application/json";
-      requestOptions.body = JSON.stringify(body);
-    }
 
     const response = await fetch(backendUrl, requestOptions);
 
-    const contentType = response.headers.get("content-type");
+    const responseContentType = response.headers.get("content-type");
 
-    if (contentType && contentType.includes("application/json")) {
-      // Try to read text first to check if body is empty
+    if (responseContentType && responseContentType.includes("application/json")) {
       const text = await response.text();
       if (!text) {
-        // Empty body, return empty JSON
         return NextResponse.json({}, { status: response.status });
       }
-      // Parse JSON from text
       const data = JSON.parse(text);
       return NextResponse.json(data, { status: response.status });
     } else if (response.status === 204) {
-      // No content response, return empty with 204 status
       return new NextResponse(null, { status: 204 });
     } else if (response.status === 200) {
-      // Handle empty body with 200 status as success
       const text = await response.text();
       if (!text) {
         return NextResponse.json({}, { status: 200 });

@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Pencil, Check } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { getChildPhotoUrl, getChildWithParentPhotoUrl } from "@/lib/api/api";
+import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos } from "@/lib/api/api";
 
 const EditableChild = ({ child, onUpdate }) => {
   const [editing, setEditing] = useState(false);
@@ -10,6 +10,9 @@ const EditableChild = ({ child, onUpdate }) => {
   const [tempGender, setTempGender] = useState(child.gender);
   const [childPhotoUrl, setChildPhotoUrl] = useState(null);
   const [parentPhotoUrl, setParentPhotoUrl] = useState(null);
+  const [uploadingChildPhoto, setUploadingChildPhoto] = useState(false);
+  const [uploadingParentPhoto, setUploadingParentPhoto] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setTempFullName(child.full_name);
@@ -48,6 +51,40 @@ const EditableChild = ({ child, onUpdate }) => {
     setEditing(false);
   };
 
+  const handleChildPhotoChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploadingChildPhoto(true);
+    setError(null);
+    try {
+      await uploadChildPhotos(child.id, file, null);
+      const updatedChildPhoto = await getChildPhotoUrl(child.id);
+      setChildPhotoUrl(updatedChildPhoto);
+      window.location.reload();
+    } catch (err) {
+      setError("خطا در آپلود عکس کودک");
+    } finally {
+      setUploadingChildPhoto(false);
+    }
+  };
+
+  const handleParentPhotoChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploadingParentPhoto(true);
+    setError(null);
+    try {
+      await uploadChildPhotos(child.id, null, file);
+      const updatedParentPhoto = await getChildWithParentPhotoUrl(child.id);
+      setParentPhotoUrl(updatedParentPhoto);
+      window.location.reload();
+    } catch (err) {
+      setError("خطا در آپلود عکس والدین");
+    } finally {
+      setUploadingParentPhoto(false);
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -56,16 +93,84 @@ const EditableChild = ({ child, onUpdate }) => {
     >
       <div className="flex gap-4 items-center">
         {childPhotoUrl && (
-          <img
-            src={childPhotoUrl}
-            className="w-16 h-16 rounded-full object-cover border border-gray-300"
-          />
+          <div className="relative">
+            <img
+              src={childPhotoUrl}
+              className="w-16 h-16 rounded-full object-cover border border-gray-300"
+            />
+            <label
+              htmlFor={`childPhotoInput-${child.id}`}
+              className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1 cursor-pointer hover:bg-blue-700"
+              title="تغییر عکس کودک"
+            >
+              {uploadingChildPhoto ? (
+                <span className="text-xs px-2">در حال آپلود...</span>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </label>
+            <input
+              id={`childPhotoInput-${child.id}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleChildPhotoChange}
+              disabled={uploadingChildPhoto}
+            />
+          </div>
         )}
         {parentPhotoUrl && (
-          <img
-            src={parentPhotoUrl}
-            className="w-16 h-16 rounded-full object-cover border border-gray-300"
-          />
+          <div className="relative">
+            <img
+              src={parentPhotoUrl}
+              className="w-16 h-16 rounded-full object-cover border border-gray-300"
+            />
+            <label
+              htmlFor={`parentPhotoInput-${child.id}`}
+              className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1 cursor-pointer hover:bg-blue-700"
+              title="تغییر عکس والدین"
+            >
+              {uploadingParentPhoto ? (
+                <span className="text-xs px-2">در حال آپلود...</span>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </label>
+            <input
+              id={`parentPhotoInput-${child.id}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleParentPhotoChange}
+              disabled={uploadingParentPhoto}
+            />
+          </div>
         )}
       </div>
 

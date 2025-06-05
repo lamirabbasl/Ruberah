@@ -9,8 +9,9 @@ import {
   addChild,
   patchChild,
   getProfilePhotoUrl,
+  uploadProfilePicture,
 } from "@/lib/api/api";
- 
+
 import EditableField from "./EditableField";
 import EditableChild from "./EditableChild";
 import AddChildForm from "./AddChildForm";
@@ -23,6 +24,7 @@ const InformationPage = () => {
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [error, setError] = useState(null);
   const [showAddChildForm, setShowAddChildForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // Fetch user info and children on mount
   useEffect(() => {
@@ -109,6 +111,25 @@ const InformationPage = () => {
     }
   };
 
+  // Handle profile photo upload
+  const handleProfilePhotoChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      await uploadProfilePicture(file);
+      // Refresh profile photo URL after upload
+      const updatedPhotoUrl = await getProfilePhotoUrl(user.id);
+      setProfilePhotoUrl(updatedPhotoUrl);
+      window.location.reload();
+    } catch (err) {
+      setError("خطا در آپلود عکس پروفایل");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loadingUser || loadingChildren) {
     return <p className="text-center mt-10">در حال بارگذاری...</p>;
   }
@@ -125,14 +146,48 @@ const InformationPage = () => {
     >
       {/* Profile photo */}
       {profilePhotoUrl && (
-        <img
-          src={profilePhotoUrl}
-          alt="User Profile"
-          className="w-24 h-24 rounded-full object-cover mb-4"
-        />
+        <div className="relative mb-4">
+          <img
+            src={profilePhotoUrl}
+            alt="User Profile"
+            className="w-24 h-24 rounded-full object-cover"
+          />
+          <label
+            htmlFor="profilePhotoInput"
+            className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1 cursor-pointer hover:bg-blue-700"
+            title="تغییر عکس پروفایل"
+          >
+            {uploading ? (
+              <span className="text-xs px-2">در حال آپلود...</span>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            )}
+          </label>
+          <input
+            id="profilePhotoInput"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleProfilePhotoChange}
+            disabled={uploading}
+          />
+        </div>
       )}
 
-      {/* Editable user info fields */} 
+      {/* Editable user info fields */}
       <div className="w-full space-y-2">
         <EditableField
           label="نام و نام خانوادگی"

@@ -303,7 +303,7 @@ function CoursesPage() {
                                             course.installments = updatedInstallments;
                                             setOpenCourseIdx((prev) => ({ ...prev }));
                                           } catch (error) {
-                                            alert("خطا در بارگذاری تصویر پرداخت");
+                                            window.location.reload();
                                           }
                                         } else {
                                           alert("لطفا یک فایل تصویر انتخاب کنید");
