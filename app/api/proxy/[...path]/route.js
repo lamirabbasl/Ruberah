@@ -50,7 +50,7 @@ async function handleRequest(request, params, method) {
       }
     }
 
-    const baseUrl = normalizeUrl(process.env.NEXT_PUBLIC_API_URL);
+    const baseUrl = normalizeUrl("http://188.121.100.138/api");
     const isStaticVideoPath =
       normalizedPath.startsWith("intro/video") &&
       /\.[a-zA-Z0-9]+$/.test(normalizedPath);
