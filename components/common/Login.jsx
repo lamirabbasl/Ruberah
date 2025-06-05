@@ -6,11 +6,17 @@ import Link from "next/link";
 import { login } from "@/lib/api/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import {resetPassword , requestResetPasswordCode} from "@/lib/api/api"
 
 const Login = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetPhone, setResetPhone] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const router = useRouter();
   const { login: authLogin } = useAuth();
 
@@ -40,6 +46,47 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
       alert("خطا در ورود: " + (error.response?.data?.detail || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendCode = async () => {
+    if (!resetPhone.trim()) {
+      alert("لطفاً شماره تلفن را وارد کنید.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await requestResetPasswordCode({ phone_number: resetPhone });
+      setShowPhoneModal(false);
+      setShowResetModal(true);
+    } catch (error) {
+      alert("خطا در ارسال کد: " + (error.response?.data?.detail || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetCode.trim() || !newPassword.trim()) {
+      alert("لطفاً همه فیلدها را پر کنید.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetPassword({
+        phone_number: resetPhone,
+        code: resetCode,
+        new_password: newPassword,
+      });
+      setShowResetModal(false);
+      setResetPhone("");
+      setResetCode("");
+      setNewPassword("");
+      alert("رمز عبور با موفقیت تغییر کرد.");
+    } catch (error) {
+      alert("خطا در تنظیم رمز عبور: " + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
@@ -116,6 +163,83 @@ const Login = () => {
             ثبت‌نام کنید
           </Link>
         </p>
+        <p className="mt-2 text-center text-gray-600">
+          <button
+            onClick={() => setShowPhoneModal(true)}
+            className="text-blue-500 hover:text-blue-600 font-semibold underline"
+          >
+            فراموشی رمز عبور؟
+          </button>
+        </p>
+
+      {/* Phone input modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
+            <h3 className="text-lg font-semibold mb-4 text-right">بازیابی رمز عبور</h3>
+            <input
+              type="text"
+              placeholder="شماره تلفن"
+              value={resetPhone}
+              onChange={(e) => setResetPhone(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowPhoneModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded-md"
+              >
+                انصراف
+              </button>
+              <button
+                onClick={handleSendCode}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={loading}
+              >
+                {loading ? "در حال ارسال..." : "ارسال کد"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset password modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
+            <h3 className="text-lg font-semibold mb-4 text-right">تنظیم رمز عبور جدید</h3>
+            <input
+              type="text"
+              placeholder="کد ارسال شده"
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+            />
+            <input
+              type="password"
+              placeholder="رمز عبور جدید"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded-md"
+              >
+                انصراف
+              </button>
+              <button
+                onClick={handleResetPassword}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={loading}
+              >
+                {loading ? "در حال تنظیم..." : "تنظیم رمز عبور"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </motion.div>
     </div>
   );
