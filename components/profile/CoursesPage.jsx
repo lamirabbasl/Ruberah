@@ -162,7 +162,7 @@ function CoursesPage() {
             {child.courses.map((course, courseIndex) => {
               const key = `${childIndex}-${courseIndex}`;
               const isOpen = openCourseIdx[key];
-              const isInstallment = !course.paid && course.installments;
+              const isInstallment =  course.installments;
 
               return (
                 <div key={courseIndex}>
@@ -238,7 +238,7 @@ function CoursesPage() {
                               <h3 className="text-lg font-bold text-blue-700 mb-2">
                                 اطلاعات اقساط
                               </h3>
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
+                              <div className="flex flex-col max-md:hidden sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
                                 <span>قسط</span>
                                 <span>مبلغ</span>
                                 <span>وضعیت پرداخت</span>
@@ -361,17 +361,14 @@ function CoursesPage() {
                           ) : (
                         <div className="bg-white p-3 rounded-md shadow text-md flex flex-col sm:flex-row flex-wrap gap-4 text-black font-medium">
                           <div className="flex gap-4">
-                            <span className="font-semibold">زمان پرداخت:</span>{" "}
+                            <span className="">زمان پرداخت:</span>{" "}
                             {course.paymentInfo?.time}
                           </div>
                           <div className="flex gap-4">
-                            <span className="font-semibold">مبلغ کل:</span>{" "}
+                            <span className="">مبلغ کل:</span>{" "}
                             {course.paymentInfo?.amount}
                           </div>
-                          <div className="flex gap-4">
-                            <span className="font-semibold">کد پرداخت:</span>{" "}
-                            {course.paymentInfo?.code}
-                          </div>
+
                         </div>
                       )}
                     </div>

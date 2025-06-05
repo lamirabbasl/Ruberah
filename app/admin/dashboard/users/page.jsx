@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 
 import AddUserForm from "@/components/admin/AddUserForm";
-import { getUsers, addUser, deleteUser } from "@/lib/api/api";
+import { getUsers, addUser, deleteUser, getUsersExport } from "@/lib/api/api";
+import { getToken } from "@/lib/utils/token";
 
 const UsersPage = () => {
   const [users, setUsers] = React.useState([]);
@@ -14,6 +15,7 @@ const UsersPage = () => {
   const [userToDelete, setUserToDelete] = React.useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [exporting, setExporting] = React.useState(false);
 
   React.useEffect(() => {
     fetchUsers();
@@ -36,6 +38,36 @@ const UsersPage = () => {
     setShowAddForm(true);
   };
 
+  const handleExportExcel = async () => {
+    setExporting(true);
+    setError(null);
+    try {
+      // Request the file as blob
+      const token = getToken()
+      const response = await fetch("/api/proxy/courses/manage/export/registrations/summary/", {
+        method: "GET",
+        headers: {
+         "Authorization": token
+       
+     } });
+      if (!response.ok) {
+        throw new Error("Failed to export Excel");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "users_export.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || "Error exporting Excel");
+    } finally {
+      setExporting(false);
+    }
+  };
   const handleSaveNewUser = async (newUser) => {
     setLoading(true);
     setError(null);
@@ -89,6 +121,14 @@ const UsersPage = () => {
         >
           <FaPlus className="mr-2" />
           افزودن کاربر
+        </button>
+        <button
+          onClick={handleExportExcel}
+          disabled={exporting}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 sm:mb-0"
+          type="button"
+        >
+          {exporting ? "در حال دانلود..." : "Export Excel"}
         </button>
         {showAddForm && (
           <AddUserForm onSave={handleSaveNewUser} onCancel={handleCancelAdd} />

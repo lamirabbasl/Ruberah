@@ -9,6 +9,8 @@ import {
   getInstallmentDetailsRegistrationId,
   getInstallmentReceiptImageAdmin,
   approveInstallmentPayment,
+  getReceiptImageAdmin,
+  confirmPaymentNonInstallment,
 } from "@/lib/api/api";
 
 const PaymentsTab = () => {
@@ -21,6 +23,8 @@ const PaymentsTab = () => {
   const [flippedCards, setFlippedCards] = useState({});
   const [registrationDetailsMap, setRegistrationDetailsMap] = useState({});
   const [modalImage, setModalImage] = useState(null); // State for modal image
+  const [confirmingPaymentIds, setConfirmingPaymentIds] = useState(new Set()); // Track confirming payments
+  const [confirmedPaymentIds, setConfirmedPaymentIds] = useState(new Set()); // Track confirmed payments
 
   // Fetch registrations and batches on mount
   useEffect(() => {
@@ -103,6 +107,25 @@ const PaymentsTab = () => {
     setFlippedCards((prev) => ({ ...prev, [regId]: true }));
   };
 
+  const handleConfirmPayment = async (regId) => {
+    if (confirmingPaymentIds.has(regId)) return; // Prevent duplicate clicks
+    setConfirmingPaymentIds((prev) => new Set(prev).add(regId));
+    try {
+      await confirmPaymentNonInstallment(regId);
+      setConfirmedPaymentIds((prev) => new Set(prev).add(regId));
+      alert("پرداخت با موفقیت تایید شد");
+    } catch (error) {
+      console.error("Error confirming payment:", error);
+      alert("خطا در تایید پرداخت");
+    } finally {
+      setConfirmingPaymentIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(regId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="p-4 ">
       <h2 className="text-xl font-bold mb-4">پرداخت‌ها</h2>
@@ -173,78 +196,121 @@ const PaymentsTab = () => {
                           <p className="text-gray-700">مبلغ نهایی: {reg.final_price}</p>
                         </div>
 
-                        {/* Back Side */}
-                        <div
-                          className="absolute w-full h-full backface-hidden bg-gray-100 p-4 overflow-y-auto max-h-[280px]"
-                          style={{
-                            backfaceVisibility: "hidden",
-                            transform: "rotateY(180deg)",
-                          }}
-                        >
-                          {regDetails ? (
-                            <>
-                              <h3 className="text-lg font-semibold mb-2">جزئیات ثبت‌نام</h3>
-                              <ul>
-                                {regDetails.installments.map((inst) => (
-                                  <li key={inst.id} className="mb-2">
-                                    <p>مبلغ: {inst.amount}</p>
-                                    <p>وضعیت: {inst.status}</p>
-                                    <p>تاریخ سررسید: {inst.due_date}</p>
-                                    {inst.secure_url ? (
-                                      <div className="flex items-center space-x-4">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setModalImage(
-                                              getInstallmentReceiptImageAdmin(inst.id)
-                                            );
-                                          }}
-                                          className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
-                                        >
-                                          مشاهده رسید
-                                        </button>
-                                        <button
-                                          disabled={inst.status === "paid"}
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-                                            try {
-                                              await approveInstallmentPayment(inst.id);
-                                              setRegistrationDetailsMap((prev) => {
-                                                const updated = { ...prev };
-                                                const regDetails = updated[reg.id];
-                                                if (regDetails) {
-                                                  const instIndex = regDetails.installments.findIndex(
-                                                    (i) => i.id === inst.id
+                          {/* Back Side */}
+                          <div
+                            className="absolute w-full h-full backface-hidden bg-gray-100 p-4 overflow-y-auto max-h-[280px]"
+                            style={{
+                              backfaceVisibility: "hidden",
+                              transform: "rotateY(180deg)",
+                            }}
+                          >
+                            {regDetails ? (
+                              <>
+{reg.payment_method !== "installment" ? (
+  <>
+    <h3 className="text-lg font-semibold mb-2">رسید پرداخت</h3>
+    <div className="flex flex-col items-start space-y-4">
+      {getReceiptImageAdmin(reg.id) ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setModalImage(getReceiptImageAdmin(reg.id));
+          }}
+          className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          مشاهده رسید
+        </button>
+      ) : (
+        <p className="text-gray-500">رسید موجود نیست</p>
+      )}
+{reg.payment_status !== "paid" && (
+  <button
+    disabled={confirmedPaymentIds.has(reg.id) || confirmingPaymentIds.has(reg.id)}
+    onClick={async (e) => {
+      e.stopPropagation();
+      await handleConfirmPayment(reg.id);
+    }}
+    className={`px-3 py-1 rounded text-white ${
+      confirmedPaymentIds.has(reg.id)
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-green-600 hover:bg-green-700"
+    }`}
+  >
+    {confirmingPaymentIds.has(reg.id)
+      ? "در حال تایید..."
+      : confirmedPaymentIds.has(reg.id)
+      ? "تایید شده"
+      : "تایید پرداخت"}
+  </button>
+)}
+    </div>
+  </>
+) : (
+                                  <>
+                                    <h3 className="text-lg font-semibold mb-2">جزئیات ثبت‌نام</h3>
+                                    <ul>
+                                      {regDetails.installments.map((inst) => (
+                                        <li key={inst.id} className="mb-2">
+                                          <p>مبلغ: {inst.amount}</p>
+                                          <p>وضعیت: {inst.status}</p>
+                                          <p>تاریخ سررسید: {inst.due_date}</p>
+                                          {inst.secure_url ? (
+                                            <div className="flex items-center space-x-4">
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setModalImage(
+                                                    getInstallmentReceiptImageAdmin(inst.id)
                                                   );
-                                                  if (instIndex !== -1) {
-                                                    regDetails.installments[instIndex].status = "paid";
+                                                }}
+                                                className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                              >
+                                                مشاهده رسید
+                                              </button>
+                                              <button
+                                                disabled={inst.status === "paid"}
+                                                onClick={async (e) => {
+                                                  e.stopPropagation();
+                                                  try {
+                                                    await approveInstallmentPayment(inst.id);
+                                                    setRegistrationDetailsMap((prev) => {
+                                                      const updated = { ...prev };
+                                                      const regDetails = updated[reg.id];
+                                                      if (regDetails) {
+                                                        const instIndex = regDetails.installments.findIndex(
+                                                          (i) => i.id === inst.id
+                                                        );
+                                                        if (instIndex !== -1) {
+                                                          regDetails.installments[instIndex].status = "paid";
+                                                        }
+                                                      }
+                                                      return updated;
+                                                    });
+                                                  } catch (error) {
+                                                    console.error("Failed to approve payment", error);
+                                                    alert("خطا در تایید پرداخت");
                                                   }
-                                                }
-                                                return updated;
-                                              });
-                                            } catch (error) {
-                                              console.error("Failed to approve payment", error);
-                                              alert("خطا در تایید پرداخت");
-                                            }
-                                          }}
-                                          className={`px-3 py-1 rounded text-white ${
-                                            inst.status === "paid"
-                                              ? "bg-gray-400 cursor-not-allowed"
-                                              : "bg-green-600 hover:bg-green-700"
-                                          }`}
-                                        >
-                                          تایید پرداخت
-                                        </button>
-                                      </div>
-                                    ) : null}
-                                  </li>
-                                ))}
-                              </ul>
-                            </>
-                          ) : (
-                            <p>در حال بارگذاری جزئیات...</p>
-                          )}
-                        </div>
+                                                }}
+                                                className={`px-3 py-1 rounded text-white ${
+                                                  inst.status === "paid"
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-green-600 hover:bg-green-700"
+                                                }`}
+                                              >
+                                                تایید پرداخت
+                                              </button>
+                                            </div>
+                                          ) : null}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <p>در حال بارگذاری جزئیات...</p>
+                            )}
+                          </div>
                       </div>
                     </div>
                   );

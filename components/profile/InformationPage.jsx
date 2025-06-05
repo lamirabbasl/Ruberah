@@ -8,14 +8,16 @@ import {
   getChildren,
   addChild,
   patchChild,
+  getProfilePhotoUrl,
 } from "@/lib/api/api";
-
+ 
 import EditableField from "./EditableField";
 import EditableChild from "./EditableChild";
 import AddChildForm from "./AddChildForm";
 
 const InformationPage = () => {
   const [user, setUser] = useState(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
   const [children, setChildren] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingChildren, setLoadingChildren] = useState(true);
@@ -29,6 +31,10 @@ const InformationPage = () => {
       try {
         const data = await getUserMe();
         setUser(data);
+        if (data && data.id) {
+          const photoUrl = await getProfilePhotoUrl(data.id);
+          setProfilePhotoUrl(photoUrl);
+        }
       } catch (err) {
         setError("خطا در دریافت اطلاعات کاربر");
       } finally {
@@ -117,7 +123,16 @@ const InformationPage = () => {
       dir="rtl"
       className="flex flex-col font-mitra items-center p-6 max-w-xl max-md:w-screen mx-auto bg-gray-100 shadow-2xl rounded-2xl mt-4 space-y-6"
     >
-      {/* Editable user info fields */}
+      {/* Profile photo */}
+      {profilePhotoUrl && (
+        <img
+          src={profilePhotoUrl}
+          alt="User Profile"
+          className="w-24 h-24 rounded-full object-cover mb-4"
+        />
+      )}
+
+      {/* Editable user info fields */} 
       <div className="w-full space-y-2">
         <EditableField
           label="نام و نام خانوادگی"

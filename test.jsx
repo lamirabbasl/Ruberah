@@ -1,347 +1,403 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
+
 import {
-  getRegistrations,
-  getChildById,
-  getChildPhotoUrl,
-  getBatchById,
-  getSeasons,
-  getRegistrationInstallments,
-  uploadInstallmentPayment,
-  getInstallmentReceiptImage,
+  getRegistrationsAdmin,
+  getChildByIdAdmin,
+  getBatches,
+  getRegistrationDetailsById,
+  getInstallmentDetailsRegistrationId,
+  getInstallmentReceiptImageAdmin,
+  approveInstallmentPayment,
 } from "@/lib/api/api";
 
-function CoursesPage() {
-  const [openCourseIdx, setOpenCourseIdx] = useState({});
-  const [children, setChildren] = useState([]);
-  const [batchesMap, setBatchesMap] = useState({});
-  const [seasons, setSeasons] = useState([]);
-  const [expandedChildId, setExpandedChildId] = useState(null);
-  const [expandedBatchId, setExpandedBatchId] = useState(null);
-  const [uploadingInstallmentId, setUploadingInstallmentId] = useState(null);
+const PaymentsTab = () => {
+  const [registrations, setRegistrations] = useState([]);
+  const [childrenMap, setChildrenMap] = useState({});
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedBatches, setExpandedBatches] = useState({});
+  const [flippedCards, setFlippedCards] = useState({});
+  const [registrationDetailsMap, setRegistrationDetailsMap] = useState({});
+  const [modalImage, setModalImage] = useState(null); // State for modal image
 
-  const toggleCourse = (childIndex, courseIndex) => {
-    const key = `${childIndex}-${courseIndex}`;
-    setOpenCourseIdx((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
+  // Fetch registrations and batches on mount
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const registrations = await getRegistrations();
-        const seasonsList = await getSeasons();
-        const seasonMap = {};
-        seasonsList.forEach((season) => {
-          seasonMap[season.id] = {
-            name: season.name,
-            start_date: season.start_date,
-            end_date: season.end_date,
-          };
-        });
+        const regs = await getRegistrationsAdmin();
+        setRegistrations(regs);
 
-        // Map to hold childId to child data
-        const childDataMap = {};
+        const batchesData = await getBatches();
+        setBatches(batchesData);
 
-        for (const reg of registrations) {
-          if (!childDataMap[reg.child]) {
-            const childInfo = await getChildById(reg.child);
-            const photoUrl = getChildPhotoUrl(reg.child);
-
-            childDataMap[reg.child] = {
-              id: reg.child,
-              name: childInfo.full_name || "نامشخص",
-              image: photoUrl,
-              courses: [],
-            };
-          }
-
-          // Fetch batch info
-          let batchInfo = null;
-          try {
-            batchInfo = await getBatchById(reg.batch);
-          } catch (e) {
-            console.error("Error fetching batch info for batch", reg.batch, e);
-          }
-
-          // Fetch installments for registration
-          let installments = [];
-          try {
-            installments = await getRegistrationInstallments(reg.id);
-          } catch (e) {
-            console.error("Error fetching installments for registration", reg.id, e);
-          }
-
-          // Determine payment status based on installments
-          let paymentStatus = "unpaid";
-          if (installments.length > 0) {
-            const allPaid = installments.every(inst => inst.status === "paid");
-            const allUnpaid = installments.every(inst => inst.status !== "paid");
-            if (allPaid) paymentStatus = "paid";
-            else if (allUnpaid) paymentStatus = "unpaid";
-            else paymentStatus = "partial";
-          } else {
-            paymentStatus = reg.payment_status === "paid" ? "paid" : "unpaid";
-          }
-
-          // Get season info from batch
-          const seasonInfo = batchInfo && batchInfo.season ? seasonMap[batchInfo.season] : null;
-
-          childDataMap[reg.child].courses.push({
-            name: batchInfo ? batchInfo.title : "دوره ثبت‌نام شده",
-            // Removed teacher field as per user request
-            start: seasonInfo ? seasonInfo.start_date : "نامشخص",
-            end: seasonInfo ? seasonInfo.end_date : "نامشخص",
-            paid: paymentStatus === "paid",
-            image: "/testimages/n1.jpg", // placeholder image, can be improved
-            paymentInfo: {
-              time: reg.registered_at,
-              amount: reg.final_price,
-              code: "کد پرداخت نامشخص",
-              location: batchInfo ? batchInfo.location : "نامشخص",
-              paymentMethod: paymentStatus === "paid" ? "پرداخت کامل" : "اقساط",
-              installments: installments,
-            },
-            installments: installments,
-          });
-        }
-
-        const childrenArray = Object.values(childDataMap);
-        setChildren(childrenArray);
-      } catch (error) {
-        console.error("Error fetching registrations or children:", error);
+        const uniqueChildIds = [...new Set(regs.map((r) => r.child))];
+        const childrenData = {};
+        await Promise.all(
+          uniqueChildIds.map(async (childId) => {
+            try {
+              const child = await getChildByIdAdmin(childId);
+              childrenData[childId] = child;
+            } catch (e) {
+              childrenData[childId] = { full_name: "نامشخص" };
+            }
+          })
+        );
+        setChildrenMap(childrenData);
+      } catch (err) {
+        setError("خطا در دریافت اطلاعات پرداخت‌ها");
+      } finally {
+        setLoading(false);
       }
-    }
+    }; 
 
     fetchData();
   }, []);
 
+  if (loading) return <p>در حال بارگذاری...</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
+  if (registrations.length === 0) return <p>هیچ ثبت‌نامی یافت نشد.</p>;
+
+  const groupedByBatch = {};
+  registrations.forEach((reg) => {
+    const batch = batches.find((b) => b.id === reg.batch);
+    const batchTitle = batch ? batch.title : "بچ نامشخص";
+    if (!groupedByBatch[batchTitle]) {
+      groupedByBatch[batchTitle] = [];
+    }
+    groupedByBatch[batchTitle].push(reg);
+  });
+
+  const toggleBatch = (batchTitle) => {
+    setExpandedBatches((prev) => ({
+      ...prev,
+      [batchTitle]: !prev[batchTitle],
+    }));
+  };
+
+  const toggleFlipCard = async (regId) => {
+    if (flippedCards[regId]) {
+      setFlippedCards((prev) => ({ ...prev, [regId]: false }));
+      return;
+    }
+
+    if (!registrationDetailsMap[regId]) {
+      try {
+        const regDetails = await getRegistrationDetailsById(regId);
+        const installmentDetails = await getInstallmentDetailsRegistrationId(regId);
+
+        // Store installments array directly in regDetails.installments
+        regDetails.installments = installmentDetails;
+
+        setRegistrationDetailsMap((prev) => ({
+          ...prev,
+          [regId]: regDetails,
+        }));
+      } catch (error) {
+        console.error("Error fetching registration details or installments", error);
+      }
+    }
+
+    setFlippedCards((prev) => ({ ...prev, [regId]: true }));
+  };
+
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen font-mitra p-6 flex flex-col items-center"
-    >
-      <h1 className="text-4xl font-bold text-gray-700 mb-6">
-        دوره‌های فرزندان
-      </h1>
+    <div className="p-4 ">
+      <h2 className="text-xl font-bold mb-4">پرداخت‌ها</h2>
+      <div>
+        {Object.entries(groupedByBatch).map(([batchTitle, regs]) => (
+          <div key={batchTitle} className="mb-4 border rounded bg-white shadow">
+            <button
+              onClick={() => toggleBatch(batchTitle)}
+              className="w-full text-right px-4 py-2 font-semibold text-lg bg-gray-100 hover:bg-gray-200 focus:outline-none"
+            >
+              {batchTitle}
+            </button>
+            {expandedBatches[batchTitle] && (
+              <div className="grid grid-cols-3 gap-4 p-4">
+                {regs.map((reg) => {
+                  const child = childrenMap[reg.child];
+                  const batch = batches.find((b) => b.id === reg.batch);
+                  const isFlipped = flippedCards[reg.id];
+                  const regDetails = registrationDetailsMap[reg.id];
 
-      {children.map((child, childIndex) => (
-        <div
-          key={childIndex}
-          className="w-screen max-w-3xl bg-gray-100 rounded-xl shadow-lg mb-8 p-5"
-        >
-          {/* فرزند */}
-          <div className="flex items-center mb-4 gap-4">
-            <Image
-              src={child.image || getChildPhotoUrl(child.id)}
-              alt={child.name}
-              width={70}
-              height={70}
-              className="w-22 h-22 rounded-full object-cover border-2 border-blue-500 shadow"
-            />
-            <h2 className="text-2xl font-bold text-gray-800">{child.name}</h2>
-          </div>
-
-          {/* عنوان جدول */}
-          <div className="hidden sm:flex justify-between items-center pr-6 bg-gray-100 border-b-2 border-gray-200 p-3 rounded-t-lg text-lg text-gray-600 font-semibold text-right">
-            <div className="flex flex-wrap gap-x-6 mr-8 gap-y-1">
-              <span className="w-20">دوره</span>
-              <span className="w-24">شروع</span>
-              <span className="w-20">پایان</span>
-              <span className="w-20">مکان</span>
-              <span className="w-24">وضعیت پرداخت</span>
-            </div>
-          </div>
-
-          {/* دوره‌ها */}
-          <div className="space-y-3 mt-2">
-            {child.courses.map((course, courseIndex) => {
-              const key = `${childIndex}-${courseIndex}`;
-              const isOpen = openCourseIdx[key];
-              const isInstallment = !course.paid && course.installments;
-
-              return (
-                <div key={courseIndex}>
-                  {/* Course Row - responsive */}
-                  <div
-                    className="flex relative flex-col sm:flex-row sm:justify-between sm:items-center pr-4 sm:pr-6 bg-white rounded-lg shadow p-3 border hover:shadow-md transition cursor-pointer"
-                    onClick={() => toggleCourse(childIndex, courseIndex)}
-                  >
-                    {/* Info block */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-5 gap-y-2 gap-x-4 text-sm sm:text-base text-gray-800 text-right w-full">
-                      <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">
-                          دوره:{" "}
-                        </span>
-                        <span className="font-bold">{course.name}</span>
-                      </div>
-
-                      <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">
-                          شروع:{" "}
-                        </span>
-                        <span>{course.start}</span>
-                      </div>
-                      <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">
-                          پایان:{" "}
-                        </span>
-                        <span>{course.end}</span>
-                      </div>
-                      <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-24">
-                          مکان:{" "}
-                        </span>
-                        <span className="font-semibold">{course.paymentInfo?.location}</span>
-                      </div>
-                      <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-24">
-                          وضعیت پرداخت:{" "}
-                        </span>
-                        <span className="font-semibold">
-                          {course.paid ? (
-                            <span className="text-green-600">پرداخت کامل</span>
-                          ) : (
-                            <span className="text-red-500">اقساط</span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <div className=" max-md:absolute  left-4 top-6   flex justify-center">
-                      <span className="font-semibold block sm:hidden w-20">
-                        روش پرداخت:{" "}
-                      </span>
-                      <span className="font-semibold">{course.paymentInfo?.paymentMethod}</span>
-                    </div>
-
-                    {/* Image */}
-                    <div className=" max-md:absolute  left-4 top-6   flex justify-center">
-                      <Image
-                        src={course.image}
-                        alt={course.name}
-                        width={60}
-                        height={60}
-                        className="rounded-md max-md:w-[100px] max-md:h-[100px] object-cover border border-gray-300"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Dropdown Info */}
-                  {isOpen && (
-                    <div className="bg-gray-50 mt-2 rounded-lg border border-blue-100 p-4 text-right space-y-3 animate-fade-in">
-                          {isInstallment ? (
+                  return (
+                    <div
+                      key={reg.id}
+                      className={`border rounded shadow hover:shadow-lg transition bg-white perspective ${
+                        isFlipped ? "is-flipped" : ""
+                      }`}
+                      style={{ cursor: "pointer", perspective: "1000px", height: "300px" }}
+                      onClick={() => toggleFlipCard(reg.id)}
+                    >
+                      <div
+                        className="relative w-full h-full duration-700"
+                        style={{
+                          transformStyle: "preserve-3d",
+                          transition: "transform 0.7s",
+                          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                          height: "100%",
+                          position: "relative",
+                        }}
+                      >
+                        {/* Front Side */}
+                        <div
+                          className="absolute w-full h-full"
+                          style={{
+                            backfaceVisibility: "hidden",
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            padding: "1rem",
+                            boxSizing: "border-box",
+                            overflowY: "auto",
+                            height: "100%",
+                          }}
+                        >
+                          <h3 className="text-lg font-semibold mb-2">
+                            {child ? child.full_name : "نامشخص"}
+                          </h3>
+                          {batch ? (
                             <>
-                              <h3 className="text-lg font-bold text-blue-700 mb-2">
-                                اطلاعات اقساط
-                              </h3>
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
-                                <span>قسط</span>
-                                <span>مبلغ</span>
-                                <span>وضعیت پرداخت</span>
-                                <span>مهلت پرداخت</span>
-                                <span></span>
-                              </div>
-                              {course.installments.map((inst, idx) => {
-                                const isPaid = inst.status === "paid";
-                                const isImg = inst.secure_url !== null
-                                return (
-                                <div
-                                  key={idx}
-                                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white rounded-md p-3 shadow text-sm gap-2 sm:gap-0"
-                                >
-                                  <span className="text-gray-700 font-semibold">
-                                    قسط {idx + 1}
-                                  </span>
-                                  <span className="text-gray-700">
-                                    {inst.amount}
-                                  </span>
-                                  <span
-                                  className={
-                                    isPaid ? "text-green-600" : "text-red-500"
-                                  }
-                                  >
-                                    {isPaid ? "پرداخت شده" : "در انتظار پرداخت"}
-                                  </span>
-                                  <span className="text-gray-600">
-                                    مهلت: {inst.due_date}
-                                  </span>
-                                  <span>
-                                    { isImg ? (
-                                      <img
-                                        src={getInstallmentReceiptImage(inst.id)}
-                                        alt={`رسید قسط ${idx + 1}`}
-                                        className="h-12 rounded-md"
-                                      />
-                                    ) : null}
-                                    <button
-                                      onClick={() => setUploadingInstallmentId(inst.id)}
-                                      className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
-                                    >
-                                      بارگذاری رسید
-                                    </button>
-                                    {uploadingInstallmentId === inst.id && (
-                                      <div>
-                                        <input
-                                          type="file"
-                                          accept="image/*"
-                                          onChange={async (e) => {
-                                            if (e.target.files.length > 0) {
-                                              try {
-                                                console.log("Uploading installment payment", inst.id, e.target.files[0]);
-                                                await uploadInstallmentPayment(inst.id, e.target.files[0]);
-                                                setUploadingInstallmentId(null);
-                                                // Refresh installments after upload
-                                                const updatedInstallments = await getRegistrationInstallments(course.id);
-                                                course.installments = updatedInstallments;
-                                                setOpenCourseIdx((prev) => ({ ...prev }));
-                                              } catch (error) {
-                                                alert("خطا در بارگذاری تصویر پرداخت");
-                                              }
-                                            }
-                                          }}
-                                        />
-                                        <button
-                                          onClick={() => setUploadingInstallmentId(null)}
-                                          className="text-red-500 text-sm mt-1"
-                                        >
-                                          لغو
-                                        </button>
-                                      </div>
-                                    )}
-                                  </span>
-                                </div>
-                                );
-                              })}
+                              <p className="text-gray-700">برنامه: {batch.schedule}</p>
+                              <p className="text-gray-700">ظرفیت: {batch.capacity}</p>
                             </>
                           ) : (
-                        <div className="bg-white p-3 rounded-md shadow text-md flex flex-col sm:flex-row flex-wrap gap-4 text-black font-medium">
-                          <div className="flex gap-4">
-                            <span className="font-semibold">زمان پرداخت:</span>{" "}
-                            {course.paymentInfo?.time}
-                          </div>
-                          <div className="flex gap-4">
-                            <span className="font-semibold">مبلغ کل:</span>{" "}
-                            {course.paymentInfo?.amount}
-                          </div>
-                          <div className="flex gap-4">
-                            <span className="font-semibold">کد پرداخت:</span>{" "}
-                            {course.paymentInfo?.code}
-                          </div>
+                            <p className="text-gray-700">بچه نامشخص</p>
+                          )}
+                          <p className="text-gray-700 mt-2">
+                            وضعیت پرداخت: {reg.payment_status}
+                          </p>
+                          <p className="text-gray-700">مبلغ نهایی: {reg.final_price}</p>
                         </div>
-                      )}
+
+                        {/* Back Side */}
+                        <div
+                          className="absolute w-full h-full backface-hidden bg-gray-100 p-4 overflow-y-auto max-h-[280px]"
+                          style={{
+                            backfaceVisibility: "hidden",
+                            transform: "rotateY(180deg)",
+                          }}
+                        >
+                          {regDetails ? (
+                            <>
+                              <h3 className="text-lg font-semibold mb-2">جزئیات ثبت‌نام</h3>
+                              <ul>
+                                {regDetails.installments.map((inst) => (
+                                  <li key={inst.id} className="mb-2">
+                                    <p>مبلغ: {inst.amount}</p>
+                                    <p>وضعیت: {inst.status}</p>
+                                    <p>تاریخ سررسید: {inst.due_date}</p>
+                                    {inst.secure_url ? (
+                                      <div className="flex items-center space-x-4">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setModalImage(
+                                              getInstallmentReceiptImageAdmin(inst.id)
+                                            );
+                                          }}
+                                          className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                        >
+                                          مشاهده رسید
+                                        </button>
+                                        <button
+                                          disabled={inst.status === "paid"}
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            try {
+                                              await approveInstallmentPayment(inst.id);
+                                              setRegistrationDetailsMap((prev) => {
+                                                const updated = { ...prev };
+                                                const regDetails = updated[reg.id];
+                                                if (regDetails) {
+                                                  const instIndex = regDetails.installments.findIndex(
+                                                    (i) => i.id === inst.id
+                                                  );
+                                                  if (instIndex !== -1) {
+                                                    regDetails.installments[instIndex].status = "paid";
+                                                  }
+                                                }
+                                                return updated;
+                                              });
+                                            } catch (error) {
+                                              console.error("Failed to approve payment", error);
+                                              alert("خطا در تایید پرداخت");
+                                            }
+                                          }}
+                                          className={`px-3 py-1 rounded text-white ${
+                                            inst.status === "paid"
+                                              ? "bg-gray-400 cursor-not-allowed"
+                                              : "bg-green-600 hover:bg-green-700"
+                                          }`}
+                                        >
+                                          تایید پرداخت
+                                        </button>
+                                      </div>
+                                    ) : null}
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
+                            <p>در حال بارگذاری جزئیات...</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Modal for showing large receipt image */}
+      {modalImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setModalImage(null)}
+        >
+          <div
+            className="bg-white p-4 rounded shadow-lg max-w-5xl max-h-full overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={modalImage}
+              alt="Receipt Large"
+              className="max-w-full max-h-[90vh]"
+            />
+            <button
+              onClick={() => setModalImage(null)}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              بستن
+            </button>
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
-}
+};
 
-export default CoursesPage;
+export default PaymentsTab;
+"use client";
+import { motion } from "framer-motion";
+import { Pencil, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { getChildPhotoUrl, getChildWithParentPhotoUrl } from "@/lib/api/api";
+
+const EditableChild = ({ child, onUpdate }) => {
+  const [editing, setEditing] = useState(false);
+  const [tempFullName, setTempFullName] = useState(child.full_name);
+  const [tempGender, setTempGender] = useState(child.gender);
+  const [childPhotoUrl, setChildPhotoUrl] = useState(null);
+  const [parentPhotoUrl, setParentPhotoUrl] = useState(null);
+
+  useEffect(() => {
+    setTempFullName(child.full_name);
+    setTempGender(child.gender);
+  }, [child]);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const childPhoto = await getChildPhotoUrl(child.id);
+        const parentPhoto = await getChildWithParentPhotoUrl(child.id);
+        setChildPhotoUrl(childPhoto);
+        setParentPhotoUrl(parentPhoto);
+      } catch (error) {
+        setChildPhotoUrl(null);
+        setParentPhotoUrl(null);
+      }
+    };
+    fetchPhotos();
+  }, [child.id]);
+
+  const handleEditToggle = () => {
+    if (!editing) {
+      setTempFullName(child.full_name);
+      setTempGender(child.gender);
+    }
+    setEditing(!editing);
+  };
+
+  const handleSave = () => {
+    onUpdate({
+      id: child.id,
+      full_name: tempFullName,
+      gender: tempGender,
+    });
+    setEditing(false);
+  };
+
+  return (
+    <motion.div
+      layout
+      className="flex flex-row items-center gap-4 bg-gray-100 rounded-md p-2 w-96"
+      dir="rtl"
+    >
+      {childPhotoUrl ? (
+        <img
+          src={childPhotoUrl}
+          alt="Child Photo"
+          className="w-16 h-16 rounded-full object-cover"
+        />
+      ) : (
+        <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+          عکس ندارد
+        </div>
+      )}
+      <div className="flex flex-col flex-1 text-right">
+        {editing ? (
+          <>
+            <input
+              type="text"
+              className="mb-1 p-1 border border-gray-300 rounded-md w-full text-right"
+              value={tempFullName}
+              onChange={(e) => setTempFullName(e.target.value)}
+              placeholder="نام و نام خانوادگی"
+            />
+            <select
+              className="mb-1 p-1 border border-gray-300 rounded-md w-full text-right"
+              value={tempGender}
+              onChange={(e) => setTempGender(e.target.value)}
+            >
+              <option value="boy">پسر</option>
+              <option value="girl">دختر</option>
+            </select>
+          </>
+        ) : (
+          <div className="flex justify-between items-center">
+            <p className="text-lg font-medium">{child.full_name}</p>
+            <p className="text-gray-600">
+              جنسیت: {child.gender === "boy" ? "پسر" : "دختر"}
+            </p>
+          </div>
+        )}
+      </div>
+      {parentPhotoUrl && (
+        <img
+          src={parentPhotoUrl}
+          alt="Parent Photo"
+          className="w-12 h-12 rounded-full object-cover"
+        />
+      )}
+      <button
+        onClick={editing ? handleSave : handleEditToggle}
+        className={`ml-4 ${
+          editing
+            ? "text-green-600 hover:text-green-800 mt-8 mr-2"
+            : "text-blue-600 hover:text-blue-800 mt-8"
+        }`}
+      >
+        {editing ? <Check size={20} /> : <Pencil size={18} />}
+      </button>
+    </motion.div>
+  );
+};
+
+export default EditableChild;

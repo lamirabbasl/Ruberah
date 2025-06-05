@@ -7,13 +7,37 @@ import { BiExit, BiMenu } from "react-icons/bi";
 import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { getUserMe , getProfilePhotoUrl} from "@/lib/api/api";
+import { useAuth } from "@/context/AuthContext";
 
 function ProfileMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(null);
+    const [user, setUser] = useState(null);
+
+      const {  logout } = useAuth();
+    
+  
   const pathname = usePathname();
   const router = useRouter();
   const menuRef = useRef(null);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+   useEffect(() => {
+      const fetchUser = async () => {
+        try {
+          const data = await getUserMe();
+          setUser(data);
+        } catch (error) {
+          setUser(null);
+        }
+      };
+      fetchUser();
+    }, []);
 
   useEffect(() => {
     const segments = pathname.split("/").filter((segment) => segment !== "");
@@ -91,20 +115,21 @@ function ProfileMenu() {
               </div>
 
               {/* Header Section */}
-              <div className="flex justify-end items-center gap-2 pb-4 border-b border-gray-800 w-full">
-                <div className="flex flex-col items-end">
-                  <p className="font-semibold">امیرعباس غلامی</p>
-                  <p className="text-sm text-gray-400">ادمین</p>
-                </div>
-                <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                  <Image
-                    src={"/user.png"}
-                    alt="user avatar"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </div>
-              </div>
+                <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
+                      <div className="flex flex-col items-end">
+                        <p className="font-semibold">{user?.username || "کاربر"}</p>
+                        <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
+                      </div>
+                      <div className="relative  rounded-full overflow-hidden">
+                        <img
+                        className="w-14 h-14"
+                          src={ getProfilePhotoUrl(user?.id) || "/user.png"}
+                          alt="user avatar"
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                      </div>
+                    </div>
 
               {/* Navigation Links */}
               <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
@@ -130,10 +155,8 @@ function ProfileMenu() {
 
               {/* Logout Button */}
               <button
-                onClick={() => {
-                  // Handle logout logic here (e.g., clear session, redirect)
-                  setIsMenuOpen(false); // Close menu after logout
-                }}
+                onClick={
+                  handleLogout}
                 className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
               >
                 <p>خارج شوید</p>

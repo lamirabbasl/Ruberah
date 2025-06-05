@@ -7,11 +7,34 @@ import { BiExit } from "react-icons/bi";
 import { FaListUl } from "react-icons/fa";
 import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
+import { getUserMe , getProfilePhotoUrl} from "@/lib/api/api";
+import { useAuth } from "@/context/AuthContext";
+
 
 function ProfileNavbar() {
+  const {  logout } = useAuth();
+
   const [activeTab, setActiveTab] = useState(null);
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await getUserMe();
+        setUser(data);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const segments = pathname.split("/").filter((segment) => segment !== "");
@@ -30,14 +53,15 @@ function ProfileNavbar() {
   return (
     <div className=" max-md:hidden fixed right-0 flex text-lg font-noto text-white flex-col gap-6 justify-start items-end p-4 h-screen w-64 bg-gray-900 shadow-md z-10 transition-transform duration-300 ease-in-out">
       {/* Header Section */}
-      <div className="flex justify-end items-center gap-2 pb-4 border-b border-gray-800 w-full">
+      <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
         <div className="flex flex-col items-end">
-          <p className="font-semibold">امیرعباس غلامی</p>
-          <p className="text-sm text-gray-400">ادمین</p>
+          <p className="font-semibold">{user?.username || "کاربر"}</p>
+          <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
         </div>
-        <div className="relative w-12 h-12 rounded-full overflow-hidden">
-          <Image
-            src={"/user.png"}
+        <div className="relative  rounded-full overflow-hidden">
+          <img
+          className="w-14 h-14"
+            src={ getProfilePhotoUrl(user?.id) || "/user.png"}
             alt="user avatar"
             layout="fill"
             objectFit="cover"
@@ -68,7 +92,7 @@ function ProfileNavbar() {
       </nav>
 
       {/* Logout Button */}
-      <button className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200">
+      <button className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200" onClick={handleLogout}>
         <p>خارج شوید</p>
         <BiExit className="text-xl" />
       </button>
