@@ -113,7 +113,7 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="max-md:w-screen w-5/6 min-h-screen bg-white text-black p-6 text-right">
+    <div className="max-md:w-screen w-5/6 min-h-screen  bg-white text-black p-6 text-right">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
         <button
           onClick={handleAddUser}

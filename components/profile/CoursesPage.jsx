@@ -101,9 +101,9 @@ function CoursesPage() {
             paymentInfo: {
               time: reg.registered_at,
               amount: reg.final_price,
-              code: "کد پرداخت نامشخص",
               location: batchInfo ? batchInfo.location : "نامشخص",
               paymentMethod: paymentStatus === "paid" ? "پرداخت کامل" : "اقساط",
+              paymentmetoo : reg.payment_method,
               installments: installments,
             },
             installments: installments,
@@ -162,7 +162,7 @@ function CoursesPage() {
             {child.courses.map((course, courseIndex) => {
               const key = `${childIndex}-${courseIndex}`;
               const isOpen = openCourseIdx[key];
-              const isInstallment =  course.installments;
+              const isInstallment =  course.paymentInfo.paymentmetoo == "installment";
 
               return (
                 <div key={courseIndex}>
@@ -232,13 +232,13 @@ function CoursesPage() {
 
                   {/* Dropdown Info */}
                   {isOpen && (
-                    <div className="bg-gray-50 mt-2 rounded-lg border border-blue-100 p-4 text-right space-y-3 animate-fade-in">
+                    <div className="bg-gray-50 mt-2 max-md:relative max-md:grid max-md:grid-cols-2 max-md:gap-4 rounded-lg border border-blue-100 p-4 text-right space-y-3 animate-fade-in">
                           {isInstallment ? (
                             <>
-                              <h3 className="text-lg font-bold text-blue-700 mb-2">
+                              <h3 className="text-lg max-md:hidden font-bold text-blue-700 mb-2">
                                 اطلاعات اقساط
                               </h3>
-                              <div className="flex flex-col max-md:hidden sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
+                              <div className="flex max-md:hidden flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
                                 <span>قسط</span>
                                 <span>مبلغ</span>
                                 <span>وضعیت پرداخت</span>
@@ -361,8 +361,8 @@ function CoursesPage() {
                           ) : (
                         <div className="bg-white p-3 rounded-md shadow text-md flex flex-col sm:flex-row flex-wrap gap-4 text-black font-medium">
                           <div className="flex gap-4">
-                            <span className="">زمان پرداخت:</span>{" "}
-                            {course.paymentInfo?.time}
+                            <span className="whitespace-nowrap">زمان پرداخت:</span>{" "}
+                            {course.paymentInfo?.time?.slice(0, 10)}
                           </div>
                           <div className="flex gap-4">
                             <span className="">مبلغ کل:</span>{" "}

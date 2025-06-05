@@ -160,7 +160,7 @@ const InstallmentsTab = () => {
       ) : Object.keys(filteredInstallmentsByBatch).length === 0 ? (
         <p>هیچ اقساطی یافت نشد.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
           {Object.entries(filteredInstallmentsByBatch).map(([batchId, insts]) => (
             <div
               key={batchId}

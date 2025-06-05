@@ -416,7 +416,7 @@ const BatchesTab = () => {
       ) : batches.length === 0 ? (
         <p>هیچ بچه‌ای یافت نشد.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
           {batches
             .filter((batch) => {
               const matchesTitle = batch.title

@@ -139,7 +139,7 @@ const PaymentsTab = () => {
               {batchTitle}
             </button>
             {expandedBatches[batchTitle] && (
-              <div className="grid grid-cols-3 gap-4 p-4">
+              <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4 p-4">
                 {regs.map((reg) => {
                   const child = childrenMap[reg.child];
                   const batch = batches.find((b) => b.id === reg.batch);

@@ -13,7 +13,7 @@ const ReservePage = () => {
   };
 
   return (
-    <div className="w-5/6 max-md:w-screen min-h-screen bg-white text-black">
+    <div className="w-5/6 max-md:w-screen whitespace-nowrap  max-md:pt-14 max-md:text-sm min-h-screen bg-white text-black">
       <div className="p-6">
         <div className="text-right border-b border-gray-200 mb-4 ">
         

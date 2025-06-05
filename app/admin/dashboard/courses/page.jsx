@@ -7,10 +7,10 @@ import InstallmentsTab from "@/components/admin/InstallmentsTab";
 import PaymentsTab from "@/components/admin/PaymentsTab";
 
 const tabLabels = [
-  "دوره‌ها",
+  "آموزش ها",
   "فصل‌ها",
-  "بچه‌های دوره",
-  "ایجاد اقساط",
+  "دوره ها",
+  "اقساط",
   "پرداخت‌ها",
 ];
 
@@ -37,7 +37,7 @@ const AdminCoursesPage = () => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen w-5/6 max-md:w-screen p-6 font-noto bg-white text-black"
+      className="min-h-screen whitespace-nowrap  max-md:pt-14 max-md:text-sm w-5/6 max-md:w-screen p-6 font-noto bg-white text-black"
     >
       <div className="flex border-b border-gray-300 mb-4">
         {tabLabels.map((label, index) => (

@@ -79,7 +79,7 @@ const CoursesTab = () => {
       </div>
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+          <div className="bg-white p-6  rounded shadow-lg w-96 relative">
             <button
               onClick={() => setShowAddForm(false)}
               className="absolute top-2 left-2 text-gray-600 hover:text-gray-900"
@@ -87,7 +87,7 @@ const CoursesTab = () => {
             >
               ✕
             </button>
-            <div className="mb-4">
+            <   div className="mb-4">
               <label className="block mb-1">نام دوره</label>
               <input
                 type="text"
@@ -155,7 +155,7 @@ const CoursesTab = () => {
       ) : courses.length === 0 ? (
         <p>هیچ دوره‌ای یافت نشد.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
           {courses.map((course) => (
             <div
               key={course.id}
