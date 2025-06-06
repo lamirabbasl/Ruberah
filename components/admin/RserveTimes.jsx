@@ -91,7 +91,7 @@ const ReserveTimes = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-sans text-right" dir="rtl">
+    <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra text-right" dir="rtl">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت جلسات رزرو</h1>
         <motion.button

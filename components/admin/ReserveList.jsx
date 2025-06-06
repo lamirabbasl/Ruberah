@@ -171,7 +171,7 @@ const ReserveList = () => {
   };
 
   return (
-    <div className="text-right font-sans p-6 bg-gray-50 min-h-screen" dir="rtl">
+    <div className="text-right font-mitra p-6 bg-gray-50 min-h-screen" dir="rtl">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">رزروها</h1>
         <motion.button

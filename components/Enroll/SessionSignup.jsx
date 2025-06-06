@@ -78,10 +78,10 @@ export default function SessionSignup() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-gradient-to-b from-primary to-gray-600 text-black font-mitra pt-24 p-6"
+      className="min-h-screen bg-gradient-to-b from-primary to-gray-600 text-black font-mitra pt-30 p-6"
     >
       <motion.h1
-        className="text-xl sm:text-3xl font-bold text-center text-white mb-4"
+        className="text-xl sm:text-3xl font-bold text-center text-white mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >

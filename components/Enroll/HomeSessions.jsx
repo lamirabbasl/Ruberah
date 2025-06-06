@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,8 +31,8 @@ export default function SessionsPage() {
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return {
-      date: date.toLocaleDateString('fa-IR'),
-      time: date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+      date: date.toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric" }),
+      time: date.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" }),
     };
   };
 
@@ -51,157 +52,189 @@ export default function SessionsPage() {
   };
 
   const confirmAndRedirect = () => {
-    const selectedSession = sessions.find(s => s.id === selectedId);
-    // Store session data in localStorage
-    localStorage.setItem('selectedSession', JSON.stringify(selectedSession));
+    const selectedSession = sessions.find((s) => s.id === selectedId);
+    localStorage.setItem("selectedSession", JSON.stringify(selectedSession));
     router.push("/enroll/session-signup");
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+  };
+
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.85 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.85, transition: { duration: 0.2 } },
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
+    tap: { scale: 0.95 },
   };
 
   if (loading) {
     return (
-      <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24">
-        <div className="text-white text-center text-xl">در حال بارگذاری جلسات...</div>
+      <div dir="rtl" className="min-h-screen flex items-center justify-center font-sans bg-gradient-to-b from-gray-900 to-gray-800 pt-48">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-t-indigo-500 border-gray-600 rounded-full"
+        ></motion.div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24">
-        <div className="text-red-500 text-center text-xl">{error}</div>
+      <div dir="rtl" className="min-h-screen flex items-center justify-center font-sans bg-gradient-to-b from-gray-900 to-gray-800 pt-48">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-red-950 text-red-400 p-6 rounded-2xl shadow-lg max-w-md w-full text-center"
+        >
+          <p className="text-lg font-medium">{error}</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-24"
-    >
+    <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-30 ">
       <motion.h1
-        className="text-2xl sm:text-4xl font-bold text-center mb-4 text-white"
+        className="text-4xl text-center mb-8 text-white tracking-tight"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        لیست معارفه ها
+        انتخاب جلسه معارفه
       </motion.h1>
 
-      {/* Header - Only for larger screens */}
-      <div className="max-w-3xl mx-auto hidden sm:grid sm:grid-cols-5 gap-4 text-white text-sm font-bold p-3 mb-3 border-b-2 border-gray-100">
+      <div className="max-w-4xl mx-auto hidden sm:grid sm:grid-cols-5 gap-4  text-sm font-semibold p-4 mb-4 bg-gray-200 text-black border border-gray-700 rounded-2xl shadow-sm">
         <div>🗓 تاریخ</div>
         <div>⏰ زمان</div>
         <div>📍 مکان</div>
-        <div>👥 ظرفیت</div>
+        <div>👥 ظرفیت کل</div>
         <div>✅ ظرفیت باقیمانده</div>
       </div>
 
-      {/* Sessions List */}
-      <div className="max-w-3xl mx-auto space-y-2 sm:space-y-4">
-        {sessions.map((s) => {
-          const isFull = s.available_slots === 0;
-          const isSelected = selectedId === s.id;
-          const { date, time } = formatDateTime(s.date_time);
+      <div className="max-w-4xl mx-auto space-y-4">
+        <AnimatePresence>
+          {sessions.map((s) => {
+            const isFull = s.available_slots === 0;
+            const isSelected = selectedId === s.id;
+            const { date, time } = formatDateTime(s.date_time);
 
-          return (
-            <motion.div
-              key={s.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: s.id * 0.05 }}
-              className={`rounded-xl p-3 sm:p-5 transition-all border-3 duration-300 shadow-sm bg-white ${
-                isFull ? "cursor-not-allowed" : "cursor-pointer"
-              } ${
-                isSelected && !isFull
-                  ? "border-3 border-secondery"
-                  : "border border-transparent"
-              }`}
-              onClick={() => handleSelect(s)}
-            >
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-lg text-black">
-                {/* تاریخ */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">🗓 تاریخ:</span>
-                  <span>{date}</span>
+            return (
+              <motion.div
+                key={s.id}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                className={`rounded-2xl p-4 sm:p-6 transition-all  duration-300 bg-gray-200 border-4 shadow-lg ${
+                  isFull
+                    ? "cursor-not-allowed opacity-60"
+                    : "cursor-pointer hover:shadow-xl hover:bg-gray-300"
+                } ${
+                  isSelected && !isFull
+                    ? "border-secondery"
+                    : "border-gray-300"
+                }`}
+                onClick={() => handleSelect(s)}
+                whileHover={!isFull ? { scale: 1.02 } : {}}
+              >
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 text-lg sm:text-xl text-black">
+                  <div className="flex items-center sm:block gap-1">
+                    <span className="text-gray-500 sm:hidden">🗓 تاریخ:</span>
+                    <span>{date}</span>
+                  </div>
+                  <div className="flex items-center sm:block gap-1">
+                    <span className="text-gray-500 sm:hidden">⏰ زمان:</span>
+                    <span>{time}</span>
+                  </div>
+                  <div className="flex items-center sm:block gap-1">
+                    <span className="text-gray-500 sm:hidden">📍 مکان:</span>
+                    <span className="truncate">{s.address}</span>
+                  </div>
+                  <div className="flex items-center sm:block gap-1">
+                    <span className="text-gray-500 sm:hidden">👥 ظرفیت کل:</span>
+                    <span >{s.capacity}</span>
+                  </div>
+                  <div className="flex items-center sm:block gap-1">
+                    <span className="text-gray-500 sm:hidden">✅ ظرفیت باقیمانده:</span>
+                    <span className={isFull ? "text-red-400" : "text-green-400 bg-gray-800 rounded-full px-2 py-1"}>
+                      {isFull ? "ظرفیت تکمیل" : s.available_slots}
+                    </span>
+                  </div>
                 </div>
-                {/* زمان */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">⏰ زمان:</span>
-                  <span>{time}</span>
-                </div>
-                {/* مکان */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">📍 مکان:</span>
-                  <span>{s.address}</span>
-                </div>
-                {/* ظرفیت کل */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">👥 ظرفیت کل:</span>
-                  <span>{s.capacity}</span>
-                </div>
-                {/* ظرفیت باقیمانده */}
-                <div className="flex items-center sm:block gap-1">
-                  <span className="text-gray-500 sm:hidden">✅ ظرفیت باقیمانده:</span>
-                  <span className={isFull ? "text-red-500" : ""}>
-                    {isFull ? "ظرفیت تکمیل" : s.available_slots}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
 
-      {/* Bottom Button */}
       <AnimatePresence>
         {selectedId && !showConfirm && (
           <motion.div
-            className="fixed bottom-5 left-0 right-0 flex justify-center"
+            className="fixed bottom-6 left-0 right-0 flex justify-center"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.3 }}
           >
-            <button
+            <motion.button
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
               onClick={handleProceed}
-              className="bg-blue-700 text-white px-6 py-2 rounded-full shadow-lg hover:bg-blue-800 transition text-xl"
+              className="bg-indigo-600 text-white px-8 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 text-2xl font-medium"
             >
               ثبت جلسه انتخابی
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Confirmation Dialog */}
       <AnimatePresence>
         {showConfirm && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-xl p-4 sm:p-6 w-screen sm:w-80 text-center shadow-lg"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-gray-950 border border-gray-700 rounded-2xl p-6 sm:p-8 w-full max-w-md text-center shadow-2xl text-white"
             >
-              <h2 className="text-xl sm:text-xl font-bold mb-2 sm:mb-4 text-black">
-                آیا مطمئن هستید که این جلسه را انتخاب می‌کنید؟ درصورت تایید شما
-                موظفید در جلسه حضور پیدا کنید
+              <h2 className="text-lg sm:text-2xl  mb-4 tracking-tight">
+                آیا مطمئن هستید که این جلسه را انتخاب می‌کنید؟
               </h2>
-              <div className="flex justify-center gap-2 sm:gap-4">
-                <button
+              <p className="text-lg text-gray-300 mb-6">
+                در صورت تایید، شما موظفید در جلسه حضور پیدا کنید.
+              </p>
+              <div className="flex justify-center gap-3">
+                <motion.button
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={confirmAndRedirect}
-                  className="bg-green-600 text-white px-3 py-1 sm:px-5 sm:py-2 rounded-lg hover:bg-green-700 transition text-xl "
+                  className="bg-green-600 text-white px-4 text-xl py-1 rounded-lg shadow-md hover:bg-green-700 transition-all duration-200 text-sm "
                 >
                   بله، مطمئنم
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
                   onClick={closeConfirm}
-                  className="bg-red-400 text-white px-3 py-1 sm:px-5 sm:py-2 rounded-lg hover:bg-red-500 transition text-xl"
+                  className="bg-red-600 text-white px-4 py-1 text-xl rounded-lg shadow-md hover:bg-red-700 transition-all duration-200 text-sm "
                 >
                   خیر
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
