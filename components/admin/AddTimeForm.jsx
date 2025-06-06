@@ -54,14 +54,7 @@ const AddTimeForm = ({ onSave, onCancel }) => {
           className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative text-right"
           dir="rtl"
         >
-          <button
-            type="button"
-            onClick={onCancel}
-            className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
-            aria-label="بستن فرم افزودن جلسه"
-          >
-            <FaTimes size={20} />
-          </button>
+
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-right">
             افزودن جلسه جدید
           </h2>

@@ -39,7 +39,7 @@ const AdminCoursesPage = () => {
       dir="rtl"
       className="min-h-screen whitespace-nowrap  max-md:pt-14 max-md:text-sm w-5/6 max-md:w-screen p-6 font-noto bg-white text-black"
     >
-      <div className="flex border-b border-gray-300 mb-4">
+      <div className="flex border-b  border-gray-300 mb-4">
         {tabLabels.map((label, index) => (
           <button
             key={index}

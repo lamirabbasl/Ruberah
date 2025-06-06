@@ -86,13 +86,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
       <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 left-2 text-gray-600 hover:text-gray-900"
-          aria-label="بستن فرم افزودن قسط"
-        >
-          <IoClose size={24} />
-        </button>
+
         <h2 className="text-xl font-bold mb-4">افزودن اقساط جدید</h2>
 
         <div className="mb-4">

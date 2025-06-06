@@ -80,28 +80,28 @@ const ReserveTimes = () => {
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+    hidden: { opacity: 0, scale: 0.85 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.85, transition: { duration: 0.2 } },
   };
 
   const rowVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans text-right" dir="rtl">
+    <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-sans text-right" dir="rtl">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">جلسات رزرو</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت جلسات رزرو</h1>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleAddItem}
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 text-sm font-medium flex items-center gap-2 w-full sm:w-auto"
         >
           <FaPlus className="w-4 h-4" />
-          افزودن جلسه
+          افزودن جلسه جدید
         </motion.button>
       </div>
 
@@ -120,32 +120,28 @@ const ReserveTimes = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           >
             <motion.div
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
+              className="bg-white rounded-2xl p-8 w-full max-w-md relative"
             >
-              <button
-                onClick={closeConfirmDelete}
-                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
-                aria-label="بستن تایید حذف"
-              >
-                <FaTrash size={20} />
-              </button>
-              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+             
+              <p className="mb-6 text-red-600 font-semibold text-center text-lg text-right">
                 آیا مطمئن هستید که می‌خواهید این جلسه را حذف کنید؟
               </p>
-              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              {error && (
+                <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg mb-4 text-right">{error}</p>
+              )}
               <div className="flex justify-end space-x-3">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={closeConfirmDelete}
-                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                  className="px-5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200 text-sm font-medium"
                 >
                   لغو
                 </motion.button>
@@ -153,7 +149,7 @@ const ReserveTimes = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleRemoveItem}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                  className="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 text-sm font-medium"
                 >
                   حذف
                 </motion.button>
@@ -163,50 +159,60 @@ const ReserveTimes = () => {
         )}
       </AnimatePresence>
 
-      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
+      {loading && (
+        <div className="flex justify-center items-center h-64">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-t-indigo-600 border-gray-200 rounded-full"
+          ></motion.div>
+        </div>
+      )}
+      {error && (
+        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-6">{error}</p>
+      )}
 
       {sessions.length === 0 ? (
-        <p className="text-center text-gray-600">هیچ جلسه‌ای وجود ندارد</p>
+        <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ جلسه‌ای وجود ندارد</p>
       ) : (
         <motion.div
           initial="hidden"
           animate="visible"
           variants={rowVariants}
-          className="overflow-x-auto border border-gray-200 rounded-xl shadow-md"
+          className="overflow-x-auto bg-white border border-gray-200 rounded-2xl shadow-lg"
         >
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
                   عنوان
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
                   زمان معارفه
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
                   آدرس
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
                   ظرفیت
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
                 >
-                  حذف
+                  عملیات
                 </th>
               </tr>
             </thead>
@@ -219,26 +225,32 @@ const ReserveTimes = () => {
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-gray-50 transition-all duration-200"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                       {session.title}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
-                      {new Date(session.date_time).toLocaleString("fa-IR")}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                      {new Date(session.date_time).toLocaleString("fa-IR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                    <td className="px-6 py-4 text-right text-sm text-gray-600">
                       {session.address}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
                       {session.capacity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => openConfirmDelete(session.id)}
-                        className="text-red-500 hover:text-red-700 focus:outline-none"
+                        className="text-red-500 hover:text-red-700 transition-all duration-200 p-2 rounded-full bg-red-50 hover:bg-red-100"
                         aria-label={`حذف جلسه ${session.title}`}
                       >
                         <FaTrash size={16} />
