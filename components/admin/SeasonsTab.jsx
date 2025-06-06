@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { getSeasons, addSeason, deleteSeason } from "@/lib/api/api";
+import JalaliCalendar from "../common/JalaliCalendar";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const SeasonsTab = () => {
   const [seasons, setSeasons] = useState([]);
@@ -17,6 +19,10 @@ const SeasonsTab = () => {
   const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [seasonToDelete, setSeasonToDelete] = useState(null);
+
+  // New state for calendar visibility
+  const [showStartCalendar, setShowStartCalendar] = useState(false);
+  const [showEndCalendar, setShowEndCalendar] = useState(false);
 
   const fetchSeasons = async () => {
     setLoading(true);
@@ -130,27 +136,53 @@ const SeasonsTab = () => {
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
                   />
                 </div>
-                <div>
+                <div className="">
                   <label className="block mb-2 text-sm font-medium text-gray-700">تاریخ شروع</label>
                   <input
-                    type="date"
+                    type="text"
+                    readOnly
                     value={newSeason.start_date}
-                    onChange={(e) =>
-                      setNewSeason({ ...newSeason, start_date: e.target.value })
-                    }
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+                    onClick={() => {
+                      setShowStartCalendar(true);
+                      setShowEndCalendar(false);
+                    }}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm cursor-pointer"
+                    placeholder="انتخاب تاریخ شروع"
                   />
+                  {showStartCalendar && (
+                    <div className="absolute z-50  mb-3 bottom-0 bg-white shadow-lg rounded-lg">
+                      <JalaliCalendar
+                        onDateSelect={(date) => {
+                          setNewSeason({ ...newSeason, start_date: date });
+                          setShowStartCalendar(false);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className=" mt-4">
                   <label className="block mb-2 text-sm font-medium text-gray-700">تاریخ پایان</label>
                   <input
-                    type="date"
+                    type="text"
+                    readOnly
                     value={newSeason.end_date}
-                    onChange={(e) =>
-                      setNewSeason({ ...newSeason, end_date: e.target.value })
-                    }
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+                    onClick={() => {
+                      setShowEndCalendar(true);
+                      setShowStartCalendar(false);
+                    }}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm cursor-pointer"
+                    placeholder="انتخاب تاریخ پایان"
                   />
+                  {showEndCalendar && (
+                    <div className="absolute z-50 bottom-0 mb-2  bg-white shadow-lg rounded-lg">
+                      <JalaliCalendar
+                        onDateSelect={(date) => {
+                          setNewSeason({ ...newSeason, end_date: date });
+                          setShowEndCalendar(false);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {error && (
@@ -259,11 +291,11 @@ const SeasonsTab = () => {
                 <div className="space-y-2 text-sm text-gray-600">
                   <p className="flex items-center">
                     <span className="inline-block w-24 font-medium">تاریخ شروع:</span>
-                    <span>{season.start_date}</span>
+                    <span>{convertToJalali(season.start_date)}</span>
                   </p>
                   <p className="flex items-center">
                     <span className="inline-block w-24 font-medium">تاریخ پایان:</span>
-                    <span>{season.end_date}</span>
+                    <span>{convertToJalali(season.end_date)}</span>
                   </p>
                 </div>
               </motion.div>

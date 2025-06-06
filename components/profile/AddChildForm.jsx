@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
+import JalaliCalendar from "../common/JalaliCalendar"; // Import JalaliCalendar
 
 const AddChildForm = ({ onAdd }) => {
   const [fullName, setFullName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("boy");
+  const [showCalendar, setShowCalendar] = useState(false); // State to control calendar visibility
 
   const handleAdd = () => {
     if (!fullName || !birthDate) return;
@@ -16,7 +18,7 @@ const AddChildForm = ({ onAdd }) => {
 
   return (
     <div
-      className="mt-4 bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-3"
+      className="mt-4 relative bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-3"
       dir="rtl"
     >
       <input
@@ -26,13 +28,26 @@ const AddChildForm = ({ onAdd }) => {
         onChange={(e) => setFullName(e.target.value)}
         className="w-full p-2 text-sm border border-gray-300 rounded-md text-right"
       />
-      <input
-        type="date"
-        placeholder="تاریخ تولد"
-        value={birthDate}
-        onChange={(e) => setBirthDate(e.target.value)}
-        className="w-full p-2 text-sm border border-gray-300 rounded-md text-right"
-      />
+      <div className="">
+        <input
+          type="text"
+          readOnly
+          placeholder="تاریخ تولد"
+          value={birthDate}
+          onClick={() => setShowCalendar(true)}
+          className="w-full p-2 text-sm border border-gray-300 rounded-md text-right cursor-pointer bg-white"
+        />
+        {showCalendar && (
+          <div className="absolute z-50 bg-white bottom-0 shadow-lg rounded-lg">
+            <JalaliCalendar
+              onDateSelect={(date) => {
+                setBirthDate(date);
+                setShowCalendar(false);
+              }}
+            />
+          </div>
+        )}
+      </div>
       <select
         value={gender}
         onChange={(e) => setGender(e.target.value)}

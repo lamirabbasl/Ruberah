@@ -14,6 +14,7 @@ import {
   getReceiptImageAdmin,
   confirmPaymentNonInstallment,
 } from "@/lib/api/api";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const PaymentsTab = () => {
   const [registrations, setRegistrations] = useState([]);
@@ -324,7 +325,7 @@ const PaymentsTab = () => {
                                               </p>
                                               <p className="flex items-center">
                                                 <span className="inline-block w-24 font-medium">سررسید:</span>
-                                                <span>{inst.due_date}</span>
+                                                <span>{convertToJalali(inst.due_date)}</span>
                                               </p>
                                             </div>
                                             {inst.secure_url && (

@@ -9,6 +9,7 @@ import {
   getChildren,
   registerChildToBatch,
 } from "@/lib/api/api";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 function AllCourses() {
   const [courses, setCourses] = useState([]);
@@ -247,13 +248,13 @@ function AllCourses() {
                             <span className="font-semibold block sm:hidden w-20">
                               شروع:{" "}
                             </span>
-                            <span>{season ? season.start_date : ""}</span>
+                            <span>{season ? convertToJalali(season.start_date) : ""}</span>
                           </div>
                           <div className="flex sm:block">
                             <span className="font-semibold block sm:hidden w-20">
                               پایان:{" "}
                             </span>
-                            <span>{season ? season.end_date : ""}</span>
+                            <span>{season ? convertToJalali(season.end_date) : ""}</span>
                           </div>
                           <div className="flex sm:block">
                             <button

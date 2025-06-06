@@ -12,6 +12,7 @@
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "farmer": "^0.0.1",
+    "jalali-moment": "^3.3.11",
     "lucide-react": "^0.507.0",
     "moment-jalaali": "^0.10.4",
     "motion": "^12.9.4",

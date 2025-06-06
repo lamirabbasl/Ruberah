@@ -11,6 +11,7 @@ import {
   uploadInstallmentPayment,
   getInstallmentReceiptImage,
 } from "@/lib/api/api";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 function CoursesPage() {
   const [openCourseIdx, setOpenCourseIdx] = useState({});
@@ -184,13 +185,13 @@ function CoursesPage() {
                         <span className="font-semibold block sm:hidden w-20">
                           شروع:{" "}
                         </span>
-                        <span>{course.start}</span>
+                        <span>{convertToJalali(course.start)}</span>
                       </div>
                       <div className="flex sm:block">
                         <span className="font-semibold block sm:hidden w-20">
                           پایان:{" "}
                         </span>
-                        <span>{course.end}</span>
+                        <span>{convertToJalali(course.end)}</span>
                       </div>
                       <div className="flex sm:block">
                         <span className="font-semibold block sm:hidden w-24">
@@ -267,7 +268,7 @@ function CoursesPage() {
                                     {isPaid ? "پرداخت شده" : "در انتظار پرداخت"}
                                   </span>
                                   <span className="text-gray-600">
-                                    مهلت: {inst.due_date}
+                                    مهلت: {convertToJalali(inst.due_date)}
                                   </span>
                                   <span>
                                     { isImg ? (
@@ -362,7 +363,7 @@ function CoursesPage() {
                         <div className="bg-white p-3 rounded-md shadow text-md flex flex-col sm:flex-row flex-wrap gap-4 text-black font-medium">
                           <div className="flex gap-4">
                             <span className="whitespace-nowrap">زمان پرداخت:</span>{" "}
-                            {course.paymentInfo?.time?.slice(0, 10)}
+                            {convertToJalali(course.paymentInfo?.time?.slice(0, 10))}
                           </div>
                           <div className="flex gap-4">
                             <span className="">مبلغ کل:</span>{" "}
