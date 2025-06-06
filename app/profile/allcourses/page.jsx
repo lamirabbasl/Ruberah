@@ -133,9 +133,12 @@ function AllCourses() {
       });
     }
     if (batch.allow_installment) {
+      const installmentCount = Array.isArray(batch.installment_templates)
+        ? batch.installment_templates.length
+        : 0;
       methods.push({
         key: "installment",
-        label: "اقساط",
+        label: `اقساط (${installmentCount} قسط)`,
         price: batch.price_installment,
       });
     }

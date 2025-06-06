@@ -66,6 +66,8 @@ const InformationPage = () => {
     const updatedUser = {
       id: user.id,
       username: field === "username" ? value : user.username,
+      first_name: field === "first_name" ? value : user.first_name,
+      last_name: field === "last_name" ? value : user.last_name,
       phone_number: field === "phone_number" ? value : user.phone_number,
       address: field === "address" ? value : user.address,
       national_id: field === "national_id" ? value : user.national_id,
@@ -189,26 +191,36 @@ const InformationPage = () => {
 
       {/* Editable user info fields */}
       <div className="w-full space-y-2">
-        <EditableField
-          label="نام و نام خانوادگی"
-          value={user?.username || ""}
-          onChange={(val) => handleUserFieldChange("username", val)}
-        />
-        <EditableField
-          label="شماره تماس"
-          value={user?.phone_number || ""}
-          onChange={(val) => handleUserFieldChange("phone_number", val)}
-        />
-        <EditableField
-          label="کد ملی"
-          value={user?.national_id || ""}
-          onChange={(val) => handleUserFieldChange("national_id", val)}
-        />
-        <EditableField
-          label="آدرس"
-          value={user?.address || ""}
-          onChange={(val) => handleUserFieldChange("address", val)}
-        />
+      <EditableField
+        label="نام"
+        value={user?.first_name || ""}
+        onChange={(val) => handleUserFieldChange("first_name", val)}
+      />
+      <EditableField
+        label="نام خانوادگی"
+        value={user?.last_name || ""}
+        onChange={(val) => handleUserFieldChange("last_name", val)}
+      />
+      <EditableField
+        label="نام کاربری"
+        value={user?.username || ""}
+        onChange={(val) => handleUserFieldChange("username", val)}
+      />
+      <EditableField
+        label="شماره تماس"
+        value={user?.phone_number || ""}
+        onChange={(val) => handleUserFieldChange("phone_number", val)}
+      />
+      <EditableField
+        label="کد ملی"
+        value={user?.national_id || ""}
+        onChange={(val) => handleUserFieldChange("national_id", val)}
+      />
+      <EditableField
+        label="آدرس"
+        value={user?.address || ""}
+        onChange={(val) => handleUserFieldChange("address", val)}
+      />
       </div>
 
       {/* Children section */}
