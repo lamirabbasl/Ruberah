@@ -41,7 +41,6 @@ const ReservePage = () => {
         <div className="mt-4">
           {activeTab === "list" && <ReserveList />}
           {activeTab === "calendar" && <ReserveTimes />}
-          {activeTab === "settings" && <ReserveSetting />}
         </div>
       </div>
     </div>

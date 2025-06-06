@@ -1,23 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FaTrash, FaPlus } from "react-icons/fa";
-
+import { motion, AnimatePresence } from "framer-motion";
+import { FaTrash, FaPlus, FaFileExport } from "react-icons/fa";
 import AddUserForm from "@/components/admin/AddUserForm";
 import { getUsers, addUser, deleteUser, getUsersExport } from "@/lib/api/api";
-import { getToken } from "@/lib/utils/token";
 
 const UsersPage = () => {
-  const [users, setUsers] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
-  const [showAddForm, setShowAddForm] = React.useState(false);
-  const [userToDelete, setUserToDelete] = React.useState(null);
-  const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [exporting, setExporting] = React.useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [exporting, setExporting] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -28,7 +27,7 @@ const UsersPage = () => {
       const data = await getUsers();
       setUsers(data);
     } catch (err) {
-      setError(err.message || "Error fetching users");
+      setError(err.message || "خطا در دریافت کاربران");
     } finally {
       setLoading(false);
     }
@@ -42,18 +41,7 @@ const UsersPage = () => {
     setExporting(true);
     setError(null);
     try {
-      // Request the file as blob
-      const token = getToken()
-      const response = await fetch("/api/proxy/courses/manage/export/registrations/summary/", {
-        method: "GET",
-        headers: {
-         "Authorization": token
-       
-     } });
-      if (!response.ok) {
-        throw new Error("Failed to export Excel");
-      }
-      const blob = await response.blob();
+      const blob = await getUsersExport();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -63,11 +51,12 @@ const UsersPage = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      setError(err.message || "Error exporting Excel");
+      setError(err.message || "خطا در صادرات به اکسل");
     } finally {
       setExporting(false);
     }
   };
+
   const handleSaveNewUser = async (newUser) => {
     setLoading(true);
     setError(null);
@@ -76,7 +65,7 @@ const UsersPage = () => {
       setShowAddForm(false);
       await fetchUsers();
     } catch (err) {
-      setError(err.message || "Error adding user");
+      setError(err.message || "خطا در افزودن کاربر");
     } finally {
       setLoading(false);
     }
@@ -106,75 +95,137 @@ const UsersPage = () => {
       setUserToDelete(null);
       await fetchUsers();
     } catch (err) {
-      setError(err.message || "Error deleting user");
+      setError(err.message || "خطا در حذف کاربر");
     } finally {
       setLoading(false);
     }
   };
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  };
+
+  const rowVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="max-md:w-screen w-5/6 min-h-screen  bg-white text-black p-6 text-right">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-        <button
-          onClick={handleAddUser}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mb-4 sm:mb-0"
-        >
-          <FaPlus className="mr-2" />
-          افزودن کاربر
-        </button>
-        <button
-          onClick={handleExportExcel}
-          disabled={exporting}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 sm:mb-0"
-          type="button"
-        >
-          {exporting ? "در حال دانلود..." : "Export Excel"}
-        </button>
-        {showAddForm && (
-          <AddUserForm onSave={handleSaveNewUser} onCancel={handleCancelAdd} />
-        )}
+    <div className="p-6 bg-gray-50 min-h-screen w-5/6 text-black font-sans text-right" dir="rtl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">کاربران</h1>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleAddUser}
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
+          >
+            <FaPlus className="w-4 h-4" />
+            افزودن کاربر
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className={`px-5 py-2.5 rounded-lg shadow-md flex items-center gap-2 w-full sm:w-auto text-white ${
+              exporting ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+            } transition-colors`}
+          >
+            <FaFileExport className="w-4 h-4" />
+            {exporting ? "در حال دانلود..." : "خروجی اکسل"}
+          </motion.button>
+        </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <input
           type="text"
           placeholder="جستجو بر اساس نام یا شماره تلفن"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded px-3 py-2 w-full"
+          className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
         />
       </div>
 
-      {loading && <p>در حال بارگذاری...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <AnimatePresence>
+        {showAddForm && (
+          <AddUserForm onSave={handleSaveNewUser} onCancel={handleCancelAdd} />
+        )}
+      </AnimatePresence>
 
-      {users.length === 0 ? (
-        <p className="text-gray-600">هیچ کاربری وجود ندارد</p>
+      <AnimatePresence>
+        {showConfirmDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
+            >
+              <button
+                onClick={closeConfirmDelete}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
+              >
+                <FaTrash size={20} />
+              </button>
+              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+                آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟
+              </p>
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={closeConfirmDelete}
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                >
+                  لغو
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDeleteUser}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                >
+                  حذف
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
+
+      {users.length === 0 && !loading ? (
+        <p className="text-center text-gray-600">هیچ کاربری وجود ندارد</p>
       ) : (
-        <div className="overflow-x-auto">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={rowVariants}
+          className="overflow-x-auto border border-gray-200 rounded-xl shadow-md"
+        >
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">حذف</span>
-                </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  کد ملی
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  آدرس
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  نقش
+                  نام کاربری
                 </th>
                 <th
                   scope="col"
@@ -186,80 +237,78 @@ const UsersPage = () => {
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  نام کاربری
+                  نقش
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  آدرس
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  کد ملی
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  حذف
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users
-                .filter(
-                  (user) =>
-                    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (user.phone_number &&
-                      user.phone_number.toLowerCase().includes(searchTerm.toLowerCase()))
-                )
-                .map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-left">
-                      <button
-                        onClick={() => openConfirmDelete(user.id)}
-                        className="text-red-500 hover:text-red-700 focus:outline-none"
-                        type="button"
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      {user.national_id || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      {user.address || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      {user.groups && user.groups.length > 0
-                        ? user.groups.join(", ")
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      {user.phone_number || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      {user.username}
-                    </td>
-                  </tr>
-                ))}
+              <AnimatePresence>
+                {users
+                  .filter(
+                    (user) =>
+                      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (user.phone_number &&
+                        user.phone_number.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map((user) => (
+                    <motion.tr
+                      key={user.id}
+                      variants={rowVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        {user.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        {user.phone_number || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        {user.groups && user.groups.length > 0 ? user.groups.join(", ") : "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        {user.address || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        {user.national_id || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => openConfirmDelete(user.id)}
+                          className="text-red-500 hover:text-red-700 focus:outline-none"
+                          aria-label={`حذف کاربر ${user.username}`}
+                        >
+                          <FaTrash size={16} />
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+              </AnimatePresence>
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* Confirmation Dialog for Deletion */}
-      {showConfirmDelete && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative border border-gray-300">
-            <h2 className="text-lg font-semibold mb-4 text-right text-gray-800">
-              آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟
-            </h2>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={closeConfirmDelete}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md"
-              >
-                لغو
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDeleteUser();
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
-                type="button"
-              >
-                حذف
-              </button>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

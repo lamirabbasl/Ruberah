@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PlusCircle, UploadCloud, Trash2 } from "lucide-react";
+import { PlusCircle, UploadCloud, Trash2, X } from "lucide-react";
 import { getIntroVideos, addIntroVideo, deleteIntroVideo } from "@/lib/api/api";
 
 const AdminSignupVideos = () => {
@@ -16,6 +18,9 @@ const AdminSignupVideos = () => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Base URL for video sources (configurable via environment variable or API)
+  const BASE_URL = "http://188.121.100.138";
+
   useEffect(() => {
     fetchVideos();
   }, []);
@@ -25,10 +30,9 @@ const AdminSignupVideos = () => {
     setError(null);
     try {
       const data = await getIntroVideos();
-      console.log("Fetched videos:", data);
       setVideos(data);
     } catch (err) {
-      setError(err.message || "Error fetching videos");
+      setError(err.message || "خطا در دریافت ویدیوها");
     } finally {
       setLoading(false);
     }
@@ -38,8 +42,9 @@ const AdminSignupVideos = () => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type.startsWith("video/")) {
       setFile(selectedFile);
+      setError(null);
     } else {
-      alert("لطفاً یک فایل ویدیویی معتبر انتخاب کنید.");
+      setError("لطفاً یک فایل ویدیویی معتبر انتخاب کنید.");
       setFile(null);
     }
   };
@@ -47,7 +52,7 @@ const AdminSignupVideos = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !videoTitle.trim()) {
-      alert("لطفاً عنوان ویدیو و فایل ویدیویی را وارد کنید.");
+      setError("لطفاً عنوان ویدیو و فایل ویدیویی را وارد کنید.");
       return;
     }
 
@@ -62,7 +67,6 @@ const AdminSignupVideos = () => {
 
       await addIntroVideo(formData);
 
-      alert("ویدیو با موفقیت بارگذاری شد!");
       setVideoTitle("");
       setVideoDescription("");
       setFile(null);
@@ -70,7 +74,7 @@ const AdminSignupVideos = () => {
       setIsAddModalOpen(false);
       fetchVideos();
     } catch (err) {
-      setError(err.message || "Error uploading video");
+      setError(err.message || "خطا در بارگذاری ویدیو");
     } finally {
       setIsUploading(false);
     }
@@ -87,118 +91,110 @@ const AdminSignupVideos = () => {
     setError(null);
     try {
       await deleteIntroVideo(videoToDelete.id);
-      // Removed alert on successful deletion as per user request
       setVideos(videos.filter((video) => video.id !== videoToDelete.id));
       setIsDeleteModalOpen(false);
       setVideoToDelete(null);
     } catch (err) {
-      setError(err.message || "Error deleting video");
+      setError(err.message || "خطا در حذف ویدیو");
     } finally {
       setLoading(false);
     }
   };
 
-  // Animation variants
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
   };
 
-  const formVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.4, ease: "easeInOut" },
-    },
-    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
   return (
-    <div className="p-4 sm:p-6 font-noto bg-white min-h-screen" dir="rtl">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-black">
-          ویدیوهای ثبت‌نام
-        </h1>
-        <button
+    <div className="p-6 bg-gray-50 min-h-screen font-sans text-right" dir="rtl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">ویدیوهای ثبت‌نام</h1>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 sm:px-6 sm:py-3 rounded-md shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
         >
           <PlusCircle className="w-5 h-5" />
           افزودن ویدیو
-        </button>
+        </motion.button>
       </div>
 
-      {error && (
-        <div className="mb-4 text-red-600 font-semibold text-center">
-          {error}
-        </div>
-      )}
+      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
-      {/* Modal for Adding Video */}
       <AnimatePresence>
         {isAddModalOpen && (
           <motion.div
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
           >
             <motion.div
-              variants={formVariants}
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md shadow-2xl relative border border-gray-300"
-              style={{ backdropFilter: "blur(12px)" }}
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative"
             >
-              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن فرم افزودن ویدیو"
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-right">
                 افزودن ویدیو جدید
               </h2>
               <form onSubmit={handleUpload}>
-                <div className="mb-4">
+                <div className="mb-5">
                   <label
                     htmlFor="videoTitle"
-                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                    className="block mb-2 text-sm font-medium text-gray-700 text-right"
                   >
-                    عنوان ویدیو:
+                    عنوان ویدیو
                   </label>
                   <input
                     type="text"
                     id="videoTitle"
-                    name="videoTitle"
                     value={videoTitle}
                     onChange={(e) => setVideoTitle(e.target.value)}
                     placeholder="عنوان ویدیو"
-                    className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                     required
                   />
                 </div>
-                <div className="mb-4">
+                <div className="mb-5">
                   <label
                     htmlFor="videoDescription"
-                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                    className="block mb-2 text-sm font-medium text-gray-700 text-right"
                   >
-                    توضیحات:
+                    توضیحات
                   </label>
                   <textarea
                     id="videoDescription"
-                    name="videoDescription"
                     value={videoDescription}
                     onChange={(e) => setVideoDescription(e.target.value)}
                     placeholder="توضیحات ویدیو"
-                    className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                     rows={3}
                   />
                 </div>
-                <div className="mb-6">
+                <div className="mb-5">
                   <label
                     htmlFor="videoFile"
-                    className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                    className="block mb-2 text-sm font-medium text-gray-700 text-right"
                   >
-                    انتخاب فایل ویدیویی:
+                    انتخاب فایل ویدیویی
                   </label>
                   <input
                     type="file"
@@ -206,24 +202,31 @@ const AdminSignupVideos = () => {
                     accept="video/*"
                     onChange={handleFileChange}
                     ref={fileInputRef}
-                    className="appearance-none border border-gray-300 rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                     required
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button
+                {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+                <div className="flex justify-end space-x-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                   >
                     لغو
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="submit"
-                    className={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto ${
-                      isUploading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
                     disabled={isUploading}
+                    className={`px-4 py-2 rounded-lg flex items-center gap-2 text-white ${
+                      isUploading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                    } transition`}
                   >
                     {isUploading ? (
                       <>
@@ -233,7 +236,7 @@ const AdminSignupVideos = () => {
                     ) : (
                       "بارگذاری"
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               </form>
             </motion.div>
@@ -241,91 +244,105 @@ const AdminSignupVideos = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal for Delete Confirmation */}
       <AnimatePresence>
         {isDeleteModalOpen && (
           <motion.div
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
           >
             <motion.div
-              variants={formVariants}
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md shadow-2xl relative border border-gray-300"
-              style={{ backdropFilter: "blur(12px)" }}
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
             >
-              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
-                حذف ویدیو
-              </h2>
-              <p className="text-gray-700 mb-4 sm:mb-6 text-right">
-                آیا مطمئن هستید که می‌خواهید ویدیوی "{videoToDelete?.title}" را
-                حذف کنید؟
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
+              >
+                <X size={20} />
+              </button>
+              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+                آیا مطمئن هستید که می‌خواهید ویدیوی "{videoToDelete?.title}" را حذف کنید؟
               </p>
-              <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                <button
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
                   لغو
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={confirmDelete}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
                 >
                   حذف
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Video Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <AnimatePresence>
-          {videos.map((video) => (
-            <motion.div
-              key={video.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="bg-white border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-all duration-200">
-                <div className="p-3 sm:p-4 flex justify-between items-center">
-                  <h2 className="text-base sm:text-lg font-semibold text-black text-right">
+      {videos.length === 0 && !loading ? (
+        <p className="text-center text-gray-600">هیچ ویدیویی وجود ندارد</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {videos.map((video) => (
+              <motion.div
+                key={video.id}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-shadow"
+              >
+                <div className="p-4 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-800 text-right truncate">
                     {video.title}
                   </h2>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleRemoveVideo(video.id, video.title)}
-                    className="text-red-500 hover:text-red-600 transition-colors"
+                    className="text-red-500 hover:text-red-700 transition-colors"
                     title="حذف ویدیو"
+                    aria-label={`حذف ویدیوی ${video.title}`}
                   >
                     <Trash2 className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 </div>
-                <div className="p-3 sm:p-4">
+                <div className="p-4">
                   <div className="relative w-full h-0 pb-[56.25%]">
                     <video
                       controls
-                      src={`http://127.0.0.1:8000/${video.video}`}
-                      className="absolute top-0 left-0 w-full h-full rounded-md object-cover border border-gray-300"
+                      src={`${BASE_URL}${video.video}`}
+                      className="absolute top-0 left-0 w-full h-full rounded-lg object-cover border border-gray-200"
                     >
                       مرورگر شما از تگ ویدیو پشتیبانی نمی‌کند.
                     </video>
                   </div>
+                  {video.description && (
+                    <p className="mt-3 text-sm text-gray-600 text-right line-clamp-2">
+                      {video.description}
+                    </p>
+                  )}
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

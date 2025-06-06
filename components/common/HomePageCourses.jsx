@@ -2,13 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+
 
 export default function HomePageCourses() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const sliderRef = useRef(null);
-
+  const router = useRouter();
+ 
   const images = [
     "/testimages/n1.jpg",
     "/testimages/n2.jpg",
@@ -84,8 +87,9 @@ export default function HomePageCourses() {
             {extendedImages.map((src, index) => (
               <div
                 key={index}
-                className="flex-none w-full sm:w-1/2 lg:w-1/4 p-2"
+                className="flex-none w-full cursor-pointer sm:w-1/2 lg:w-1/4 p-2"
                 style={{ width: `${100 / itemsPerView}%` }}
+                onClick={()=>{ router.push("/courses")}}
               >
                 <img
                   src={src}

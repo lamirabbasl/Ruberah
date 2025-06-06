@@ -50,7 +50,7 @@ const Signup = () => {
     setIsVerifyingCode(true);
     setValidationMessage("");
     try {
-      const res = await verifyPhoneValidationCode(phone, validationCode);
+      const res = await verifyPhoneValidationCode(phone, validationCode , "signup");
       if (res.message === "Phone number verified successfully.") {
         setPhoneValidated(true);
         setValidationMessage("شماره تلفن با موفقیت تایید شد.");

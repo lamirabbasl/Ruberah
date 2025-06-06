@@ -6,7 +6,7 @@ import Link from "next/link";
 import { login } from "@/lib/api/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import {resetPassword , requestResetPasswordCode} from "@/lib/api/api"
+import {resetPassword , requestResetPasswordCode, verifyPhoneValidationCode, requestValidPhone} from "@/lib/api/api"
 
 const Login = () => {
   const [phone, setPhone] = useState("");
@@ -58,9 +58,17 @@ const Login = () => {
     }
     setLoading(true);
     try {
-      await requestResetPasswordCode({ phone_number: resetPhone });
-      setShowPhoneModal(false);
-      setShowResetModal(true);
+      // Validate phone number first
+      const response = await requestValidPhone(resetPhone);
+      if (response.message === "Phone number is exist.") {
+        await requestResetPasswordCode({ phone_number: resetPhone, purpose: "reset" });
+        setShowPhoneModal(false);
+        setShowResetModal(true);
+      } else if (response.message === "No account found for this phone.") {
+        alert("شماره تلفن یافت نشد.");
+      } else {
+        alert("خطا در اعتبارسنجی شماره تلفن.");
+      }
     } catch (error) {
       alert("خطا در ارسال کد: " + (error.response?.data?.detail || error.message));
     } finally {
@@ -75,6 +83,10 @@ const Login = () => {
     }
     setLoading(true);
     try {
+      // Verify phone validation code first
+      await verifyPhoneValidationCode(resetPhone, resetCode, "reset");
+
+      // If verification succeeds, proceed to reset password
       await resetPassword({
         phone_number: resetPhone,
         code: resetCode,

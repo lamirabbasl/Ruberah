@@ -49,7 +49,7 @@ async function handleRequest(request, params, method) {
         }
       }
     }
-
+ 
     const baseUrl = normalizeUrl("http://188.121.100.138/api");
     const isStaticVideoPath =
       normalizedPath.startsWith("intro/video") &&

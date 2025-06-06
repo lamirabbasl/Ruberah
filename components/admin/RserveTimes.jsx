@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
+import { AnimatePresence, motion } from "framer-motion";
 import AddTimeForm from "./AddTimeForm";
 import { getSessions, addSession, deleteSession } from "@/lib/api/api";
 
@@ -24,7 +25,7 @@ const ReserveTimes = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      setError(err.message || "Error fetching sessions");
+      setError(err.message || "خطا در دریافت جلسات");
     } finally {
       setLoading(false);
     }
@@ -42,7 +43,7 @@ const ReserveTimes = () => {
       setShowAddForm(false);
       await fetchSessions();
     } catch (err) {
-      setError(err.message || "Error adding session");
+      setError(err.message || "خطا در افزودن جلسه");
     } finally {
       setLoading(false);
     }
@@ -72,54 +73,116 @@ const ReserveTimes = () => {
       setSessionToDelete(null);
       await fetchSessions();
     } catch (err) {
-      setError(err.message || "Error deleting session");
+      setError(err.message || "خطا در حذف جلسه");
     } finally {
       setLoading(false);
     }
   };
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  };
+
+  const rowVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="max-md:w-screen min-h-screen bg-white text-black p-6 text-right">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-        <button
+    <div className="p-6 bg-gray-50 min-h-screen font-sans text-right" dir="rtl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">جلسات رزرو</h1>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleAddItem}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mb-4 sm:mb-0"
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
         >
-          <FaPlus className="mr-2" />
+          <FaPlus className="w-4 h-4" />
           افزودن جلسه
-        </button>
+        </motion.button>
+      </div>
+
+      <AnimatePresence>
         {showAddForm && (
           <AddTimeForm
             onSave={handleSaveNewItem}
             onCancel={handleCancelAdd}
           />
         )}
-      </div>
+      </AnimatePresence>
 
-      {loading && <p>در حال بارگذاری...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <AnimatePresence>
+        {showConfirmDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
+            >
+              <button
+                onClick={closeConfirmDelete}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
+              >
+                <FaTrash size={20} />
+              </button>
+              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+                آیا مطمئن هستید که می‌خواهید این جلسه را حذف کنید؟
+              </p>
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={closeConfirmDelete}
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                >
+                  لغو
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRemoveItem}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                >
+                  حذف
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       {sessions.length === 0 ? (
-        <p className="text-gray-600">هیچ جلسه‌ای وجود ندارد</p>
+        <p className="text-center text-gray-600">هیچ جلسه‌ای وجود ندارد</p>
       ) : (
-        <div className="overflow-x-auto">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={rowVariants}
+          className="overflow-x-auto border border-gray-200 rounded-xl shadow-md"
+        >
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">حذف</span>
-                </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  ظرفیت
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  آدرس
+                  عنوان
                 </th>
                 <th
                   scope="col"
@@ -131,63 +194,62 @@ const ReserveTimes = () => {
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  عنوان
+                  آدرس
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  ظرفیت
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  حذف
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sessions.map((session) => (
-                <tr key={session.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">
-                    <button
-                      onClick={() => openConfirmDelete(session.id)}
-                      className="text-red-500 hover:text-red-700 focus:outline-none"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.capacity}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.address}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {new Date(session.date_time).toLocaleString("fa-IR")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {session.title}
-                  </td>
-                </tr>
-              ))}
+              <AnimatePresence>
+                {sessions.map((session) => (
+                  <motion.tr
+                    key={session.id}
+                    variants={rowVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                      {session.title}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                      {new Date(session.date_time).toLocaleString("fa-IR")}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                      {session.address}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                      {session.capacity}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => openConfirmDelete(session.id)}
+                        className="text-red-500 hover:text-red-700 focus:outline-none"
+                        aria-label={`حذف جلسه ${session.title}`}
+                      >
+                        <FaTrash size={16} />
+                      </motion.button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* Confirmation Dialog for Deletion */}
-      {showConfirmDelete && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative border border-gray-300">
-            <h2 className="text-lg font-semibold mb-4 text-right text-gray-800">
-              آیا مطمئن هستید که می‌خواهید این جلسه را حذف کنید؟
-            </h2>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={closeConfirmDelete}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md"
-              >
-                لغو
-              </button>
-              <button
-                onClick={handleRemoveItem}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
-              >
-                حذف
-              </button>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

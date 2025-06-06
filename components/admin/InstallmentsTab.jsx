@@ -1,5 +1,7 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { getInstallmentTemplates, getBatches } from "@/lib/api/api";
 import AddInstallmentCard from "./AddInstallmentCard";
@@ -87,108 +89,148 @@ const InstallmentsTab = () => {
     }
   });
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">ایجاد اقساط</h2>
-        <button
+    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-800">ایجاد اقساط</h2>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors"
         >
           افزودن قسط
-        </button>
+        </motion.button>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <input
           type="text"
           placeholder="جستجو بر اساس عنوان قسط"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded px-3 py-2 w-full"
+          className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
 
-      {showAddForm && (
-        <AddInstallmentCard
-          onClose={() => setShowAddForm(false)}
-          onAdded={() => {
-            setShowAddForm(false);
-            fetchData();
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {showAddForm && (
+          <AddInstallmentCard
+            onClose={() => setShowAddForm(false)}
+            onAdded={() => {
+              setShowAddForm(false);
+              fetchData();
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-80 relative">
-            <button
-              onClick={cancelDelete}
-              className="absolute top-2 left-2 text-gray-600 hover:text-gray-900"
-              aria-label="بستن تایید حذف"
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm relative"
             >
-              <IoClose size={24} />
-            </button>
-            <p className="mb-4 text-red-600 font-semibold">
-              آیا از حذف قسط "{installmentToDelete?.title}" مطمئن هستید؟
-            </p>
-            {deleteError && (
-              <p className="mb-4 text-red-600 font-semibold">{deleteError}</p>
-            )}
-            <div className="flex justify-end space-x-2">
               <button
                 onClick={cancelDelete}
-                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 transition"
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
               >
-                لغو
+                <IoClose size={24} />
               </button>
-              <button
-                onClick={handleDeleteInstallment}
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition"
-              >
-                حذف
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <p className="mb-6 text-red-600 font-semibold text-center">
+                آیا از حذف قسط "{installmentToDelete?.title}" مطمئن هستید؟
+              </p>
+              {deleteError && (
+                <p className="mb-4 text-red-500 text-sm">{deleteError}</p>
+              )}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={cancelDelete}
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                >
+                  لغو
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDeleteInstallment}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                >
+                  حذف
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {loading ? (
-        <p>در حال بارگذاری...</p>
+        <p className="text-center text-gray-600">در حال بارگذاری...</p>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <p className="text-center text-red-500">{error}</p>
       ) : Object.keys(filteredInstallmentsByBatch).length === 0 ? (
-        <p>هیچ اقساطی یافت نشد.</p>
+        <p className="text-center text-gray-600">هیچ اقساطی یافت نشد.</p>
       ) : (
-        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
-          {Object.entries(filteredInstallmentsByBatch).map(([batchId, insts]) => (
-            <div
-              key={batchId}
-              className="relative border rounded p-4 shadow hover:shadow-lg transition bg-white"
-            >
-              <h3 className="text-lg font-semibold mb-2">{getBatchName(Number(batchId))}</h3>
-              {insts.map((inst) => (
-                <div
-                  key={inst.id}
-                  className="flex justify-between items-center border-b last:border-b-0 py-2"
-                >
-                  <div>
-                    <p className="font-semibold">{inst.title}</p>
-                    <p className="text-sm text-gray-600">
-                      مبلغ: {inst.amount} - ماه سررسید: {inst.deadline_month}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => confirmDeleteInstallment(inst)}
-                    className="text-red-600 hover:text-red-900"
-                    aria-label={`حذف قسط ${inst.title}`}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {Object.entries(filteredInstallmentsByBatch).map(([batchId, insts]) => (
+              <motion.div
+                key={batchId}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="relative bg-white border border-gray-200 rounded-xl p-5 shadow-md hover:shadow-xl transition-shadow"
+              >
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  {getBatchName(Number(batchId))}
+                </h3>
+                {insts.map((inst) => (
+                  <div
+                    key={inst.id}
+                    className="flex justify-between items-center border-b last:border-b-0 py-2"
                   >
-                    <IoClose size={20} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))}
+                    <div>
+                      <p className="font-medium text-gray-700">{inst.title}</p>
+                      <p className="text-sm text-gray-600">
+                        مبلغ: {inst.amount} - ماه سررسید: {inst.deadline_month}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => confirmDeleteInstallment(inst)}
+                      className="text-red-500 hover:text-red-700 transition"
+                      aria-label={`حذف قسط ${inst.title}`}
+                    >
+                      <IoClose size={20} />
+                    </button>
+                  </div>
+                ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

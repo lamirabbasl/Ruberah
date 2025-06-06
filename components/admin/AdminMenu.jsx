@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { FaRegCalendarCheck, FaListUl } from "react-icons/fa";
 import { BiExit, BiMenu } from "react-icons/bi";
 import { VscSignIn } from "react-icons/vsc";
@@ -121,7 +120,7 @@ function AdminMenu() {
                       <div className="relative  rounded-full overflow-hidden">
                         <img
                         className="w-14 h-14"
-                          src={ getProfilePhotoUrl(user?.id) || "/user.png"}
+                          src={ getProfilePhotoUrl(user?.id) || "../../public/user.png"}
                           alt="user avatar"
                           layout="fill"
                           objectFit="cover"
@@ -181,7 +180,7 @@ function AdminMenu() {
                 <div className="relative  rounded-full overflow-hidden">
                   <img
                   className="w-14 h-14"
-                    src={ getProfilePhotoUrl(user?.id) || "/user.png"}
+                    src={ getProfilePhotoUrl(user?.id) || "../../public/user.png"}
                     alt="user avatar"
                     layout="fill"
                     objectFit="cover"

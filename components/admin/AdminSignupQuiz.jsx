@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, X } from "lucide-react";
 import { getQuizQuestions, addQuizQuestion, deleteQuizQuestion } from "@/lib/api/api";
 
 const AdminSignupQuiz = () => {
@@ -27,7 +29,7 @@ const AdminSignupQuiz = () => {
       const data = await getQuizQuestions();
       setQuizzes(data);
     } catch (err) {
-      setError(err.message || "Error fetching quiz questions");
+      setError(err.message || "خطا در دریافت سوالات");
     } finally {
       setLoading(false);
     }
@@ -43,15 +45,15 @@ const AdminSignupQuiz = () => {
 
   const handleAddQuiz = async () => {
     if (!newQuiz.question_text.trim()) {
-      alert("لطفاً سوال را وارد کنید.");
+      setError("لطفاً سوال را وارد کنید.");
       return;
     }
     if (newQuiz.choices.some((choice) => !choice.trim())) {
-      alert("لطفاً هر چهار گزینه را وارد کنید.");
+      setError("لطفاً هر چهار گزینه را وارد کنید.");
       return;
     }
     if (!newQuiz.correct_answer.trim()) {
-      alert("لطفاً پاسخ صحیح را انتخاب کنید.");
+      setError("لطفاً پاسخ صحیح را انتخاب کنید.");
       return;
     }
     setLoading(true);
@@ -62,7 +64,7 @@ const AdminSignupQuiz = () => {
       setIsAddModalOpen(false);
       fetchQuizzes();
     } catch (err) {
-      setError(err.message || "Error adding quiz question");
+      setError(err.message || "خطا در افزودن سوال");
     } finally {
       setLoading(false);
     }
@@ -83,71 +85,74 @@ const AdminSignupQuiz = () => {
       setIsDeleteModalOpen(false);
       setQuizToDelete(null);
     } catch (err) {
-      setError(err.message || "Error deleting quiz question");
+      setError(err.message || "خطا در حذف سوال");
     } finally {
       setLoading(false);
     }
   };
 
-  // Animation variants
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
   };
 
-  const formVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.4, ease: "easeInOut" },
-    },
-    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
   return (
-    <div className="p-4 sm:p-6 font-noto bg-white min-h-screen" dir="rtl">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-black">
+    <div className="p-6 bg-gray-50 min-h-screen font-sans text-right" dir="rtl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
           سوالات فرآیند ثبت‌نام
         </h1>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 sm:px-6 sm:py-3 rounded-md shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
         >
           <PlusCircle className="w-5 h-5" />
           افزودن سوال
-        </button>
+        </motion.button>
       </div>
 
-      {/* Modal for Adding Quiz */}
+      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
+
       <AnimatePresence>
         {isAddModalOpen && (
           <motion.div
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
           >
             <motion.div
-              variants={formVariants}
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md shadow-2xl relative border border-gray-300"
-              style={{ backdropFilter: "blur(12px)" }}
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative"
             >
-              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن فرم افزودن سوال"
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-right">
                 افزودن سوال جدید
               </h2>
-              <div className="mb-4">
+              <div className="mb-5">
                 <label
                   htmlFor="question"
-                  className="block text-gray-700 text-sm font-bold mb-2 text-right"
+                  className="block mb-2 text-sm font-medium text-gray-700 text-right"
                 >
-                  سوال:
+                  سوال
                 </label>
                 <input
                   type="text"
@@ -157,18 +162,11 @@ const AdminSignupQuiz = () => {
                     setNewQuiz({ ...newQuiz, question_text: e.target.value })
                   }
                   placeholder="سوال"
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                 />
               </div>
               {newQuiz.choices.map((choice, i) => (
-                <div key={i} className="mb-2 flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={choice}
-                    onChange={(e) => handleChoiceChange(i, e.target.value)}
-                    placeholder={`گزینه ${i + 1}`}
-                    className="flex-1 appearance-none border border-gray-300 text-right rounded-md py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
-                  />
+                <div key={i} className="mb-3 flex items-center gap-3">
                   <input
                     type="radio"
                     name="correctAnswer"
@@ -179,118 +177,144 @@ const AdminSignupQuiz = () => {
                         correct_answer: choice,
                       }))
                     }
-                    className="form-radio h-5 w-5 text-blue-600"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                  />
+                  <input
+                    type="text"
+                    value={choice}
+                    onChange={(e) => handleChoiceChange(i, e.target.value)}
+                    placeholder={`گزینه ${i + 1}`}
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                   />
                 </div>
               ))}
-              <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-4">
-                <button
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
                   لغو
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleAddQuiz}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+                  } transition`}
                 >
                   افزودن
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Modal for Delete Confirmation */}
       <AnimatePresence>
         {isDeleteModalOpen && (
           <motion.div
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
           >
             <motion.div
-              variants={formVariants}
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md shadow-2xl relative border border-gray-300"
-              style={{ backdropFilter: "blur(12px)" }}
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
             >
-              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
-                حذف سوال
-              </h2>
-              <p className="text-gray-700 mb-4 sm:mb-6 text-right">
-                آیا مطمئن هستید که می‌خواهید سوال "{quizToDelete?.question_text}" را
-                حذف کنید؟
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
+              >
+                <X size={20} />
+              </button>
+              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+                آیا مطمئن هستید که می‌خواهید سوال "{quizToDelete?.question_text}" را حذف کنید؟
               </p>
-              <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                <button
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
                   لغو
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={confirmDelete}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
                 >
                   حذف
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Quiz Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <AnimatePresence>
-          {quizzes.map((quiz) => (
-            <motion.div
-              key={quiz.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="bg-white border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-all duration-200 p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-base sm:text-lg font-semibold text-black text-right">
+      {quizzes.length === 0 && !loading ? (
+        <p className="text-center text-gray-600">هیچ سوالی وجود ندارد</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {quizzes.map((quiz) => (
+              <motion.div
+                key={quiz.id}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-shadow"
+              >
+                <div className="p-4 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-800 text-right line-clamp-2">
                     {quiz.question_text}
                   </h2>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleRemoveQuiz(quiz.id, quiz.question_text)}
-                    className="text-red-500 hover:text-red-600 transition-colors"
+                    className="text-red-500 hover:text-red-700 transition-colors"
                     title="حذف سوال"
+                    aria-label={`حذف سوال ${quiz.question_text}`}
                   >
                     <Trash2 className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 </div>
-                <ul className="space-y-1">
-                  {quiz.choices.map((choice, index) => (
-                    <li
-                      key={index}
-                      className={`text-right ${
-                        choice === quiz.correct_answer
-                          ? "text-green-600 font-bold"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {choice}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                <div className="p-4 pt-0">
+                  <ul className="space-y-1 text-right">
+                    {quiz.choices.map((choice, index) => (
+                      <li
+                        key={index}
+                        className={`text-sm ${
+                          choice === quiz.correct_answer
+                            ? "text-green-600 font-semibold"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {choice}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

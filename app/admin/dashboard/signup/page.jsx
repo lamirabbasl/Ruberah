@@ -41,7 +41,6 @@ const AdminSignUpPage = () => {
         <div className="mt-4">
           {activeTab === "videos" && <AdminSignupVideos />}
           {activeTab === "quiz" && <AdminSignupQuiz />}
-          {activeTab === "terms" && <AdminSignupTerms />}
         </div>
       </div>
     </div>

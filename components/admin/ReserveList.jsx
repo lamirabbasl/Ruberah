@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,7 +14,7 @@ import {
 const ReserveList = () => {
   const [reservations, setReservations] = useState([]);
   const [groupedReservations, setGroupedReservations] = useState({});
-  const [expandedDates, setExpandedDates] = useState({}); // Track expanded/collapsed dates
+  const [expandedDates, setExpandedDates] = useState({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -42,9 +44,7 @@ const ReserveList = () => {
     });
 
     const grouped = filteredReservations.reduce((acc, reservation) => {
-      const date = new Date(reservation.reserved_at).toLocaleDateString(
-        "fa-IR"
-      );
+      const date = new Date(reservation.reserved_at).toLocaleDateString("fa-IR");
       if (!acc[date]) {
         acc[date] = [];
       }
@@ -69,7 +69,7 @@ const ReserveList = () => {
       data.sort((a, b) => new Date(a.reserved_at) - new Date(b.reserved_at));
       setReservations(data);
     } catch (err) {
-      setError(err.message || "Error fetching reservations");
+      setError(err.message || "خطا در دریافت رزروها");
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ const ReserveList = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      setError(err.message || "Error fetching sessions");
+      setError(err.message || "خطا در دریافت جلسات");
     }
   };
 
@@ -91,7 +91,7 @@ const ReserveList = () => {
       await toggleReservationActivation(id);
       await fetchReservations();
     } catch (err) {
-      setError(err.message || "Error toggling activation");
+      setError(err.message || "خطا در تغییر وضعیت فعال‌سازی");
     } finally {
       setLoading(false);
     }
@@ -102,18 +102,16 @@ const ReserveList = () => {
       setLoading(true);
       setError(null);
       try {
-        await deleteReservation(itemToDelete); // Call the API to delete the reservation
-        // Remove item locally
-        setReservations(
-          reservations.filter((item) => item.id !== itemToDelete)
-        );
-      } catch (err) {
-        setError(err.message || "Error deleting reservation");
-      } finally {
-        // Refresh reservations list to sync frontend with backend state
+        await deleteReservation(itemToDelete);
+        setReservations(reservations.filter((item) => item.id !== itemToDelete));
         await fetchReservations();
-        setShowConfirmDelete(false); // Close the confirmation dialog regardless of success or error
-        setItemToDelete(null); // Reset the item to delete
+        window.location.reload(); // Refresh the page
+      } catch (err) {
+        window.location.reload(); // Refresh the page
+        setError(err.message || "خطا در حذف رزرو");
+      } finally {
+        setShowConfirmDelete(false);
+        setItemToDelete(null);
         setLoading(false);
       }
     }
@@ -140,7 +138,7 @@ const ReserveList = () => {
       !newReservation.phone.trim() ||
       !newReservation.session
     ) {
-      alert("لطفاً تمام فیلدها را پر کنید.");
+      setError("لطفاً تمام فیلدها را پر کنید.");
       return;
     }
     setLoading(true);
@@ -155,257 +153,321 @@ const ReserveList = () => {
       setShowAddForm(false);
       await fetchReservations();
     } catch (err) {
-      setError(err.message || "Error adding reservation");
+      setError(err.message || "خطا در افزودن رزرو");
     } finally {
       setLoading(false);
     }
   };
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div
-      className="text-right font-noto p-4 sm:p-6 bg-white min-h-screen"
-      dir="rtl"
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-black">رزروها</h1>
+    <div className="text-right font-sans p-6 bg-gray-50 min-h-screen" dir="rtl">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">رزروها</h1>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowAddForm(true)}
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
+        >
+          <FaPlus className="w-4 h-4" />
+          افزودن رزرو
+        </motion.button>
       </div>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+      <div className="mb-6">
         <input
           type="text"
           placeholder="جستجو بر اساس کد یا نام"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded px-3 py-2 w-full text-right"
+          className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
         />
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2 w-full sm:w-auto"
-        >
-          <FaPlus className="w-5 h-5" />
-          افزودن رزرو
-        </button>
       </div>
-
-      {/* Confirmation Dialog for Deletion */}
-      <AnimatePresence>
-        {showConfirmDelete && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4"
-          >
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative border border-gray-300">
-              <h2 className="text-lg font-semibold mb-4 text-right text-gray-800">
-                آیا مطمئن هستید که می‌خواهید این رزرو را حذف کنید؟
-              </h2>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={closeConfirmDelete}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md"
-                >
-                  لغو
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
-                >
-                  حذف
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {showAddForm && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
           >
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative border border-gray-300">
-              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 text-right text-gray-800">
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative"
+            >
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن فرم افزودن رزرو"
+              >
+                <FaTrash size={20} />
+              </button>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-right">
                 افزودن رزرو جدید
               </h2>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                  نام و نام خانوادگی:
+              <div className="mb-5">
+                <label className="block mb-2 text-sm font-medium text-gray-700 text-right">
+                  نام و نام خانوادگی
                 </label>
                 <input
                   type="text"
                   value={newReservation.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                  ایمیل:
+              <div className="mb-5">
+                <label className="block mb-2 text-sm font-medium text-gray-700 text-right">
+                  ایمیل
                 </label>
                 <input
                   type="email"
                   value={newReservation.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                  تلفن:
+              <div className="mb-5">
+                <label className="block mb-2 text-sm font-medium text-gray-700 text-right">
+                  تلفن
                 </label>
                 <input
                   type="text"
                   value={newReservation.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                  جلسه:
+              <div className="mb-5">
+                <label className="block mb-2 text-sm font-medium text-gray-700 text-right">
+                  جلسه
                 </label>
                 <select
                   value={newReservation.session}
                   onChange={(e) => handleInputChange("session", e.target.value)}
-                  className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right"
                 >
                   <option value="">انتخاب جلسه</option>
                   {sessions.map((session) => (
                     <option key={session.id} value={session.id}>
-                      {session.title} -{" "}
-                      {new Date(session.date_time).toLocaleString("fa-IR")}
+                      {session.title} - {new Date(session.date_time).toLocaleString("fa-IR")}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-4">
-                <button
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowAddForm(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-md focus:outline-none shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
                   لغو
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleAddReservation}
-                  className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-200 z-10 w-full sm:w-auto"
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
                 >
                   افزودن
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {loading && <p>در حال بارگذاری...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <AnimatePresence>
+        {showConfirmDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-sm relative"
+            >
+              <button
+                onClick={closeConfirmDelete}
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition"
+                aria-label="بستن تایید حذف"
+              >
+                <FaTrash size={20} />
+              </button>
+              <p className="mb-6 text-red-600 font-semibold text-center text-right">
+                آیا مطمئن هستید که می‌خواهید این رزرو را حذف کنید؟
+              </p>
+              {error && <p className="text-red-500 text-sm mb-4 text-right">{error}</p>}
+              <div className="flex justify-end space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={closeConfirmDelete}
+                  className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                >
+                  لغو
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDelete}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                >
+                  حذف
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       {Object.keys(groupedReservations).length === 0 ? (
-        <p className="text-gray-600">هیچ رزروی ثبت نشده است</p>
+        <p className="text-center text-gray-600">هیچ رزروی ثبت نشده است</p>
       ) : (
-        Object.entries(groupedReservations).map(
-          ([date, reservationsForDate]) => (
-            <div key={date} className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold">{date}</h3>
-                <button
+        <div className="space-y-6">
+          {Object.entries(groupedReservations).map(([date, reservationsForDate]) => (
+            <motion.div
+              key={date}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between mb-3 bg-gray-100 rounded-lg px-4 py-3">
+                <h3 className="text-lg font-semibold text-gray-800">{date}</h3>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() =>
                     setExpandedDates((prev) => ({
                       ...prev,
                       [date]: !prev[date],
                     }))
                   }
-                  className="text-blue-600 hover:text-blue-800 focus:outline-none"
-                  aria-label={expandedDates[date] ? "Collapse" : "Expand"}
+                  className="text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                  aria-label={expandedDates[date] ? "جمع کردن" : "باز کردن"}
                 >
                   {expandedDates[date] ? "▲" : "▼"}
-                </button>
+                </motion.button>
               </div>
-              {expandedDates[date] && (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          فعال‌سازی کد
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          کد
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          نام و نام خانوادگی
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          ایمیل
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          زمان معارفه
-                        </th>
-                        <th scope="col" className="relative px-6 py-3">
-                          <span className="sr-only">حذف</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {reservationsForDate.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <input
-                              type="checkbox"
-                              checked={item.code_activated}
-                              onChange={() => handleToggleActivation(item.id)}
-                              className="form-checkbox h-5 w-5 text-blue-600"
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {item.registration_code}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {item.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {item.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            {new Date(item.reserved_at).toLocaleString("fa-IR")}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-left">
-                            <button
-                              onClick={() => openConfirmDelete(item.id)}
-                              className="text-red-500 hover:text-red-700 focus:outline-none"
-                            >
-                              <FaTrash />
-                            </button>
-                          </td>
+              <AnimatePresence>
+                {expandedDates[date] && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-x-auto border border-gray-200 rounded-xl shadow-md"
+                  >
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            فعال‌سازی کد
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            کد
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            نام و نام خانوادگی
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            ایمیل
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            زمان معارفه
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            حذف
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )
-        )
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {reservationsForDate.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <input
+                                type="checkbox"
+                                checked={item.code_activated}
+                                onChange={() => handleToggleActivation(item.id)}
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                              {item.registration_code}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                              {item.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                              {item.email}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                              {new Date(item.reserved_at).toLocaleString("fa-IR")}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => openConfirmDelete(item.id)}
+                                className="text-red-500 hover:text-red-700 focus:outline-none"
+                                aria-label={`حذف رزرو ${item.registration_code}`}
+                              >
+                                <FaTrash size={16} />
+                              </motion.button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
       )}
     </div>
   );

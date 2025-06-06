@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Menu from "./Menu";
 import { useAuth } from "@/context/AuthContext";
+import { getUserMe } from "@/lib/api/api";
 
 export default function Navbar() {
   const router = useRouter();
@@ -37,7 +38,23 @@ export default function Navbar() {
           </Link>
         ) : (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 cursor-pointer">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={async () => {
+                try {
+                  const userInfo = await getUserMe();
+                  if (userInfo.groups && userInfo.groups.includes("manager")) {
+                    router.push("/admin/dashboard");
+                  } else {
+                    router.push("/profile");
+                  }
+                } catch (error) {
+                  console.error("Error fetching user info:", error);
+                  // fallback redirect or show error
+                  router.push("/profile");
+                }
+              }}
+            >
               <Image
                 src="/user.png"
                 alt="User Profile"
