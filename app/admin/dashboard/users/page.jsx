@@ -41,16 +41,23 @@ const UsersPage = () => {
     setExporting(true);
     setError(null);
     try {
-      const blob = await getUsersExport();
+      const response = await getUsersExport();
+      
+      if (!(response instanceof Blob)) {
+        throw new Error("دریافت پاسخ نامعتبر از سرور");
+      }
+
+      const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "users_export.xlsx";
       document.body.appendChild(a);
       a.click();
-      a.remove();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err) {
+      console.error("Error exporting Excel:", err);
       setError(err.message || "خطا در صادرات به اکسل");
     } finally {
       setExporting(false);

@@ -212,6 +212,16 @@ const PaymentsTab = () => {
                               <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
                                 {child ? child.full_name : "نامشخص"}
                               </h3>
+                              <div className="space-y-1 text-lg text-gray-700">
+                                <p className="flex items-center">
+                                  <span className="inline-block w-24 font-medium">نام والد:</span>
+                                  <span>{reg.parent_name || "نامشخص"}</span>
+                                </p>
+                                <p className="flex items-center">
+                                  <span className="inline-block w-24 font-medium">نام کاربری والد:</span>
+                                  <span>{reg.parent_username || "نامشخص"}</span>
+                                </p>
+                              </div>
                               {batch ? (
                                 <div className="space-y-2 text-xl">
                                   <p className="text-gray-700 flex items-center">

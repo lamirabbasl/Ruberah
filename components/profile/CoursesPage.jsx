@@ -275,7 +275,7 @@ function CoursesPage() {
                                       <img
                                         src={getInstallmentReceiptImage(inst.id)}
                                         alt={`رسید قسط ${idx + 1}`}
-                                        className="h-12 rounded-md"
+                                        className="h-12 rounded-md mx-auto"
                                       />
                                     ) : null}
                                       {uploadingInstallmentId !== inst.id && (
@@ -312,20 +312,28 @@ function CoursesPage() {
                                       }}
                                     >
                                       <input
-                                        type="file"
-                                        name="receipt_image"
-                                        accept="image/*"
-                                        className="mb-2"
-                                        onChange={(e) => {
-                                          const file = e.target.files[0];
-                                          if (file) {
-                                            const previewUrl = URL.createObjectURL(file);
-                                            setPreviewImage(previewUrl);
-                                          } else {
-                                            setPreviewImage(null);
-                                          }
-                                        }}
-                                      />
+    id="receipt_image"
+    type="file"
+    name="receipt_image"
+    accept="image/*"
+    className="hidden"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const previewUrl = URL.createObjectURL(file);
+        setPreviewImage(previewUrl);
+      } else {
+        setPreviewImage(null);
+      }
+    }}
+  />
+
+                                       <label
+    htmlFor="receipt_image"
+    className="block mb-2 cursor-pointer py-2 text-center bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+  >
+    {previewImage ? "فایل انتخاب شد" : "انتخاب کنید"}
+  </label>
                                       {previewImage && (
                                         <img
                                           src={previewImage}

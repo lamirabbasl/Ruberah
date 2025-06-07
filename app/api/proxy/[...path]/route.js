@@ -28,28 +28,23 @@ async function handleRequest(request, params, method) {
 
     if (method === "POST" || method === "PATCH") {
       if (contentType && contentType.includes("application/json")) {
-        // Handle JSON body
         const contentLength = request.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > 0) {
           requestBody = await request.json();
           requestHeaders["Content-Type"] = "application/json";
-          requestBody = JSON.stringify(requestBody); // Stringify for fetch
+          requestBody = JSON.stringify(requestBody);
         }
       } else if (contentType && contentType.includes("multipart/form-data")) {
-        // Handle FormData body (for file uploads)
-        requestBody = await request.formData(); // Use request.formData() for FormData
-        // When sending FormData, DO NOT set Content-Type header manually.
-        // fetch will automatically set the correct 'Content-Type: multipart/form-data; boundary=...'
-        // and handle the serialization of the FormData object.
+        requestBody = await request.formData();
+        // Content-Type is not set manually for FormData to allow fetch to set it automatically
       } else {
-        // Handle other content types if needed, or assume no body
         const contentLength = request.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > 0) {
-            requestBody = await request.text(); // Or handle as raw text if unsure
+          requestBody = await request.text();
         }
       }
     }
- 
+
     const baseUrl = normalizeUrl("http://188.121.100.138/api");
     const isStaticVideoPath =
       normalizedPath.startsWith("intro/video") &&
@@ -67,16 +62,36 @@ async function handleRequest(request, params, method) {
       method,
       headers: {
         ...(token && { Authorization: token }),
-        ...requestHeaders, // Apply Content-Type here if set for JSON
+        ...requestHeaders,
       },
-      // Only add body if it exists and is for POST/PATCH
       ...(requestBody && (method === "POST" || method === "PATCH") && { body: requestBody }),
     };
 
     const response = await fetch(backendUrl, requestOptions);
-
     const responseContentType = response.headers.get("content-type");
 
+    // Handle binary responses (e.g., Excel, PDF, images)
+    if (
+      responseContentType &&
+      (
+        responseContentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+        responseContentType.includes("application/octet-stream") ||
+        responseContentType.includes("application/pdf") ||
+        responseContentType.includes("image/")
+      )
+    ) {
+      const buffer = await response.arrayBuffer();
+      return new NextResponse(buffer, {
+        status: response.status,
+        headers: {
+          "Content-Type": responseContentType,
+          "Content-Disposition": response.headers.get("content-disposition") || "attachment; filename=\"users_export.xlsx\"",
+          "Content-Length": buffer.byteLength.toString(),
+        },
+      });
+    }
+
+    // Handle JSON responses
     if (responseContentType && responseContentType.includes("application/json")) {
       const text = await response.text();
       if (!text) {
@@ -84,29 +99,22 @@ async function handleRequest(request, params, method) {
       }
       const data = JSON.parse(text);
       return NextResponse.json(data, { status: response.status });
-    } else if (response.status === 204) {
-      return new NextResponse(null, { status: 204 });
-    } else if (response.status === 200) {
-      const text = await response.text();
-      if (!text) {
-        return NextResponse.json({}, { status: 200 });
-      } else {
-        console.error(
-          `[${method}] Non-JSON response received with body: ${text}`
-        );
-        return NextResponse.json(
-          { error: "Invalid response format", details: text },
-          { status: response.status }
-        );
-      }
-    } else {
-      const text = await response.text();
-      console.error(`[${method}] Non-JSON response received`);
-      return NextResponse.json(
-        { error: "Invalid response format", details: text },
-        { status: response.status }
-      );
     }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return new NextResponse(null, { status: 204 });
+    }
+
+    // Handle unexpected non-JSON, non-binary responses
+    const text = await response.text();
+    console.error(
+      `[${method}] Unexpected response with Content-Type: ${responseContentType}, body: ${text}`
+    );
+    return NextResponse.json(
+      { error: "Invalid response format", details: text },
+      { status: response.status }
+    );
   } catch (error) {
     console.error(`[${method}] Proxy error:`, error.message);
     return NextResponse.json(
