@@ -137,7 +137,7 @@ function CoursesPage() {
         >
           {/* فرزند */}
           <div className="flex items-center mb-4 gap-4">
-            <Image
+            <img
               src={child.image || getChildPhotoUrl(child.id)}
               alt={child.name}
               width={70}
@@ -221,7 +221,7 @@ function CoursesPage() {
 
                     {/* Image */}
                     <div className=" max-md:absolute  left-4 top-6   flex justify-center">
-                      <Image
+                      <img
                         src={course.image}
                         alt={course.name}
                         width={60}

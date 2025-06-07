@@ -63,8 +63,7 @@ function ProfileNavbar() {
           className="w-14 h-14"
             src={ getProfilePhotoUrl(user?.id) || "/user.png"}
             alt="user avatar"
-            layout="fill"
-            objectFit="cover"
+
           />
         </div>
       </div>

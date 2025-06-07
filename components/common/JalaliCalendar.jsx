@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import moment from "moment-jalaali";
 import "moment/locale/fa";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
 
 moment.loadPersian({ usePersianDigits: true, dialect: "persian-modern" });
 
@@ -20,6 +20,7 @@ const JalaliCalendar = ({ onDateSelect }) => {
     month: currentDate.jMonth() + 1,
     year: currentDate.jYear(),
   });
+  const [showYearPicker, setShowYearPicker] = useState(false);
 
   useEffect(() => {
     const firstDayOfMonth = moment(currentDate).jDate(1);
@@ -49,6 +50,17 @@ const JalaliCalendar = ({ onDateSelect }) => {
     setSelectedDate({ day: null, month: null, year: null });
   };
 
+  const handleYearClick = () => {
+    setShowYearPicker(!showYearPicker);
+  };
+
+  const handleYearSelect = (year) => {
+    const newDate = moment(currentDate).jYear(year);
+    setCurrentDate(newDate);
+    setSelectedDate({ day: null, month: null, year: null });
+    setShowYearPicker(false);
+  };
+
   const handleDayClick = (day) => {
     if (day) {
       const selected = {
@@ -72,6 +84,10 @@ const JalaliCalendar = ({ onDateSelect }) => {
     }
   };
 
+  // Generate a range of years for the year picker (current year ± 10)
+  const currentYear = currentDate.jYear();
+  const years = Array.from({ length: 40 }, (_, i) => currentYear - 20 + i);
+
   return (
     <div className="flex flex-col text-black relative items-center gap-3 w-full h-[460px] max-w-md mx-auto p-5 bg-white rounded-lg shadow-lg border border-gray-200">
       <div className="flex justify-between items-center w-full mb-6 mt-5">
@@ -81,9 +97,27 @@ const JalaliCalendar = ({ onDateSelect }) => {
         >
           <IoIosArrowForward size={20} className="text-black hover:text-blue-500" />
         </button>
-        <h2 className="text-[23px] ">
-          {currentDate.format("jYYYY")} {currentDate.format("jMMMM")}
-        </h2>
+        <div className=" flex items-center">
+          <h2 className="text-[23px] flex items-center cursor-pointer" onClick={handleYearClick}>
+            {currentDate.format("jYYYY")} {currentDate.format("jMMMM")}
+            <IoIosArrowDown size={16} className="ml-2 text-gray-500 hover:text-blue-500" />
+          </h2>
+          {showYearPicker && (
+            <div className="absolute top-20 w-88 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-4 grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+              {years.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => handleYearSelect(year)}
+                  className={`p-2 rounded hover:bg-gray-100 text-sm ${
+                    year === currentDate.jYear() ? "bg-blue-100" : ""
+                  }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           onClick={prevMonth}
           className="px-3 py-1 text-gray-500 hover:text-gray-700 focus:outline-none"

@@ -122,8 +122,6 @@ function AdminMenu() {
                         className="w-14 h-14"
                           src={ getProfilePhotoUrl(user?.id) || "../../public/user.png"}
                           alt="user avatar"
-                          layout="fill"
-                          objectFit="cover"
                         />
                       </div>
                     </div>
@@ -182,8 +180,7 @@ function AdminMenu() {
                   className="w-14 h-14"
                     src={ getProfilePhotoUrl(user?.id) || "../../public/user.png"}
                     alt="user avatar"
-                    layout="fill"
-                    objectFit="cover"
+
                   />
                 </div>
               </div>
