@@ -28,6 +28,8 @@ const PaymentsTab = () => {
   const [modalImage, setModalImage] = useState(null);
   const [confirmingPaymentIds, setConfirmingPaymentIds] = useState(new Set());
   const [confirmedPaymentIds, setConfirmedPaymentIds] = useState(new Set());
+  const [receiptImages, setReceiptImages] = useState({}); // New state for receipt images
+  const [installmentReceiptImages, setInstallmentReceiptImages] = useState({}); // New state for installment receipt images
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +54,26 @@ const PaymentsTab = () => {
           })
         );
         setChildrenMap(childrenData);
+
+        // Fetch receipt images for non-installment payments
+        const receiptImagePromises = regs
+          .filter((reg) => reg.payment_method !== "installment")
+          .map(async (reg) => {
+            try {
+              const receiptUrl = await getReceiptImageAdmin(reg.id);
+              return { id: reg.id, url: receiptUrl };
+            } catch (err) {
+              console.error(`Error fetching receipt image for registration ${reg.id}:`, err);
+              return { id: reg.id, url: "/path/to/fallback-receipt.jpg" };
+            }
+          });
+
+        const receiptImagesData = await Promise.all(receiptImagePromises);
+        const receiptImagesMap = receiptImagesData.reduce((acc, { id, url }) => {
+          acc[id] = url;
+          return acc;
+        }, {});
+        setReceiptImages(receiptImagesMap);
       } catch (err) {
         setError("خطا در دریافت اطلاعات پرداخت‌ها");
       } finally {
@@ -60,6 +82,16 @@ const PaymentsTab = () => {
     };
 
     fetchData();
+
+    // Clean up blob URLs on unmount
+    return () => {
+      Object.values(receiptImages).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+      Object.values(installmentReceiptImages).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
   }, []);
 
   const groupedByBatch = {};
@@ -89,7 +121,26 @@ const PaymentsTab = () => {
       try {
         const regDetails = await getRegistrationDetailsById(regId);
         const installmentDetails = await getInstallmentDetailsRegistrationId(regId);
-        regDetails.installments = installmentDetails;
+        // Fetch installment receipt images
+        const installmentsWithImages = await Promise.all(
+          installmentDetails.map(async (inst) => {
+            if (inst.secure_url) {
+              try {
+                const receiptUrl = await getInstallmentReceiptImageAdmin(inst.id);
+                setInstallmentReceiptImages((prev) => ({
+                  ...prev,
+                  [inst.id]: receiptUrl,
+                }));
+                return { ...inst, receiptUrl };
+              } catch (err) {
+                console.error(`Error fetching installment receipt image for installment ${inst.id}:`, err);
+                return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
+              }
+            }
+            return inst;
+          })
+        );
+        regDetails.installments = installmentsWithImages;
         setRegistrationDetailsMap((prev) => ({
           ...prev,
           [regId]: regDetails,
@@ -136,11 +187,11 @@ const PaymentsTab = () => {
     <div className="p-6 bg-gradient-to-b max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra">
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">مدیریت پرداخت‌ها</h2>
       {loading ? (
-        <div className="flex  justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 border-4  border-t-indigo-600 border-gray-200 rounded-full"
+            className="w-12 h-12 border-4 border-t-indigo-600 border-gray-200 rounded-full"
           ></motion.div>
         </div>
       ) : error ? (
@@ -155,7 +206,7 @@ const PaymentsTab = () => {
               variants={cardVariants}
               initial="hidden"
               animate="visible"
-              className="border border-gray-200   rounded-2xl max-md:ml-4 shadow-lg overflow-hidden"
+              className="border border-gray-200 rounded-2xl max-md:ml-4 shadow-lg overflow-hidden"
             >
               <button
                 onClick={() => toggleBatch(batchTitle)}
@@ -176,7 +227,7 @@ const PaymentsTab = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }}
                     exit={{ height: 0, opacity: 0, transition: { duration: 0.3 } }}
-                    className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3 gap-6 p-6"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
                   >
                     {regs.map((reg) => {
                       const child = childrenMap[reg.child];
@@ -190,7 +241,7 @@ const PaymentsTab = () => {
                           variants={cardVariants}
                           initial="hidden"
                           animate="visible"
-                          className="relative border border-gray-200 rounded-xl shadow-md hover:shadow-xl  transition-all duration-300 bg-white cursor-pointer"
+                          className="relative border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-white cursor-pointer"
                           style={{ height: "320px", perspective: "1200px" }}
                           onClick={() => toggleFlipCard(reg.id)}
                           whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
@@ -228,11 +279,11 @@ const PaymentsTab = () => {
                                     <span className="inline-block w-20 font-medium">برنامه:</span>
                                     <span className="text-gray-600">{batch.schedule || "-"}</span>
                                   </p>
-                                  <p className="text-gray-700  flex items-center">
+                                  <p className="text-gray-700 flex items-center">
                                     <span className="inline-block w-20 font-medium">ظرفیت:</span>
                                     <span className="text-gray-600">{batch.capacity}</span>
                                   </p>
-                                  <p className="text-gray-700  flex items-center">
+                                  <p className="text-gray-700 flex items-center">
                                     <span className="inline-block w-20 font-medium">وضعیت:</span>
                                     <span
                                       className={`px-2 py-1 rounded-full text-xs ${
@@ -266,13 +317,13 @@ const PaymentsTab = () => {
                                       <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
                                         رسید پرداخت
                                       </h3>
-                                      {getReceiptImageAdmin(reg.id) ? (
+                                      {receiptImages[reg.id] ? (
                                         <motion.button
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setModalImage(getReceiptImageAdmin(reg.id));
+                                            setModalImage(receiptImages[reg.id]);
                                           }}
                                           className="px-5 py-2 rounded-lg text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
                                         >
@@ -281,8 +332,7 @@ const PaymentsTab = () => {
                                       ) : (
                                         <p className="text-gray-500 text-sm">رسید موجود نیست</p>
                                       )}
-                                      {
-                                        reg.payment_status !== "paid" && (
+                                      {reg.payment_status !== "paid" && (
                                         <motion.button
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
@@ -339,15 +389,15 @@ const PaymentsTab = () => {
                                               </p>
                                             </div>
                                             {inst.secure_url && (
-                                              <div className="flex items-center space-x-4  mt-6">
+                                              <div className="flex items-center space-x-4 mt-6">
                                                 <motion.button
                                                   whileHover={{ scale: 1.05 }}
                                                   whileTap={{ scale: 0.95 }}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setModalImage(getInstallmentReceiptImageAdmin(inst.id));
+                                                    setModalImage(installmentReceiptImages[inst.id] || "/path/to/fallback-receipt.jpg");
                                                   }}
-                                                  className="px-3 py-2 rounded-lg  bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
+                                                  className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
                                                 >
                                                   مشاهده رسید
                                                 </motion.button>

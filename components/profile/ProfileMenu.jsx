@@ -7,37 +7,59 @@ import { BiExit, BiMenu } from "react-icons/bi";
 import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserMe , getProfilePhotoUrl} from "@/lib/api/api";
+import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
 
 function ProfileMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(null);
-    const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      const {  logout } = useAuth();
-    
-  
+  const { logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const menuRef = useRef(null);
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
 
-   useEffect(() => {
-      const fetchUser = async () => {
-        try {
-          const data = await getUserMe();
-          setUser(data);
-        } catch (error) {
-          setUser(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const data = await getUserMe();
+        setUser(data);
+        if (data && data.id) {
+          try {
+            const photoUrl = await getProfilePhotoUrl(data.id);
+            setProfilePhotoUrl(photoUrl);
+          } catch (err) {
+            console.error("Error fetching profile photo:", err);
+            setProfilePhotoUrl("/user.png"); // Fallback image
+          }
         }
-      };
-      fetchUser();
-    }, []);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+        setError("خطا در دریافت اطلاعات کاربر");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+
+    // Clean up blob URL on unmount
+    return () => {
+      if (profilePhotoUrl) {
+        URL.revokeObjectURL(profilePhotoUrl);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const segments = pathname.split("/").filter((segment) => segment !== "");
@@ -60,7 +82,7 @@ function ProfileMenu() {
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
@@ -72,6 +94,14 @@ function ProfileMenu() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMenuOpen]);
+
+  if (loading) {
+    return <p className="text-center mt-10 text-white">در حال بارگذاری...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center mt-10 text-red-600">{error}</p>;
+  }
 
   return (
     <>
@@ -99,7 +129,7 @@ function ProfileMenu() {
               stiffness: 200,
               damping: 25,
               duration: 0.15,
-            }} // Changed duration here
+            }}
             className="fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out"
           >
             <div className="p-4">
@@ -115,19 +145,19 @@ function ProfileMenu() {
               </div>
 
               {/* Header Section */}
-                <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
-                      <div className="flex flex-col items-end">
-                        <p className="font-semibold">{user?.username || "کاربر"}</p>
-                        <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
-                      </div>
-                      <div className="relative  rounded-full overflow-hidden">
-                        <img
-                        className="w-14 h-14"
-                          src={ getProfilePhotoUrl(user?.id) || "/user.png"}
-                          alt="user avatar"
-                        />
-                      </div>
-                    </div>
+              <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
+                <div className="flex flex-col items-end">
+                  <p className="font-semibold text-white">{user?.username || "کاربر"}</p>
+                  <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
+                </div>
+                <div className="relative rounded-full overflow-hidden">
+                  <img
+                    className="w-14 h-14 object-cover"
+                    src={profilePhotoUrl || "/user.png"}
+                    alt="user avatar"
+                  />
+                </div>
+              </div>
 
               {/* Navigation Links */}
               <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
@@ -147,14 +177,13 @@ function ProfileMenu() {
                   label="دوره ها"
                   icon={<FaRegCalendarCheck className="text-xl ml-2" />}
                   onClick={() => handleTabClick("allcourses")}
-                  isActive={activeTab === "allcrouses"}
+                  isActive={activeTab === "allcourses"} // Fixed typo: "allcrouses" to "allcourses"
                 />
               </nav>
 
               {/* Logout Button */}
               <button
-                onClick={
-                  handleLogout}
+                onClick={handleLogout}
                 className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
               >
                 <p>خارج شوید</p>
@@ -164,8 +193,6 @@ function ProfileMenu() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Desktop Sidebar */}
     </>
   );
 }
@@ -178,7 +205,7 @@ function NavItem({ label, icon, onClick, isActive }) {
       } p-2`}
       onClick={onClick}
     >
-      <p>{label}</p>
+      <p className="text-white">{label}</p>
       {icon}
       {isActive && (
         <div className="absolute top-0 right-0 h-full w-1 bg-indigo-500 rounded-r-md shadow-md"></div>
