@@ -19,6 +19,7 @@ function CoursesPage() {
   const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fetchedImages, setFetchedImages] = useState({});
 
   const toggleCourse = (childIndex, courseIndex) => {
     const key = `${childIndex}-${courseIndex}`;
@@ -28,6 +29,7 @@ function CoursesPage() {
     }));
   };
 
+  // Initial data fetching (excluding images)
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -48,18 +50,10 @@ function CoursesPage() {
         for (const reg of registrations) {
           if (!childDataMap[reg.child]) {
             const childInfo = await getChildById(reg.child);
-            let photoUrl;
-            try {
-              photoUrl = await getChildPhotoUrl(reg.child);
-            } catch (err) {
-              console.error("Error fetching child photo:", err);
-              photoUrl = "/path/to/fallback-image.jpg";
-            }
-
             childDataMap[reg.child] = {
               id: reg.child,
               name: childInfo.full_name || "نامشخص",
-              image: photoUrl,
+              image: null,
               courses: [],
             };
           }
@@ -74,20 +68,10 @@ function CoursesPage() {
           let installments = [];
           try {
             installments = await getRegistrationInstallments(reg.id);
-            installments = await Promise.all(
-              installments.map(async (inst) => {
-                if (inst.secure_url !== null) {
-                  try {
-                    const receiptUrl = await getInstallmentReceiptImage(inst.id);
-                    return { ...inst, receiptUrl };
-                  } catch (err) {
-                    console.error("Error fetching receipt image for installment", inst.id, err);
-                    return { ...inst, receiptUrl: null };
-                  }
-                }
-                return inst;
-              })
-            );
+            installments = installments.map((inst) => ({
+              ...inst,
+              receiptUrl: null,
+            }));
           } catch (e) {
             console.error("Error fetching installments for registration", reg.id, e);
           }
@@ -106,7 +90,7 @@ function CoursesPage() {
           const seasonInfo = batchInfo && batchInfo.season ? seasonMap[batchInfo.season] : null;
 
           childDataMap[reg.child].courses.push({
-            id: reg.id, // Store registration ID for updating installments
+            id: reg.id,
             name: batchInfo ? batchInfo.title : "دوره ثبت‌نام شده",
             start: seasonInfo ? seasonInfo.start_date : "نامشخص",
             end: seasonInfo ? seasonInfo.end_date : "نامشخص",
@@ -136,20 +120,84 @@ function CoursesPage() {
     fetchData();
 
     return () => {
-      children.forEach((child) => {
-        if (child.image) {
-          URL.revokeObjectURL(child.image);
-        }
-        child.courses.forEach((course) => {
-          course.installments?.forEach((inst) => {
-            if (inst.receiptUrl) {
-              URL.revokeObjectURL(inst.receiptUrl);
-            }
-          });
-        });
-      });
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+      }
     };
   }, []);
+
+  // Fetch child photos
+  useEffect(() => {
+    async function fetchChildPhotos() {
+      const updatedChildren = await Promise.all(
+        children.map(async (child) => {
+          if (!fetchedImages[`child-${child.id}`]) {
+            try {
+              const photoUrl = await getChildPhotoUrl(child.id);
+              setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
+              return { ...child, image: photoUrl };
+            } catch (err) {
+              console.error("Error fetching child photo:", err);
+              setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
+              return { ...child, image: "/path/to/fallback-image.jpg" };
+            }
+          }
+          return child;
+        })
+      );
+      setChildren(updatedChildren);
+    }
+
+    if (children.length > 0) {
+      fetchChildPhotos();
+    }
+  }, [children.length]);
+
+  // Fetch receipt images when course is opened
+  useEffect(() => {
+    async function fetchReceiptImages() {
+      const updatedChildren = await Promise.all(
+        children.map(async (child, childIndex) => ({
+          ...child,
+          courses: await Promise.all(
+            child.courses.map(async (course, courseIndex) => {
+              const key = `${childIndex}-${courseIndex}`;
+              if (openCourseIdx[key] && course.installments?.length > 0) {
+                const updatedInstallments = await Promise.all(
+                  course.installments.map(async (inst) => {
+                    if (inst.secure_url !== null && !fetchedImages[`installment-${inst.id}`]) {
+                      try {
+                        const receiptUrl = await getInstallmentReceiptImage(inst.id);
+                        setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                        return { ...inst, receiptUrl };
+                      } catch (err) {
+                        console.error("Error fetching receipt image for installment", inst.id, err);
+                        setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                        return { ...inst, receiptUrl: null };
+                      }
+                    }
+                    return inst;
+                  })
+                );
+                return {
+                  ...course,
+                  installments: updatedInstallments,
+                  paymentInfo: { ...course.paymentInfo, installments: updatedInstallments },
+                };
+              }
+              return course;
+            })
+          ),
+        }))
+      );
+      setChildren(updatedChildren);
+    }
+
+    const hasOpenCourses = Object.values(openCourseIdx).some((isOpen) => isOpen);
+    if (hasOpenCourses && children.length > 0) {
+      fetchReceiptImages();
+    }
+  }, [openCourseIdx, children.length]);
 
   const handleImageUpload = async (e, registrationId, installmentId) => {
     e.preventDefault();
@@ -161,16 +209,17 @@ function CoursesPage() {
 
     try {
       await uploadInstallmentPayment(installmentId, fileInput.files[0]);
-      // Fetch updated installments for the specific registration
       const updatedInstallments = await getRegistrationInstallments(registrationId);
       const updatedInstallmentsWithReceipts = await Promise.all(
         updatedInstallments.map(async (inst) => {
           if (inst.secure_url !== null) {
             try {
               const receiptUrl = await getInstallmentReceiptImage(inst.id);
+              setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
               return { ...inst, receiptUrl };
             } catch (err) {
               console.error("Error fetching receipt image for installment", inst.id, err);
+              setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
               return { ...inst, receiptUrl: null };
             }
           }
@@ -178,7 +227,6 @@ function CoursesPage() {
         })
       );
 
-      // Update the children state with the new installments
       setChildren((prevChildren) =>
         prevChildren.map((child) => ({
           ...child,
@@ -236,7 +284,7 @@ function CoursesPage() {
             <h2 className="text-2xl font-bold text-gray-800">{child.name}</h2>
           </div>
 
-          <div className="hidden sm:flex justify-between items-center pr-6 bg-gray-100 border-b-2 border-gray-200 p-3 rounded-t-lg text-lg text-gray-600 font-semibold text-right">
+          <div className="hidden sm:flex justify-between items-center pr-6 bg-gray-100 border-b-2 border-gray-200 p-3 rounded-t-lg text-lg text-gray-600  text-right">
             <div className="flex flex-wrap gap-x-6 mr-8 gap-y-1">
               <span className="w-20">دوره</span>
               <span className="w-24">شروع</span>
@@ -258,25 +306,25 @@ function CoursesPage() {
                     className="flex relative flex-col sm:flex-row sm:justify-between sm:items-center pr-4 sm:pr-6 bg-white rounded-lg shadow p-3 border hover:shadow-md transition cursor-pointer"
                     onClick={() => toggleCourse(childIndex, courseIndex)}
                   >
-                    <div className="flex flex-col sm:grid sm:grid-cols-5 gap-y-2 gap-x-4 text-sm sm:text-base text-gray-800 text-right w-full">
+                    <div className="flex flex-col sm:grid sm:grid-cols-5 gap-y-2 gap-x-4 text-sm sm:text-lg text-gray-800 text-right w-full">
                       <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">دوره: </span>
+                        <span className=" block sm:hidden w-20">دوره: </span>
                         <span className="font-bold">{course.name}</span>
                       </div>
                       <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">شروع: </span>
+                        <span className=" block sm:hidden w-20">شروع: </span>
                         <span>{convertToJalali(course.start)}</span>
                       </div>
                       <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-20">پایان: </span>
+                        <span className=" block sm:hidden w-20">پایان: </span>
                         <span>{convertToJalali(course.end)}</span>
                       </div>
                       <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-24">مکان: </span>
-                        <span className="font-semibold">{course.paymentInfo?.location}</span>
+                        <span className=" block sm:hidden w-24">مکان: </span>
+                        <span className="">{course.paymentInfo?.location}</span>
                       </div>
                       <div className="flex sm:block">
-                        <span className="font-semibold block sm:hidden w-24">وضعیت پرداخت: </span>
+                        <span className=" block sm:hidden w-24">وضعیت پرداخت: </span>
                         <span className="font-semibold">
                           {course.paid ? (
                             <span className="text-green-600">پرداخت کامل</span>
@@ -308,12 +356,12 @@ function CoursesPage() {
                           <h3 className="text-lg max-md:hidden font-bold text-blue-700 mb-2">
                             اطلاعات اقساط
                           </h3>
-                          <div className="flex max-md:hidden flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-sm gap-2 sm:gap-0 font-semibold text-gray-700">
-                            <span>قسط</span>
-                            <span>مبلغ</span>
-                            <span>وضعیت پرداخت</span>
-                            <span>مهلت پرداخت</span>
-                            <span></span>
+                          <div className="flex max-md:hidden flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-lg gap-2 sm:gap-0  text-gray-700">
+                            <span className="w-20">قسط</span>
+                            <span className="w-20">مبلغ</span>
+                            <span className="w-24">وضعیت پرداخت</span>
+                            <span className="w-24">مهلت پرداخت</span>
+                            <span className="w-40"></span>
                           </div>
                           {course.installments.map((inst, idx) => {
                             const isPaid = inst.status === "paid";
@@ -322,22 +370,22 @@ function CoursesPage() {
                             return (
                               <div
                                 key={idx}
-                                className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white rounded-md p-3 shadow text-sm gap-2 sm:gap-0"
+                                className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white rounded-md p-3 shadow sm:text-lg gap-2 sm:gap-0"
                               >
-                                <span className="text-gray-700 font-semibold">قسط {idx + 1}</span>
-                                <span className="text-gray-700">{inst.amount}</span>
-                                <span className={isPaid ? "text-green-600" : "text-red-500"}>
+                                <span className="text-gray-700 font-semibold w-20">قسط {idx + 1}</span>
+                                <span className="text-gray-700 w-20">{inst.amount}</span>
+                                <span className={`w-24 ${isPaid ? "text-green-600" : "text-red-500"}`}>
                                   {isPaid ? "پرداخت شده" : "در انتظار پرداخت"}
                                 </span>
-                                <span className="text-gray-600">
+                                <span className="text-gray-600 w-24">
                                   مهلت: {convertToJalali(inst.due_date)}
                                 </span>
-                                <span>
-                                  {isImg ? (
+                                <span className="w-40 flex flex-col items-center">
+                                  {isImg && inst.receiptUrl ? (
                                     <img
                                       src={inst.receiptUrl}
                                       alt={`رسید قسط ${idx + 1}`}
-                                      className="h-12 rounded-md mx-auto"
+                                      className="h-20 rounded-md mx-auto"
                                     />
                                   ) : null}
                                   {uploadingInstallmentId !== inst.id && (
