@@ -76,7 +76,7 @@ function CoursesPage() {
             installments = await getRegistrationInstallments(reg.id);
             installments = await Promise.all(
               installments.map(async (inst) => {
-                if ( inst.secure_url !== null) {
+                if (inst.secure_url !== null) {
                   try {
                     const receiptUrl = await getInstallmentReceiptImage(inst.id);
                     return { ...inst, receiptUrl };
@@ -106,6 +106,7 @@ function CoursesPage() {
           const seasonInfo = batchInfo && batchInfo.season ? seasonMap[batchInfo.season] : null;
 
           childDataMap[reg.child].courses.push({
+            id: reg.id, // Store registration ID for updating installments
             name: batchInfo ? batchInfo.title : "دوره ثبت‌نام شده",
             start: seasonInfo ? seasonInfo.start_date : "نامشخص",
             end: seasonInfo ? seasonInfo.end_date : "نامشخص",
@@ -141,12 +142,68 @@ function CoursesPage() {
         }
         child.courses.forEach((course) => {
           course.installments?.forEach((inst) => {
-
+            if (inst.receiptUrl) {
+              URL.revokeObjectURL(inst.receiptUrl);
+            }
           });
         });
       });
     };
   }, []);
+
+  const handleImageUpload = async (e, registrationId, installmentId) => {
+    e.preventDefault();
+    const fileInput = e.target.elements.receipt_image;
+    if (fileInput.files.length === 0) {
+      alert("لطفا یک فایل تصویر انتخاب کنید");
+      return;
+    }
+
+    try {
+      await uploadInstallmentPayment(installmentId, fileInput.files[0]);
+      // Fetch updated installments for the specific registration
+      const updatedInstallments = await getRegistrationInstallments(registrationId);
+      const updatedInstallmentsWithReceipts = await Promise.all(
+        updatedInstallments.map(async (inst) => {
+          if (inst.secure_url !== null) {
+            try {
+              const receiptUrl = await getInstallmentReceiptImage(inst.id);
+              return { ...inst, receiptUrl };
+            } catch (err) {
+              console.error("Error fetching receipt image for installment", inst.id, err);
+              return { ...inst, receiptUrl: null };
+            }
+          }
+          return inst;
+        })
+      );
+
+      // Update the children state with the new installments
+      setChildren((prevChildren) =>
+        prevChildren.map((child) => ({
+          ...child,
+          courses: child.courses.map((course) =>
+            course.id === registrationId
+              ? {
+                  ...course,
+                  installments: updatedInstallmentsWithReceipts,
+                  paymentInfo: {
+                    ...course.paymentInfo,
+                    installments: updatedInstallmentsWithReceipts,
+                  },
+                }
+              : course
+          ),
+        }))
+      );
+
+      setUploadingInstallmentId(null);
+      setPreviewImage(null);
+    } catch (error) {
+      console.error("Error uploading installment payment:", error);
+      alert("خطا در بارگذاری رسید. لطفا دوباره تلاش کنید.");
+    }
+  };
 
   if (loading) {
     return <p className="text-center mt-10">در حال بارگذاری...</p>;
@@ -260,7 +317,7 @@ function CoursesPage() {
                           </div>
                           {course.installments.map((inst, idx) => {
                             const isPaid = inst.status === "paid";
-                            const isImg =  inst.secure_url !== null;
+                            const isImg = inst.secure_url !== null;
 
                             return (
                               <div
@@ -297,23 +354,7 @@ function CoursesPage() {
                                   {uploadingInstallmentId === inst.id && (
                                     <div>
                                       <form
-                                        onSubmit={async (e) => {
-                                          e.preventDefault();
-                                          const fileInput = e.target.elements.receipt_image;
-                                          if (fileInput.files.length > 0) {
-                                            try {
-                                              await uploadInstallmentPayment(inst.id, fileInput.files[0]);
-                                              setUploadingInstallmentId(null);
-                                              const updatedInstallments = await getRegistrationInstallments(course.id);
-                                              course.installments = updatedInstallments;
-                                              setOpenCourseIdx((prev) => ({ ...prev }));
-                                            } catch (error) {
-                                              window.location.reload();
-                                            }
-                                          } else {
-                                            alert("لطفا یک فایل تصویر انتخاب کنید");
-                                          }
-                                        }}
+                                        onSubmit={(e) => handleImageUpload(e, course.id, inst.id)}
                                       >
                                         <input
                                           id="receipt_image"

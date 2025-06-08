@@ -20,18 +20,24 @@ const EditableChild = ({ child, onUpdate }) => {
   }, [child]);
 
   useEffect(() => {
-    const fetchPhotos = async () => {
+    const fetchPhotos1 = async () => {
       try {
         const childPhoto = await getChildPhotoUrl(child.id);
-        const parentPhoto = await getChildWithParentPhotoUrl(child.id);
         setChildPhotoUrl(childPhoto);
-        setParentPhotoUrl(parentPhoto);
       } catch (error) {
         setChildPhotoUrl(null);
+      }
+    };
+    const fetchPhotos2 = async () => {
+      try {
+        const parentPhoto = await getChildWithParentPhotoUrl(child.id);
+        setParentPhotoUrl(parentPhoto);
+      } catch (error) {
         setParentPhotoUrl(null);
       }
     };
-    fetchPhotos();
+    fetchPhotos1();
+    fetchPhotos2();
   }, [child.id]);
 
   const handleEditToggle = () => {
@@ -60,7 +66,6 @@ const EditableChild = ({ child, onUpdate }) => {
       await uploadChildPhotos(child.id, file, null);
       const updatedChildPhoto = await getChildPhotoUrl(child.id);
       setChildPhotoUrl(updatedChildPhoto);
-      window.location.reload();
     } catch (err) {
       setError("خطا در آپلود عکس کودک");
     } finally {
@@ -77,7 +82,6 @@ const EditableChild = ({ child, onUpdate }) => {
       await uploadChildPhotos(child.id, null, file);
       const updatedParentPhoto = await getChildWithParentPhotoUrl(child.id);
       setParentPhotoUrl(updatedParentPhoto);
-      window.location.reload();
     } catch (err) {
       setError("خطا در آپلود عکس والدین");
     } finally {
@@ -92,7 +96,7 @@ const EditableChild = ({ child, onUpdate }) => {
       className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-md p-4 w-full max-w-2xl mx-auto"
     >
       <div className="flex gap-4 items-center">
-        {childPhotoUrl && (
+       
           <div className="relative">
             <img
               src={childPhotoUrl}
@@ -131,8 +135,8 @@ const EditableChild = ({ child, onUpdate }) => {
               disabled={uploadingChildPhoto}
             />
           </div>
-        )}
-        {parentPhotoUrl && (
+        
+       
           <div className="relative">
             <img
               src={parentPhotoUrl}
@@ -171,7 +175,7 @@ const EditableChild = ({ child, onUpdate }) => {
               disabled={uploadingParentPhoto}
             />
           </div>
-        )}
+      
       </div>
 
       <div className="flex-1 w-full md:w-auto">
