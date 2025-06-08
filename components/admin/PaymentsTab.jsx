@@ -28,9 +28,11 @@ const PaymentsTab = () => {
   const [modalImage, setModalImage] = useState(null);
   const [confirmingPaymentIds, setConfirmingPaymentIds] = useState(new Set());
   const [confirmedPaymentIds, setConfirmedPaymentIds] = useState(new Set());
-  const [receiptImages, setReceiptImages] = useState({}); // New state for receipt images
-  const [installmentReceiptImages, setInstallmentReceiptImages] = useState({}); // New state for installment receipt images
+  const [receiptImages, setReceiptImages] = useState({});
+  const [installmentReceiptImages, setInstallmentReceiptImages] = useState({});
+  const [fetchedImages, setFetchedImages] = useState({}); // Track fetched images
 
+  // Initial data fetching (excluding images)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -54,26 +56,6 @@ const PaymentsTab = () => {
           })
         );
         setChildrenMap(childrenData);
-
-        // Fetch receipt images for non-installment payments
-        const receiptImagePromises = regs
-          .filter((reg) => reg.payment_method !== "installment")
-          .map(async (reg) => {
-            try {
-              const receiptUrl = await getReceiptImageAdmin(reg.id);
-              return { id: reg.id, url: receiptUrl };
-            } catch (err) {
-              console.error(`Error fetching receipt image for registration ${reg.id}:`, err);
-              return { id: reg.id, url: "/path/to/fallback-receipt.jpg" };
-            }
-          });
-
-        const receiptImagesData = await Promise.all(receiptImagePromises);
-        const receiptImagesMap = receiptImagesData.reduce((acc, { id, url }) => {
-          acc[id] = url;
-          return acc;
-        }, {});
-        setReceiptImages(receiptImagesMap);
       } catch (err) {
         setError("خطا در دریافت اطلاعات پرداخت‌ها");
       } finally {
@@ -86,13 +68,94 @@ const PaymentsTab = () => {
     // Clean up blob URLs on unmount
     return () => {
       Object.values(receiptImages).forEach((url) => {
-        if (url) URL.revokeObjectURL(url);
+        if (url && url !== "/path/to/fallback-receipt.jpg") URL.revokeObjectURL(url);
       });
       Object.values(installmentReceiptImages).forEach((url) => {
-        if (url) URL.revokeObjectURL(url);
+        if (url && url !== "/path/to/fallback-receipt.jpg") URL.revokeObjectURL(url);
       });
     };
   }, []);
+
+  // Fetch receipt images for non-installment payments when a batch is expanded
+  useEffect(() => {
+    async function fetchReceiptImages() {
+      const hasExpandedBatches = Object.values(expandedBatches).some((isExpanded) => isExpanded);
+      if (!hasExpandedBatches || registrations.length === 0) return;
+
+      const receiptImagePromises = registrations
+        .filter((reg) => reg.payment_method !== "installment" && !fetchedImages[`reg-${reg.id}`])
+        .map(async (reg) => {
+          try {
+            const receiptUrl = await getReceiptImageAdmin(reg.id);
+            setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
+            return { id: reg.id, url: receiptUrl };
+          } catch (err) {
+            console.error(`Error fetching receipt image for registration ${reg.id}:`, err);
+            setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
+            return { id: reg.id, url: "/path/to/fallback-receipt.jpg" };
+          }
+        });
+
+      const receiptImagesData = await Promise.all(receiptImagePromises);
+      setReceiptImages((prev) => ({
+        ...prev,
+        ...receiptImagesData.reduce((acc, { id, url }) => {
+          acc[id] = url;
+          return acc;
+        }, {}),
+      }));
+    }
+
+    fetchReceiptImages();
+  }, [expandedBatches, registrations.length]);
+
+  // Fetch installment receipt images when a card is flipped
+  useEffect(() => {
+    async function fetchInstallmentReceiptImages() {
+      const flippedRegIds = Object.keys(flippedCards).filter((id) => flippedCards[id]);
+      if (flippedRegIds.length === 0) return;
+
+      const updatedDetailsMap = { ...registrationDetailsMap };
+      await Promise.all(
+        flippedRegIds.map(async (regId) => {
+          if (!updatedDetailsMap[regId]) {
+            try {
+              const regDetails = await getRegistrationDetailsById(regId);
+              const installmentDetails = await getInstallmentDetailsRegistrationId(regId);
+              const installmentsWithImages = await Promise.all(
+                installmentDetails.map(async (inst) => {
+                  if (inst.secure_url && !fetchedImages[`installment-${inst.id}`]) {
+                    try {
+                      const receiptUrl = await getInstallmentReceiptImageAdmin(inst.id);
+                      setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                      setInstallmentReceiptImages((prev) => ({
+                        ...prev,
+                        [inst.id]: receiptUrl,
+                      }));
+                      return { ...inst, receiptUrl };
+                    } catch (err) {
+                      console.error(`Error fetching installment receipt image for installment ${inst.id}:`, err);
+                      setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                      return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
+                    }
+                  }
+                  return { ...inst, receiptUrl: installmentReceiptImages[inst.id] || null };
+                })
+              );
+              updatedDetailsMap[regId] = { ...regDetails, installments: installmentsWithImages };
+            } catch (error) {
+              console.error("Error fetching registration details or installments", error);
+            }
+          }
+        })
+      );
+      setRegistrationDetailsMap(updatedDetailsMap);
+    }
+
+    if (Object.values(flippedCards).some((isFlipped) => isFlipped)) {
+      fetchInstallmentReceiptImages();
+    }
+  }, [flippedCards]);
 
   const groupedByBatch = {};
   registrations.forEach((reg) => {
@@ -112,45 +175,7 @@ const PaymentsTab = () => {
   };
 
   const toggleFlipCard = async (regId) => {
-    if (flippedCards[regId]) {
-      setFlippedCards((prev) => ({ ...prev, [regId]: false }));
-      return;
-    }
-
-    if (!registrationDetailsMap[regId]) {
-      try {
-        const regDetails = await getRegistrationDetailsById(regId);
-        const installmentDetails = await getInstallmentDetailsRegistrationId(regId);
-        // Fetch installment receipt images
-        const installmentsWithImages = await Promise.all(
-          installmentDetails.map(async (inst) => {
-            if (inst.secure_url) {
-              try {
-                const receiptUrl = await getInstallmentReceiptImageAdmin(inst.id);
-                setInstallmentReceiptImages((prev) => ({
-                  ...prev,
-                  [inst.id]: receiptUrl,
-                }));
-                return { ...inst, receiptUrl };
-              } catch (err) {
-                console.error(`Error fetching installment receipt image for installment ${inst.id}:`, err);
-                return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
-              }
-            }
-            return inst;
-          })
-        );
-        regDetails.installments = installmentsWithImages;
-        setRegistrationDetailsMap((prev) => ({
-          ...prev,
-          [regId]: regDetails,
-        }));
-      } catch (error) {
-        console.error("Error fetching registration details or installments", error);
-      }
-    }
-
-    setFlippedCards((prev) => ({ ...prev, [regId]: true }));
+    setFlippedCards((prev) => ({ ...prev, [regId]: !prev[regId] }));
   };
 
   const handleConfirmPayment = async (regId) => {
