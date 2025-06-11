@@ -6,7 +6,9 @@ import Link from "next/link";
 import { login } from "@/lib/api/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import {resetPassword , requestResetPasswordCode, verifyPhoneValidationCode, requestValidPhone} from "@/lib/api/api"
+import { resetPassword, requestResetPasswordCode, verifyPhoneValidationCode, requestValidPhone } from "@/lib/api/api";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import toastify CSS
 
 const Login = () => {
   const [phone, setPhone] = useState("");
@@ -23,7 +25,16 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!phone.trim() || !password.trim()) {
-      alert("لطفاً همه فیلدها را پر کنید.");
+      toast.error("لطفاً همه فیلدها را پر کنید.", {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+        rtl: true, // Enable RTL for Persian
+      });
       return;
     }
     setLoading(true);
@@ -41,11 +52,33 @@ const Login = () => {
           router.push("/profile");
         }
       } else {
-        alert("ورود ناموفق بود.");
+        toast.error("ورود ناموفق بود.", {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+          rtl: true,
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("خطا در ورود: " + (error.response?.data?.detail || error.message));
+      const errorMessage =
+        error.response?.data?.detail === "No active account found with the given credentials"
+          ? "هیچ حساب فعالی با اطلاعات وارد شده یافت نشد."
+          : error.response?.data?.detail || error.message;
+      toast.error(`خطا در ورود: ${errorMessage}`, {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+        rtl: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -184,74 +217,77 @@ const Login = () => {
           </button>
         </p>
 
-      {/* Phone input modal */}
-      {showPhoneModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
-            <h3 className="text-lg font-semibold mb-4 text-right">بازیابی رمز عبور</h3>
-            <input
-              type="text"
-              placeholder="شماره تلفن"
-              value={resetPhone}
-              onChange={(e) => setResetPhone(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
-            />
-            <div className="flex justify-between">
-              <button
-                onClick={() => setShowPhoneModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-md"
-              >
-                انصراف
-              </button>
-              <button
-                onClick={handleSendCode}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
-                disabled={loading}
-              >
-                {loading ? "در حال ارسال..." : "ارسال کد"}
-              </button>
+        {/* Phone input modal */}
+        {showPhoneModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
+              <h3 className="text-lg font-semibold mb-4 text-right">بازیابی رمز عبور</h3>
+              <input
+                type="text"
+                placeholder="شماره تلفن"
+                value={resetPhone}
+                onChange={(e) => setResetPhone(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+              />
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setShowPhoneModal(false)}
+                  className="px-4 py-2 bg-gray-300 rounded-md"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={handleSendCode}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                  disabled={loading}
+                >
+                  {loading ? "در حال ارسال..." : "ارسال کد"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Reset password modal */}
-      {showResetModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
-            <h3 className="text-lg font-semibold mb-4 text-right">تنظیم رمز عبور جدید</h3>
-            <input
-              type="text"
-              placeholder="کد ارسال شده"
-              value={resetCode}
-              onChange={(e) => setResetCode(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
-            />
-            <input
-              type="password"
-              placeholder="رمز عبور جدید"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
-            />
-            <div className="flex justify-between">
-              <button
-                onClick={() => setShowResetModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-md"
-              >
-                انصراف
-              </button>
-              <button
-                onClick={handleResetPassword}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
-                disabled={loading}
-              >
-                {loading ? "در حال تنظیم..." : "تنظیم رمز عبور"}
-              </button>
+        {/* Reset password modal */}
+        {showResetModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
+              <h3 className="text-lg font-semibold mb-4 text-right">تنظیم رمز عبور جدید</h3>
+              <input
+                type="text"
+                placeholder="کد ارسال شده"
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+              />
+              <input
+                type="password"
+                placeholder="رمز عبور جدید"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 mb-4 text-right"
+              />
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setShowResetModal(false)}
+                  className="px-4 py-2 bg-gray-300 rounded-md"
+                >
+                  انصراف
+                </button>
+                <button
+                  onClick={handleResetPassword}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                  disabled={loading}
+                >
+                  {loading ? "در حال تنظیم..." : "تنظیم رمز عبور"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Add ToastContainer for rendering toast notifications */}
+        <ToastContainer />
       </motion.div>
     </div>
   );

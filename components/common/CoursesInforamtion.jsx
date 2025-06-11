@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { getCourses, getCourseBatches, getSeasons } from "../../lib/api/api";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function CoursesInforamtion() {
+export default function CoursesInformation() {
   const [courses, setCourses] = useState([]);
   const [seasons, setSeasons] = useState([]);
   const [expandedCourseId, setExpandedCourseId] = useState(null);
@@ -34,7 +35,6 @@ export default function CoursesInforamtion() {
 
   const handleCourseClick = async (courseId) => {
     if (expandedCourseId === courseId) {
-      // Collapse if already expanded
       setExpandedCourseId(null);
       return;
     }
@@ -59,74 +59,151 @@ export default function CoursesInforamtion() {
   };
 
   if (loadingCourses) {
-    return <div className="p-4 text-center">Loading courses...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full"
+        />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-600">{error}</div>;
+    return (
+      <div className="p-4 text-center text-red-600 bg-red-100 rounded-lg m-4 text-base">
+        {error}
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl font-mitra mx-auto p-4 pt-30 ">
-      <h1 className="text-3xl font-bold mb-6 text-center">اطلاعات دوره‌ها</h1>
-      <div className="space-y-4 text-black">
+    <div dir="rtl" className="max-w-5xl mx-auto font-mitra p-6 min-h-screen">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-5xl font-bold mb-10 text-center text-gray-800"
+      >
+        اطلاعات دوره‌ها
+      </motion.h1>
+      <div className="space-y-6">
         {courses.map((course) => (
-          <div
+          <motion.div
             key={course.id}
-            className="border rounded-md p-4 cursor-pointer bg-white shadow hover:shadow-md transition"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
           >
             <div
-              className="flex justify-between items-center"
+              className="cursor-pointer p-4 relative"
               onClick={() => handleCourseClick(course.id)}
             >
-              <div>
-                <h2 className="text-xl font-semibold">{course.name}</h2>
-                {course.description && (
-                  <p className="text-gray-600 mt-1">{course.description}</p>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-row-reverse justify-between">
+                    <motion.div
+                      animate={{ rotate: expandedCourseId === course.id ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-gray-500 text-2xl"
+                    >
+                
+                    </motion.div>
+                    <h2 className="text-3xl font-semibold mt-4 text-gray-800">
+                      {course.name}
+                    </h2>
+                  </div>
+                  {course.description && (
+                    <p className="text-gray-600 mt-2 text-right text-base">{course.description}</p>
+                  )}
+                </div>
+                {course.image && (
+                  <motion.img
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    src={`http://188.121.100.138${course.image}`}
+                    alt={course.name}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
                 )}
-              </div>
-              <div className="text-2xl select-none">
-                {expandedCourseId === course.id ? "▲" : "▼"}
               </div>
             </div>
-            {expandedCourseId === course.id && (
-              <div className="mt-4 border-t pt-4">
-                {loadingBatches[course.id] ? (
-                  <p>Loading batches...</p>
-                ) : batchesByCourse[course.id] && batchesByCourse[course.id].length > 0 ? (
-                  <ul className="space-y-3">
-                    {batchesByCourse[course.id].map((batch) => {
-                      const season = getSeasonById(batch.season);
-                      return (
-                        <li
-                          key={batch.id}
-                          className="border rounded p-3 bg-gray-50"
-                        >
-                          <h3 className="font-semibold text-lg">{batch.title}</h3>
-                          {season && (
-                            <p className="text-sm text-gray-700">
-                              فصل: {season.name} ({season.start_date} - {season.end_date})
-                            </p>
-                          )}
-                          <p className="text-sm text-gray-700">
-                            محدوده سنی: {batch.min_age} تا {batch.max_age} سال
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            برنامه: {batch.schedule}
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            ظرفیت: {batch.capacity}
-                          </p>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p>هیچ دوره‌ای یافت نشد.</p>
-                )}
-              </div>
-            )}
-          </div>
+            <AnimatePresence>
+              {expandedCourseId === course.id && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-6 bg-gray-50 border-t"
+                >
+                  {loadingBatches[course.id] ? (
+                    <div className="flex justify-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        className="w-8 h-8 border-2 border-t-blue-500 border-gray-200 rounded-full"
+                      />
+                    </div>
+                  ) : batchesByCourse[course.id]?.length > 0 ? (
+                    <div>
+                      <div className="hidden md:flex flex-wrap items-center gap-x-4 gap-y-1 border-b p-3 bg-gray-100 text-base font-semibold text-gray-800">
+                        <span className="min-w-[100px]">عنوان</span>
+                        <span className="min-w-[200px]">فصل</span>
+                        <span className="min-w-[120px]">محدوده سنی</span>
+                        <span className="min-w-[150px]">برنامه</span>
+                        <span className="min-w-[80px]">ظرفیت</span>
+                      </div>
+                      <ul className="space-y-2 mt-2">
+                        {batchesByCourse[course.id].map((batch) => {
+                          const season = getSeasonById(batch.season);
+                          return (
+                            <motion.li
+                              key={batch.id}
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="flex flex-wrap items-center gap-x-4 gap-y-1 border rounded-lg p-3 bg-white shadow-sm text-base text-gray-600"
+                            >
+                              <span className="min-w-[100px] md:min-w-[100px]">
+                                <span className="md:hidden font-semibold">عنوان: </span>
+                                {batch.title}
+                              </span>
+                              <span className="min-w-[200px] md:min-w-[200px]">
+                                <span className="md:hidden font-semibold">فصل: </span>
+                                {season ? (
+                                  `${season.name} (${season.start_date} - ${season.end_date})`
+                                ) : (
+                                  "-"
+                                )}
+                              </span>
+                              <span className="min-w-[120px] md:min-w-[120px]">
+                                <span className="md:hidden font-semibold">محدوده سنی: </span>
+                                {batch.min_age} تا {batch.max_age} سال
+                              </span>
+                              <span className="min-w-[150px] md:min-w-[150px]">
+                                <span className="md:hidden font-semibold">برنامه: </span>
+                                {batch.schedule}
+                              </span>
+                              <span className="min-w-[80px] md:min-w-[80px]">
+                                <span className="md-hidden font-semibold">ظرفیت: </span>
+                                {batch.capacity}
+                              </span>
+                            </motion.li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 text-center text-base">هیچ دوره‌ای یافت نشد.</p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         ))}
       </div>
     </div>

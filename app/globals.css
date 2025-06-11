@@ -19,3 +19,9 @@ html {
   width: 100%;
   overflow-x: hidden;
 }
+
+.Toastify__toast {
+  font-family: 'Mitra', sans-serif !important;
+  text-align: right; /* Ensure RTL text alignment */
+  direction: rtl; /* Right-to-left direction for Persian */
+}
