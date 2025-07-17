@@ -34,9 +34,14 @@ const InformationPage = () => {
         const data = await getUserMe();
         setUser(data);
         if (data && data.id) {
-          const photoUrl = await getProfilePhotoUrl(data.id);
-          setProfilePhotoUrl(photoUrl);
-        }
+          try {
+            const photoUrl = await getProfilePhotoUrl(data.id);
+            setProfilePhotoUrl(photoUrl);
+          } catch (err) {
+            // Don't block rendering, just don't set photo
+            setProfilePhotoUrl(null);
+            console.warn("No profile photo found or error loading it", err);
+          }}
       } catch (err) {
         setError("خطا در دریافت اطلاعات کاربر");
       } finally {

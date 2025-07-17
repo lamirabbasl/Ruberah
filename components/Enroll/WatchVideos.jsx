@@ -77,7 +77,7 @@ function WatchVideos() {
 
   const currentVideo = videos[currentIndex];
   // Use the proxy URL instead of direct backend URL
-  const videoUrl = `http://188.121.100.138${currentVideo.video}`;
+  const videoUrl = `${process.env.NEXT_PUBLIC_API_URL}${currentVideo.video}`;
 
   return (
     <div

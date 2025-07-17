@@ -19,7 +19,7 @@ const AdminSignupVideos = () => {
   const fileInputRef = useRef(null);
 
   // Base URL for video sources (configurable via environment variable or API)
-  const BASE_URL = "http://188.121.100.138";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     fetchVideos();

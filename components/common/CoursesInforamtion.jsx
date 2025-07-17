@@ -124,7 +124,7 @@ export default function CoursesInformation() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}
-                    src={`http://188.121.100.138${course.image}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
                     alt={course.name}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
