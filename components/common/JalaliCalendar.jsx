@@ -85,14 +85,15 @@ const JalaliCalendar = ({ onDateSelect }) => {
   };
 
   // Generate a range of years for the year picker (current year ± 10)
-  const currentYear = currentDate.jYear();
-  const years = Array.from({ length: 40 }, (_, i) => currentYear - 20 + i);
+  const systemCurrentYear = moment().jYear(); // always current system year
+  const years = Array.from({ length: 80 }, (_, i) => systemCurrentYear - 40 + i);
+
 
   return (
     <div className="flex flex-col text-black relative items-center gap-3 w-full h-[460px] max-w-md mx-auto p-5 bg-white rounded-lg shadow-lg border border-gray-200">
       <div className="flex justify-between items-center w-full mb-6 mt-5">
         <button
-          onClick={nextMonth}
+          onClick={prevMonth}
           className="px-3 py-1 text-gray-500 hover:text-gray-700 focus:outline-none"
         >
           <IoIosArrowForward size={20} className="text-black hover:text-blue-500" />
@@ -103,7 +104,7 @@ const JalaliCalendar = ({ onDateSelect }) => {
             <IoIosArrowDown size={16} className="ml-2 text-gray-500 hover:text-blue-500" />
           </h2>
           {showYearPicker && (
-            <div className="absolute top-20 w-88 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-4 grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+            <div className="absolute top-22 w-70 right-10 z-20 bg-white border border-gray-200 rounded-lg shadow-lg p-4 grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
               {years.map((year) => (
                 <button
                   key={year}
@@ -119,7 +120,7 @@ const JalaliCalendar = ({ onDateSelect }) => {
           )}
         </div>
         <button
-          onClick={prevMonth}
+          onClick={nextMonth}
           className="px-3 py-1 text-gray-500 hover:text-gray-700 focus:outline-none"
         >
           <IoIosArrowBack size={20} className="text-black hover:text-blue-500" />
