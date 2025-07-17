@@ -152,7 +152,7 @@ const InformationPage = () => {
       className="flex flex-col font-mitra items-center p-6 max-w-xl max-md:w-screen mx-auto bg-gray-100 shadow-2xl rounded-2xl mt-4 space-y-6"
     >
       {/* Profile photo */}
-      {profilePhotoUrl && (
+      
         <div className="relative mb-4">
           <img
             src={profilePhotoUrl}
@@ -192,7 +192,7 @@ const InformationPage = () => {
             disabled={uploading}
           />
         </div>
-      )}
+      
 
       {/* Editable user info fields */}
       <div className="w-full space-y-2">
