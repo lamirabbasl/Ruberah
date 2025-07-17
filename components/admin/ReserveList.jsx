@@ -357,23 +357,24 @@ const ReserveList = () => {
               animate="visible"
               className="mb-6"
             >
-              <div className="flex items-center justify-between mb-3 bg-gray-100 rounded-lg px-4 py-3">
-                <h3 className="text-lg font-semibold text-gray-800">{date}</h3>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() =>
-                    setExpandedDates((prev) => ({
-                      ...prev,
-                      [date]: !prev[date],
-                    }))
-                  }
-                  className="text-indigo-600 hover:text-indigo-800 focus:outline-none"
-                  aria-label={expandedDates[date] ? "جمع کردن" : "باز کردن"}
-                >
-                  {expandedDates[date] ? "▲" : "▼"}
-                </motion.button>
-              </div>
+             <motion.div
+      className="flex items-center justify-between mb-3 bg-gray-100 rounded-lg px-4 py-3 cursor-pointer"
+      whileHover={{ scale: 1.02 }}
+      onClick={() =>
+        setExpandedDates((prev) => ({
+          ...prev,
+          [date]: !prev[date],
+        }))
+      }
+    >
+      <h3 className="text-lg font-semibold text-gray-800">{date}</h3>
+      <span
+        className="text-indigo-600"
+        aria-label={expandedDates[date] ? "جمع کردن" : "باز کردن"}
+      >
+        {expandedDates[date] ? "▲" : "▼"}
+      </span>
+    </motion.div>
               <AnimatePresence>
                 {expandedDates[date] && (
                   <motion.div

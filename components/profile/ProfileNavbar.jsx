@@ -97,13 +97,13 @@ function ProfileNavbar() {
       {/* Navigation Links */}
       <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
         <NavItem
-          label="اطلاعات شخصی"
+          label="پروفایل"
           icon={<FaListUl className="text-xl ml-2" />}
           onClick={() => handleTabClick("information")}
           isActive={activeTab === "information"} // Fixed typo: "informatin"
         />
         <NavItem
-          label="دوره های من"
+          label="دوره های ثبت نام شده"
           icon={<FaRegCalendarCheck className="text-xl ml-2" />}
           onClick={() => handleTabClick("courses")}
           isActive={activeTab === "courses"} // Fixed typo: "crouses"
