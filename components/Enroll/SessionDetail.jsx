@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 export default function SessionDetail() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function SessionDetail() {
   if (!data.code || !data.user || !data.session) {
     return (
       <div dir="rtl" className="min-h-screen bg-gradient-to-b from-primary to-gray-600 pt-24 p-6 font-mitra">
-        <div className="text-white text-center">در حال بارگذاری اطلاعات...</div>
+        <LoadingSpinner/>
       </div>
     );
   }

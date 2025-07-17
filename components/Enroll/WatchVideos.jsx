@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getIntroVideos } from "@/lib/api/api";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 function WatchVideos() {
   const router = useRouter();
@@ -54,7 +55,7 @@ function WatchVideos() {
   if (loading) {
     return (
       <div className="w-full h-screen pt-[140px] bg-primary text-white flex justify-center items-center font-noto">
-        <div className="text-xl">در حال بارگذاری ویدیوها...</div>
+       <LoadingSpinner/>
       </div>
     );
   }

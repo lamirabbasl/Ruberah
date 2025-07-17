@@ -8,6 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 function AdminMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -92,7 +93,7 @@ function AdminMenu() {
   }, [isMenuOpen]);
 
   if (loading) {
-    return <p className="text-center mt-10 text-white">در حال بارگذاری...</p>;
+    return <LoadingSpinner/>
   }
 
   if (error) {

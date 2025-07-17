@@ -11,6 +11,7 @@ import {
   getInstallmentReceiptImage,
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 function CoursesPage() {
   const [openCourseIdx, setOpenCourseIdx] = useState({});
@@ -254,7 +255,7 @@ function CoursesPage() {
   };
 
   if (loading) {
-    return <p className="text-center mt-10">در حال بارگذاری...</p>;
+    return <LoadingSpinner />;
   }
 
   if (error) {

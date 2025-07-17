@@ -15,6 +15,7 @@ import {
 import EditableField from "./EditableField";
 import EditableChild from "./EditableChild";
 import AddChildForm from "./AddChildForm";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const InformationPage = () => {
   const [user, setUser] = useState(null);
@@ -138,7 +139,7 @@ const InformationPage = () => {
   };
 
   if (loadingUser || loadingChildren) {
-    return <p className="text-center mt-10">در حال بارگذاری...</p>;
+    return <div className="w-screen"><LoadingSpinner/></div>;
   }
 
   if (error) {

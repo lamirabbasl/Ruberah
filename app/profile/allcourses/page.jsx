@@ -10,6 +10,7 @@ import {
   registerChildToBatch,
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 function AllCourses() {
   const [courses, setCourses] = useState([]);
@@ -148,12 +149,7 @@ function AllCourses() {
 
   if (loadingCourses) {
     return (
-      <div
-        dir="rtl"
-        className="min-h-screen flex items-center justify-center font-mitra text-lg"
-      >
-        در حال بارگذاری داده‌ها...
-      </div>
+      <LoadingSpinner />
     );
   }
 

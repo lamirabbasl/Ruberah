@@ -73,10 +73,6 @@ function ProfileNavbar() {
     router.push(`/profile/${tab}`);
   };
 
-  if (loading) {
-    return <p className="text-center mt-10 text-white">در حال بارگذاری...</p>;
-  }
-
   if (error) {
     return <p className="text-center mt-10 text-red-600">{error}</p>;
   }
