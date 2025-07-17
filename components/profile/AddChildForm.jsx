@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import JalaliCalendar from "../common/JalaliCalendar"; // Import JalaliCalendar
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const AddChildForm = ({ onAdd }) => {
   const [fullName, setFullName] = useState("");
@@ -33,7 +34,7 @@ const AddChildForm = ({ onAdd }) => {
           type="text"
           readOnly
           placeholder="تاریخ تولد"
-          value={birthDate}
+          value={convertToJalali(birthDate)}
           onClick={() => setShowCalendar(true)}
           className="w-full p-2 text-sm border border-gray-300 rounded-md text-right cursor-pointer bg-white"
         />

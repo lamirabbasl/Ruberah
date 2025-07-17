@@ -141,7 +141,7 @@ const SeasonsTab = () => {
                   <input
                     type="text"
                     readOnly
-                    value={newSeason.start_date}
+                    value={convertToJalali(newSeason.start_date)}
                     onClick={() => {
                       setShowStartCalendar(true);
                       setShowEndCalendar(false);
@@ -165,7 +165,7 @@ const SeasonsTab = () => {
                   <input
                     type="text"
                     readOnly
-                    value={newSeason.end_date}
+                    value={convertToJalali(newSeason.end_date)}
                     onClick={() => {
                       setShowEndCalendar(true);
                       setShowStartCalendar(false);

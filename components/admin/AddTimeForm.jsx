@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import JalaliCalendar from "../common/JalaliCalendar";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const AddTimeForm = ({ onSave, onCancel }) => {
   const [title, setTitle] = useState("");
@@ -85,7 +86,7 @@ const AddTimeForm = ({ onSave, onCancel }) => {
             <input
               type="text"
               readOnly
-              value={dateTime}
+              value={convertToJalali(dateTime)}
               onClick={() => setShowCalendar(true)}
               placeholder="انتخاب تاریخ"
               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right cursor-pointer bg-white"
