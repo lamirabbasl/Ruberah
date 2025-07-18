@@ -1,50 +1,61 @@
 import { NextResponse } from "next/server";
 
+function normalizeUrl(url) {
+  url = url.replace(/\/+$/, "");
+  if (url.endsWith("/api")) {
+    url = url.slice(0, -4);
+  }
+  return url;
+}
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // Check cookie or Authorization header
-  const tokenRaw =
+  // Check both cookie and Authorization header
+  const token =
     request.cookies.get("auth_token")?.value ||
     request.headers.get("Authorization");
 
-  // Only protect /admin and /profile
+  // Protect /admin and /profile routes only
   if (pathname.startsWith("/admin") || pathname.startsWith("/profile")) {
-    if (!tokenRaw) {
+    if (!token) {
       const callbackUrl = encodeURIComponent(pathname);
       return NextResponse.redirect(
         new URL(`/api/auth/login?callbackUrl=${callbackUrl}`, request.url)
       );
     }
 
-    // Remove duplicate Bearer prefix if present
-    const tokenStripped = tokenRaw.replace(/^Bearer\s+/, "").trim();
-    const authorizationHeader = `Bearer ${tokenStripped}`;
+    // If token exists but doesn't have Bearer prefix, add it
+    const tokenWithBearer = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 
-    // Restrict /admin to users in manager group
+    // For admin routes, verify user is in manager group
     if (pathname.startsWith("/admin")) {
       try {
-        const userInfoUrl = `${request.nextUrl.origin}/api/proxy/users/me`;
+        // Use the external Django API URL
+        const apiUrl = normalizeUrl(process.env.NEXT_PUBLIC_API_URL) ;
+        const verificationUrl = `${apiUrl}/api/users/me`;
 
-        console.log("Calling user verification API:", userInfoUrl);
+        console.log(`Calling user verification API: ${verificationUrl}`); // Debug log
 
-        const response = await fetch(userInfoUrl, {
+        const response = await fetch(verificationUrl, {
           headers: {
-            Authorization: authorizationHeader,
+            Authorization: tokenWithBearer,
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errText}`);
+          throw new Error(`Failed to verify user: ${response.statusText}`);
         }
 
         const userData = await response.json();
 
+        // Check if user is in manager group
         const isManager =
           Array.isArray(userData.groups) && userData.groups.includes("manager");
 
         if (!isManager) {
+          // Redirect non-manager users to home page
           return NextResponse.redirect(new URL("/", request.url));
         }
       } catch (error) {
@@ -53,10 +64,11 @@ export async function middleware(request) {
       }
     }
 
-    // Pass request with Authorization header
+    // Clone the request headers and add the token
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("Authorization", authorizationHeader);
+    requestHeaders.set("Authorization", tokenWithBearer);
 
+    // Return response with modified headers
     return NextResponse.next({
       request: {
         headers: requestHeaders,
@@ -64,7 +76,6 @@ export async function middleware(request) {
     });
   }
 
-  // Allow public routes
   return NextResponse.next();
 }
 
