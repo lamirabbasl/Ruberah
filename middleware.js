@@ -1,55 +1,50 @@
 import { NextResponse } from "next/server";
 
-function normalizeUrl(url) {
-  url = url.replace(/\/+$/, "");
-  if (url.endsWith("/api")) {
-    url = url.slice(0, -4);
-  }
-  return url;
-}
-
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  
-  // Check both cookie and Authorization header
-  const token =
+
+  // Check cookie or Authorization header
+  const tokenRaw =
     request.cookies.get("auth_token")?.value ||
     request.headers.get("Authorization");
 
-  // Protect /admin and /profile routes only
+  // Only protect /admin and /profile
   if (pathname.startsWith("/admin") || pathname.startsWith("/profile")) {
-    if (!token) {
+    if (!tokenRaw) {
       const callbackUrl = encodeURIComponent(pathname);
       return NextResponse.redirect(
         new URL(`/api/auth/login?callbackUrl=${callbackUrl}`, request.url)
       );
     }
 
-    // If token exists but doesn't have Bearer prefix, add it
-    const tokenWithBearer = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    // Remove duplicate Bearer prefix if present
+    const tokenStripped = tokenRaw.replace(/^Bearer\s+/, "").trim();
+    const authorizationHeader = `Bearer ${tokenStripped}`;
 
-    // For admin routes, verify user is in manager group
+    // Restrict /admin to users in manager group
     if (pathname.startsWith("/admin")) {
       try {
-        // Use proxy route for verification
-        const response = await fetch(new URL("/api/proxy/users/me", request.url), {
+        const userInfoUrl = `${request.nextUrl.origin}/api/proxy/users/me`;
+
+        console.log("Calling user verification API:", userInfoUrl);
+
+        const response = await fetch(userInfoUrl, {
           headers: {
-            Authorization: tokenWithBearer,
+            Authorization: authorizationHeader,
           },
         });
 
         if (!response.ok) {
-          throw new Error("Failed to verify user");
+          const errText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errText}`);
         }
 
         const userData = await response.json();
 
-        // Check if user is in manager group
-        const isManager = Array.isArray(userData.groups) && 
-                        userData.groups.includes("manager");
+        const isManager =
+          Array.isArray(userData.groups) && userData.groups.includes("manager");
 
         if (!isManager) {
-          // Redirect non-manager users to home page
           return NextResponse.redirect(new URL("/", request.url));
         }
       } catch (error) {
@@ -58,11 +53,10 @@ export async function middleware(request) {
       }
     }
 
-    // Clone the request headers and add the token
+    // Pass request with Authorization header
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("Authorization", tokenWithBearer);
+    requestHeaders.set("Authorization", authorizationHeader);
 
-    // Return response with modified headers
     return NextResponse.next({
       request: {
         headers: requestHeaders,
@@ -70,6 +64,7 @@ export async function middleware(request) {
     });
   }
 
+  // Allow public routes
   return NextResponse.next();
 }
 
