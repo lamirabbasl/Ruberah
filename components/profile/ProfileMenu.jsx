@@ -158,25 +158,32 @@ function ProfileMenu() {
 
               {/* Navigation Links */}
               <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
-                <NavItem
-                  label="پروفایل"
-                  icon={<FaListUl className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("information")}
-                  isActive={activeTab === "information"}
-                />
-                <NavItem
-                  label="دوره های ثبت نام شده"
-                  icon={<FaRegCalendarCheck className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("courses")}
-                  isActive={activeTab === "courses"}
-                />
-                <NavItem
-                  label="دوره ها"
-                  icon={<FaRegCalendarCheck className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("allcourses")}
-                  isActive={activeTab === "allcourses"} // Fixed typo: "allcrouses" to "allcourses"
-                />
-              </nav>
+  <NavItem
+    label="پروفایل"
+    icon={<FaListUl className="text-xl ml-2" />}
+    onClick={() => handleTabClick("information")}
+    isActive={activeTab === "information"}
+  />
+  <NavItem
+    label="دوره های ثبت نام شده"
+    icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+    onClick={() => handleTabClick("courses")}
+    isActive={activeTab === "courses"}
+  />
+  <NavItem
+    label="دوره ها"
+    icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+    onClick={() => handleTabClick("allcourses")}
+    isActive={activeTab === "allcourses"}
+  />
+  <NavItem
+    label="فرزندان"
+    icon={<FaListUl className="text-xl ml-2" />}
+    onClick={() => handleTabClick("children")}
+    isActive={activeTab === "children"}
+  />
+</nav>
+
 
               {/* Logout Button */}
               <button

@@ -114,6 +114,12 @@ function ProfileNavbar() {
           onClick={() => handleTabClick("allcourses")}
           isActive={activeTab === "allcourses"} // Fixed typo: "allcrouses"
         />
+        <NavItem
+          label= "فرزندان"
+          icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+          onClick={() => handleTabClick("children")}
+          isActive={activeTab === "children"} // Fixed typo: "allcrouses"
+        />
       </nav>
 
       {/* Logout Button */}
