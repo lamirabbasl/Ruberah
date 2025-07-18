@@ -50,6 +50,7 @@ const ChildrenPage = () => {
       const patchedChild = await patchChild(updatedChild.id, {
         full_name: updatedChild.full_name,
         gender: updatedChild.gender,
+        birth_date: updatedChild.birth_date,
       });
       setChildren(
         children.map((child) =>

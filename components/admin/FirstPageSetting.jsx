@@ -24,7 +24,7 @@ const SettingsPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getFirstPage();
+      const data = await getFirstPageManager();
       setSettings({
         install_link: data.install_link || "",
         telegram_link: data.telegram_link || "",

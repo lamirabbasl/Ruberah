@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoClose } from "react-icons/io5";
-import { getCourses, addCourse, deleteCourse , UploadCourseImage} from "@/lib/api/api";
+import { IoClose, IoPencil } from "react-icons/io5";
+import { getCourses, addCourse, editCourse, deleteCourse, UploadCourseImage } from "@/lib/api/api";
 
 const CoursesTab = () => {
   const [courses, setCourses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: "", description: "" });
+  const [editingCourse, setEditingCourse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -44,7 +46,26 @@ const CoursesTab = () => {
     } catch (err) {
       setError("خطا در افزودن دوره");
     }
-  }; 
+  };
+
+  const handleEditCourse = async () => {
+    if (!editingCourse.name.trim()) {
+      setError("نام دوره نمی‌تواند خالی باشد");
+      return;
+    }
+    setError(null);
+    try {
+      await editCourse(editingCourse.id, {
+        name: editingCourse.name,
+        description: editingCourse.description,
+      });
+      setShowEditForm(false);
+      setEditingCourse(null);
+      fetchCourses();
+    } catch (err) {
+      setError("خطا در ویرایش دوره");
+    }
+  };
 
   const confirmDeleteCourse = (course) => {
     setCourseToDelete(course);
@@ -108,7 +129,6 @@ const CoursesTab = () => {
               exit="exit"
               className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative"
             >
-          
               <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">افزودن دوره جدید</h3>
               <div className="space-y-5">
                 <div>
@@ -157,6 +177,68 @@ const CoursesTab = () => {
       </AnimatePresence>
 
       <AnimatePresence>
+        {showEditForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">ویرایش دوره</h3>
+              <div className="space-y-5">
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">نام دوره</label>
+                  <input
+                    type="text"
+                    value={editingCourse?.name || ""}
+                    onChange={(e) => setEditingCourse({ ...editingCourse, name: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">توضیحات</label>
+                  <textarea
+                    value={editingCourse?.description || ""}
+                    onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+                    rows="4"
+                  />
+                </div>
+              </div>
+              {error && (
+                <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg mt-4">{error}</p>
+              )}
+              <div className="flex justify-end space-x-3 mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowEditForm(false)}
+                  className="px-5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200 text-sm font-medium"
+                >
+                  انصراف
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleEditCourse}
+                  className="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
+                >
+                  ذخیره
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -171,7 +253,6 @@ const CoursesTab = () => {
               exit="exit"
               className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative"
             >
-           
               <p className="mb-6 text-red-600 font-semibold text-center text-lg">
                 آیا از حذف دوره "{courseToDelete?.name}" مطمئن هستید؟
               </p>
@@ -232,62 +313,76 @@ const CoursesTab = () => {
                 >
                   <IoClose size={20} />
                 </motion.button>
-                
-                {/* Course Image */}
-                <div className="w-full h-48 bg-gray-100">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    setEditingCourse({ id: course.id, name: course.name, description: course.description });
+                    setShowEditForm(true);
+                  }}
+                  className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm text-indigo-500 hover:bg-gray-200 hover:text-indigo-700 transition-all duration-200 z-10"
+                  aria-label={`ویرایش دوره ${course.name}`}
+                >
+                  <IoPencil size={20} />
+                </motion.button>
+                <div className="w-full h-48 bg-gray-1006">
                   {course.image ? (
-                    <img 
+                    <img
                       src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
                       alt={course.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
                       }}
                     />
                   ) : null}
-                  <div 
-                    className={`w-full h-full flex items-center justify-center ${course.image ? 'hidden' : ''}`}
-                    style={{ display: course.image ? 'none' : 'flex' }}
+                  <div
+                    className={`w-full h-full flex items-center justify-center ${course.image ? "hidden" : ""}`}
+                    style={{ display: course.image ? "none" : "flex" }}
                   >
                     <div className="text-center">
                       <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className="w-8 h-8 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                       </div>
                       <span className="text-gray-400 text-sm">بدون تصویر</span>
                     </div>
                   </div>
                 </div>
-                
                 <div className="p-6">
-  <h3 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">{course.name}</h3>
-  <p className="text-sm text-gray-600 mb-4">{course.description || "بدون توضیحات"}</p>
-
-  {/* Upload Image Button */}
-  <label className="inline-block bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer hover:bg-indigo-700 transition">
-    بارگذاری تصویر
-    <input
-      type="file"
-      accept="image/*"
-      className="hidden"
-      onChange={async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        try {
-          await UploadCourseImage(course.id, file);
-          fetchCourses(); // refresh courses to show updated image
-        } catch (err) {
-          alert("خطا در بارگذاری تصویر");
-        }
-      }}
-    />
-  </label>
-</div>
-
-                
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">{course.name}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{course.description || "بدون توضیحات"}</p>
+                  <label className="inline-block bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer hover:bg-indigo-700 transition">
+                    بارگذاری تصویر
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        try {
+                          await UploadCourseImage(course.id, file);
+                          fetchCourses();
+                        } catch (err) {
+                          alert("خطا در بارگذاری تصویر");
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>

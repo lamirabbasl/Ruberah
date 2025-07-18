@@ -1,7 +1,24 @@
+"use client"
+
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { getIntroText } from "@/lib/api/api";
 
 function Home() {
+  const [introText, setIntroText] = useState([]);
+
+  useEffect(() => {
+    const fetchIntroText = async () => {
+      try {
+        const data = await getIntroText();
+        setIntroText(data);
+      } catch (error) {
+        console.error("Error fetching intro text:", error);
+      }
+    };
+    fetchIntroText();
+  }, []);
+
   return (
     <div className="w-full h-8/10 pt-[140px] flex items-center justify-center font-noto max-md:pt-[240px] ">
       <div className="flex flex-col items-end gap-8 w-3/7 h-full border-2 border-white rounded-lg bg-gray-950 p-8 max-md:w-[95%] max-md:h-auto">
@@ -10,24 +27,13 @@ function Home() {
         </div>
         <div dir="rtl">
           <ul className="list-disc text-right gap-2 pr-6 space-y-4">
-            <li>
-              برای بهبود و افزایش کارایی لطفا تمام ویدیو های نمایش داده شده را
-              تا انتها تماشا کنید
-            </li>
-            <li>
-              لطفا تمام سوالات نمایش داده شده را جواب داده سپس وارد روند ثبت نام
-              شوید
-            </li>
-            <li>سپس وارد روند احراز هویت شده </li>
-            <li>ابتدا توسط پیامک شماره تلفن شما تایید می شود</li>
-            <li>
-              پس از تایید شماره تماس شما می بایست در یک جلسه مصاحبه برای آشنایی
-              و تکمیل اطلاعات شرکت فرمایید
-            </li>
-            <li>
-              پس از تکمیل ثبت نام زمان های در درسترس برای شرکت در جلسه مصاحبه در
-              اختیار شما قرار میگیرد
-            </li>
+            {introText.length > 0 ? (
+              introText.map((item) => (
+                <li key={item.id}>{item.text}</li>
+              ))
+            ) : (
+              <li>Loading...</li>
+            )}
           </ul>
         </div>
         <Link href={"/enroll/watch"}>

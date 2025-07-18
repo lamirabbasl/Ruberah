@@ -3,20 +3,25 @@ import { motion } from "framer-motion";
 import { Pencil, Check } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos } from "@/lib/api/api";
+import JalaliCalendar from "../common/JalaliCalendar";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const EditableChild = ({ child, onUpdate }) => {
   const [editing, setEditing] = useState(false);
   const [tempFullName, setTempFullName] = useState(child.full_name);
   const [tempGender, setTempGender] = useState(child.gender);
+  const [tempBirthDate, setTempBirthDate] = useState(child.birth_date || "");
   const [childPhotoUrl, setChildPhotoUrl] = useState(null);
   const [parentPhotoUrl, setParentPhotoUrl] = useState(null);
   const [uploadingChildPhoto, setUploadingChildPhoto] = useState(false);
   const [uploadingParentPhoto, setUploadingParentPhoto] = useState(false);
   const [error, setError] = useState(null);
+  const [showBirthCalendar, setShowBirthCalendar] = useState(false);
 
   useEffect(() => {
     setTempFullName(child.full_name);
     setTempGender(child.gender);
+    setTempBirthDate(child.birth_date || "");
   }, [child]);
 
   useEffect(() => {
@@ -44,15 +49,22 @@ const EditableChild = ({ child, onUpdate }) => {
     if (!editing) {
       setTempFullName(child.full_name);
       setTempGender(child.gender);
+      setTempBirthDate(child.birth_date || "");
     }
     setEditing(!editing);
   };
 
   const handleSave = () => {
+    if (!tempFullName || !tempBirthDate) {
+      setError("لطفا تمام فیلدهای ضروری را پر کنید");
+      return;
+    }
+    setError(null);
     onUpdate({
       id: child.id,
       full_name: tempFullName,
       gender: tempGender,
+      birth_date: tempBirthDate,
     });
     setEditing(false);
   };
@@ -106,7 +118,7 @@ const EditableChild = ({ child, onUpdate }) => {
         >
           <img
             src={childPhotoUrl || "/placeholder-child.jpg"}
-            className="w-20 h-20 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+            className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
             alt="عکس فرزند"
           />
           <label
@@ -147,7 +159,7 @@ const EditableChild = ({ child, onUpdate }) => {
         >
           <img
             src={parentPhotoUrl || "/placeholder-parent.jpg"}
-            className="w-20 h-20 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+            className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
             alt="عکس با والدین"
           />
           <label
@@ -200,12 +212,35 @@ const EditableChild = ({ child, onUpdate }) => {
               <option value="boy">پسر</option>
               <option value="girl">دختر</option>
             </select>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                placeholder="تاریخ تولد"
+                value={convertToJalali(tempBirthDate)}
+                onClick={() => setShowBirthCalendar(true)}
+                className="p-3 border border-gray-200 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 bg-gray-50 text-sm cursor-pointer"
+              />
+              {showBirthCalendar && (
+                <div className="absolute z-50 bg-white bottom-0 shadow-lg rounded-lg">
+                  <JalaliCalendar
+                    onDateSelect={(date) => {
+                      setTempBirthDate(date);
+                      setShowBirthCalendar(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col text-right gap-2">
             <p className="text-lg font-bold text-gray-800 truncate">{child.full_name}</p>
             <p className="text-gray-500 text-sm">
               جنسیت: {child.gender === "boy" ? "پسر" : "دختر"}
+            </p>
+            <p className="text-gray-500 text-sm">
+              تاریخ تولد: {convertToJalali(child.birth_date) || "-"}
             </p>
           </div>
         )}
