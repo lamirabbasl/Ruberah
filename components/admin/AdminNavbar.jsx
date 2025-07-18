@@ -71,6 +71,12 @@ function AdminNavbar() {
 
       {/* Navigation Links */}
       <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
+      <NavItem
+          label="صفحه اصلی"
+          icon={<FaListUl className="text-xl ml-2" />}
+          onClick={() => handleTabClick("firstPage")}
+          isActive={activeTab === "firstPage"}
+        />
         <NavItem
           label="دوره ها"
           icon={<FaListUl className="text-xl ml-2" />}
