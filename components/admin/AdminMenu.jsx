@@ -11,6 +11,8 @@ import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { IoIosHome } from "react-icons/io";
 import { FaUser } from "react-icons/fa";
+import { FaChildren } from "react-icons/fa6";
+
 
 
 
@@ -186,6 +188,12 @@ function AdminMenu() {
                   onClick={() => handleTabClick("signup")}
                   isActive={activeTab === "signup"}
                 />
+                 <NavItem
+            label="کودکان"
+            icon={<FaChildren className="text-2xl ml-2" />}
+            onClick={() => handleTabClick("children")}
+            isActive={activeTab === "children"}
+          />
                 <NavItem
                   label="کاربران"
                   icon={<FaUser className="text-xl ml-2" />}
@@ -249,6 +257,12 @@ function AdminMenu() {
             icon={<VscSignIn className="text-xl ml-2" />}
             onClick={() => handleTabClick("signup")}
             isActive={activeTab === "signup"}
+          />
+          <NavItem
+            label="کودکان"
+            icon={<FaChildren className="text-2xl ml-2" />}
+            onClick={() => handleTabClick("children")}
+            isActive={activeTab === "children"}
           />
           <NavItem
             label="کاربران"
