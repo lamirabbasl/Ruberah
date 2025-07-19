@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoClose, IoPencil } from "react-icons/io5";
-import { getSeasons, addSeason, editSeason, deleteSeason } from "@/lib/api/api";
+import { IoClose, IoPencil, IoSearch } from "react-icons/io5";
+import { getSeasons, addSeason, editSeason, deleteSeason, searchSeasons } from "@/lib/api/api";
 import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
@@ -26,21 +26,28 @@ const SeasonsTab = () => {
   const [showEditStartCalendar, setShowEditStartCalendar] = useState(false);
   const [showEditEndCalendar, setShowEditEndCalendar] = useState(false);
 
-  const fetchSeasons = async () => {
+  // State for search functionality - no debounce needed
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Modify fetchSeasons to accept an optional name parameter
+  const fetchSeasons = useCallback(async (name = "") => {
     setLoading(true);
+    setError(null); // Clear previous errors
     try {
-      const data = await getSeasons();
+      const data = name ? await searchSeasons(name) : await getSeasons();
       setSeasons(data);
     } catch (err) {
-      setError("خطا در دریافت فصل‌ها");
+      console.error("Error fetching seasons:", err); // Log the actual error
+      setError("خطا در دریافت فصل‌ها. لطفا دوباره تلاش کنید.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
   useEffect(() => {
-    fetchSeasons();
-  }, []);
+    // Trigger fetchSeasons whenever searchTerm changes
+    fetchSeasons(searchTerm);
+  }, [searchTerm, fetchSeasons]); // Now depends directly on searchTerm
 
   const handleAddSeason = async () => {
     if (!newSeason.name.trim() || !newSeason.start_date || !newSeason.end_date) {
@@ -52,8 +59,9 @@ const SeasonsTab = () => {
       await addSeason(newSeason);
       setNewSeason({ name: "", start_date: "", end_date: "" });
       setShowAddForm(false);
-      fetchSeasons();
+      fetchSeasons(searchTerm); // Refresh seasons after adding, maintaining current search
     } catch (err) {
+      console.error("Error adding season:", err);
       setError("خطا در افزودن فصل");
     }
   };
@@ -72,8 +80,9 @@ const SeasonsTab = () => {
       });
       setShowEditForm(false);
       setEditingSeason(null);
-      fetchSeasons();
+      fetchSeasons(searchTerm); // Refresh seasons after editing, maintaining current search
     } catch (err) {
+      console.error("Error editing season:", err);
       setError("خطا در ویرایش فصل");
     }
   };
@@ -89,8 +98,9 @@ const SeasonsTab = () => {
       await deleteSeason(seasonToDelete.id);
       setShowDeleteConfirm(false);
       setSeasonToDelete(null);
-      fetchSeasons();
+      fetchSeasons(searchTerm); // Refresh seasons after deleting, maintaining current search
     } catch (err) {
+      console.error("Error deleting season:", err);
       setError("خطا در حذف فصل");
     }
   };
@@ -123,6 +133,22 @@ const SeasonsTab = () => {
         >
           افزودن فصل جدید
         </motion.button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-8 relative rounded-lg shadow-sm">
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <IoSearch className="h-5 w-5 text-gray-400" aria-hidden="true" />
+        </div>
+        <input
+          type="text"
+          name="season-search"
+          id="season-search"
+          className="block w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          placeholder="جستجو بر اساس نام فصل..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)} // Direct update, no debounce
+        />
       </div>
 
       <AnimatePresence>
@@ -378,7 +404,11 @@ const SeasonsTab = () => {
         </div>
       ) : error ? (
         <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg">{error}</p>
-      ) : seasons.length === 0 ? (
+      ) : seasons.length === 0 && searchTerm ? ( // Show message if no results and search term is present
+        <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">
+          هیچ فصلی با نام "{searchTerm}" یافت نشد.
+        </p>
+      ) : seasons.length === 0 ? ( // Show message if no results and no search term
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ فصلی یافت نشد.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
