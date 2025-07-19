@@ -1,3 +1,5 @@
+// route.js (or whatever your catch-all route file is named, e.g., /api/proxy/[...path]/route.js)
+
 import { NextResponse } from "next/server";
 
 function ensureTrailingSlash(path) {
@@ -6,6 +8,9 @@ function ensureTrailingSlash(path) {
 
 function normalizeUrl(url) {
   url = url.replace(/\/+$/, "");
+  // This part seems to be for stripping '/api' from the base URL if it's there.
+  // Make sure your NEXT_PUBLIC_API_URL does NOT end with /api if you want this logic.
+  // For example, NEXT_PUBLIC_API_URL=https://test.dr-dev.ir
   if (url.endsWith("/api")) {
     url = url.slice(0, -4);
   }
@@ -45,18 +50,21 @@ async function handleRequest(request, params, method) {
       }
     }
 
-    const baseUrl = normalizeUrl(`${process.env.NEXT_PUBLIC_API_URL}/api`);
+    const baseUrl = normalizeUrl(`${process.env.NEXT_PUBLIC_API_URL}`); // Changed: Removed /api here, it's added below.
     const isStaticVideoPath =
       normalizedPath.startsWith("intro/video") &&
       /\.[a-zA-Z0-9]+$/.test(normalizedPath);
 
-    const baseUrlEndsWithApi = baseUrl.endsWith("/api");
+    // Extract query parameters from the incoming request
+    const url = new URL(request.url);
+    const queryString = url.search; // This will get "?name=فندقی" or ""
 
-    const backendUrl = isStaticVideoPath
-      ? `${baseUrl}/${normalizedPath}`
-      : baseUrlEndsWithApi
-      ? `${baseUrl}/${normalizedPath}`
-      : `${baseUrl}/api/${normalizedPath}`;
+    let backendUrl;
+    if (isStaticVideoPath) {
+      backendUrl = `${baseUrl}/${normalizedPath}${queryString}`; // Append query string
+    } else {
+      backendUrl = `${baseUrl}/api/${normalizedPath}${queryString}`; // Append query string
+    }
 
     const requestOptions = {
       method,

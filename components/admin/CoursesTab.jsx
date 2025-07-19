@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose, IoPencil } from "react-icons/io5";
-import { getCourses, addCourse, editCourse, deleteCourse, UploadCourseImage } from "@/lib/api/api";
+import { getAdminCourses, addCourse, editCourse, deleteCourse, UploadCourseImage, searchCourses } from "@/lib/api/api";
 
 const CoursesTab = () => {
   const [courses, setCourses] = useState([]);
@@ -15,11 +15,13 @@ const CoursesTab = () => {
   const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (searchQuery = "") => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await getCourses();
+      const data = searchQuery ? await searchCourses(searchQuery) : await getAdminCourses();
       setCourses(data);
     } catch (err) {
       setError("خطا در دریافت دوره‌ها");
@@ -29,8 +31,13 @@ const CoursesTab = () => {
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    // Debounce search term
+    const delayDebounceFn = setTimeout(() => {
+      fetchCourses(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]); // Re-run when searchTerm changes
 
   const handleAddCourse = async () => {
     if (!newCourse.name.trim()) {
@@ -42,7 +49,7 @@ const CoursesTab = () => {
       await addCourse(newCourse);
       setNewCourse({ name: "", description: "" });
       setShowAddForm(false);
-      fetchCourses();
+      fetchCourses(searchTerm); // Refresh list with current search term
     } catch (err) {
       setError("خطا در افزودن دوره");
     }
@@ -61,7 +68,7 @@ const CoursesTab = () => {
       });
       setShowEditForm(false);
       setEditingCourse(null);
-      fetchCourses();
+      fetchCourses(searchTerm); // Refresh list with current search term
     } catch (err) {
       setError("خطا در ویرایش دوره");
     }
@@ -78,7 +85,7 @@ const CoursesTab = () => {
       await deleteCourse(courseToDelete.id);
       setShowDeleteConfirm(false);
       setCourseToDelete(null);
-      fetchCourses();
+      fetchCourses(searchTerm); // Refresh list with current search term
     } catch (err) {
       setError("خطا در حذف دوره");
     }
@@ -112,6 +119,19 @@ const CoursesTab = () => {
         >
           افزودن دوره جدید
         </motion.button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <label htmlFor="search" className="sr-only">جستجو دوره‌ها</label>
+        <input
+          type="text"
+          id="search"
+          placeholder="جستجو بر اساس نام دوره..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
+        />
       </div>
 
       <AnimatePresence>
@@ -328,12 +348,14 @@ const CoursesTab = () => {
                 <div className="w-full h-48 bg-gray-1006">
                   {course.image ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
+                      src={course.image}
                       alt={course.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
+                        if (e.target.nextSibling) { // Check if nextSibling exists
+                          e.target.nextSibling.style.display = "flex";
+                        }
                       }}
                     />
                   ) : null}
@@ -375,7 +397,7 @@ const CoursesTab = () => {
                         if (!file) return;
                         try {
                           await UploadCourseImage(course.id, file);
-                          fetchCourses();
+                          fetchCourses(searchTerm); // Refresh list with current search term
                         } catch (err) {
                           alert("خطا در بارگذاری تصویر");
                         }
