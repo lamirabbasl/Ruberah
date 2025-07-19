@@ -9,6 +9,10 @@ import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
+import { FaUser } from "react-icons/fa";
+import { FaChildren } from "react-icons/fa6";
+
+
 
 function ProfileNavbar() {
   const { logout } = useAuth();
@@ -98,7 +102,7 @@ function ProfileNavbar() {
       <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
         <NavItem
           label="پروفایل"
-          icon={<FaListUl className="text-xl ml-2" />}
+          icon={<FaUser className="text-xl ml-2" />}
           onClick={() => handleTabClick("information")}
           isActive={activeTab === "information"} // Fixed typo: "informatin"
         />
@@ -110,13 +114,13 @@ function ProfileNavbar() {
         />
         <NavItem
           label="دوره ها"
-          icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+          icon={<FaListUl className="text-xl ml-2" />}
           onClick={() => handleTabClick("allcourses")}
           isActive={activeTab === "allcourses"} // Fixed typo: "allcrouses"
         />
         <NavItem
           label= "فرزندان"
-          icon={<FaRegCalendarCheck className="text-xl ml-2" />}
+          icon={<FaChildren className="text-[28px] ml-2" />}
           onClick={() => handleTabClick("children")}
           isActive={activeTab === "children"} // Fixed typo: "allcrouses"
         />

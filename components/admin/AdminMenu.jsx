@@ -9,6 +9,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { IoIosHome } from "react-icons/io";
+import { FaUser } from "react-icons/fa";
+
+
 
 function AdminMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -160,7 +164,7 @@ function AdminMenu() {
               <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
               <NavItem
                   label="صفحه اصلی"
-                  icon={<FaListUl className="text-xl ml-2" />}
+                  icon={<IoIosHome className="text-xl ml-2" />}
                   onClick={() => handleTabClick("firstPage")}
                   isActive={activeTab === "firstPage"}
                 />
@@ -184,7 +188,7 @@ function AdminMenu() {
                 />
                 <NavItem
                   label="کاربران"
-                  icon={<FaListUl className="text-xl ml-2" />}
+                  icon={<FaUser className="text-xl ml-2" />}
                   onClick={() => handleTabClick("users")}
                   isActive={activeTab === "users"}
                 />
@@ -224,7 +228,7 @@ function AdminMenu() {
         <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
         <NavItem
                   label="صفحه اصلی"
-                  icon={<FaListUl className="text-xl ml-2" />}
+                  icon={<IoIosHome className="text-xl ml-2" />}
                   onClick={() => handleTabClick("firstPage")}
                   isActive={activeTab === "firstPage"}
                 />
@@ -248,7 +252,7 @@ function AdminMenu() {
           />
           <NavItem
             label="کاربران"
-            icon={<FaListUl className="text-xl ml-2" />}
+            icon={<FaUser className="text-xl ml-2" />}
             onClick={() => handleTabClick("users")}
             isActive={activeTab === "users"}
           />
