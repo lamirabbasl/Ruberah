@@ -117,7 +117,7 @@ const EditableChild = ({ child, onUpdate }) => {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <img
-            src={childPhotoUrl || "/placeholder-child.jpg"}
+            src={childPhotoUrl || "/user.png"}
             className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
             alt="عکس فرزند"
           />
@@ -158,7 +158,7 @@ const EditableChild = ({ child, onUpdate }) => {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <img
-            src={parentPhotoUrl || "/placeholder-parent.jpg"}
+            src={parentPhotoUrl || "/user.png"}
             className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
             alt="عکس با والدین"
           />
