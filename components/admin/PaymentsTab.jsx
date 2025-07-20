@@ -90,7 +90,6 @@ const PaymentsTab = () => {
             setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
             return { id: reg.id, url: receiptUrl };
           } catch (err) {
-            console.error(`Error fetching receipt image for registration ${reg.id}:`, err);
             setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
             return { id: reg.id, url: "/path/to/fallback-receipt.jpg" };
           }
@@ -134,7 +133,6 @@ const PaymentsTab = () => {
                       }));
                       return { ...inst, receiptUrl };
                     } catch (err) {
-                      console.error(`Error fetching installment receipt image for installment ${inst.id}:`, err);
                       setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                       return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
                     }
@@ -448,7 +446,6 @@ const PaymentsTab = () => {
                                                         return updated;
                                                       });
                                                     } catch (error) {
-                                                      console.error("Failed to approve payment", error);
                                                       alert("خطا در تایید پرداخت");
                                                     }
                                                   }}

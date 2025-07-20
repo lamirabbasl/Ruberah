@@ -25,7 +25,6 @@ const InformationPage = () => {
             setProfilePhotoUrl(photoUrl);
           } catch (err) {
             setProfilePhotoUrl(null);
-            console.warn("No profile photo found or error loading it", err);
           }
         }
       } catch (err) {

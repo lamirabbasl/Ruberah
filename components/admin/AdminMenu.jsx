@@ -44,7 +44,6 @@ function AdminMenu() {
             const photoUrl = await getProfilePhotoUrl(data.id);
             setProfilePhotoUrl(photoUrl);
           } catch (err) {
-            console.error("Error fetching profile photo:", err);
             setProfilePhotoUrl("/user.png");
           }
         }

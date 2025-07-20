@@ -142,7 +142,6 @@ function CoursesPage() {
               setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
               return { ...child, image: photoUrl };
             } catch (err) {
-              console.error("Error fetching child photo:", err);
               setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
               return { ...child, image: "/path/to/fallback-image.jpg" };
             }
@@ -176,7 +175,6 @@ function CoursesPage() {
                     setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
                     updatedCourse = { ...course, receiptUrl };
                   } catch (err) {
-                    console.error("Error fetching receipt image for registration", course.id, err);
                     setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
                     updatedCourse = { ...course, receiptUrl: null };
                   }
@@ -192,7 +190,6 @@ function CoursesPage() {
                           setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                           return { ...inst, receiptUrl };
                         } catch (err) {
-                          console.error("Error fetching receipt image for installment", inst.id, err);
                           setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                           return { ...inst, receiptUrl: null };
                         }
@@ -243,7 +240,6 @@ function CoursesPage() {
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                 return { ...inst, receiptUrl };
               } catch (err) {
-                console.error("Error fetching receipt image for installment", inst.id, err);
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                 return { ...inst, receiptUrl: null };
               }
