@@ -30,15 +30,34 @@ const PaymentsTab = () => {
   const [confirmedPaymentIds, setConfirmedPaymentIds] = useState(new Set());
   const [receiptImages, setReceiptImages] = useState({});
   const [installmentReceiptImages, setInstallmentReceiptImages] = useState({});
-  const [fetchedImages, setFetchedImages] = useState({}); // Track fetched images
+  const [fetchedImages, setFetchedImages] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
 
-  // Initial data fetching (excluding images)
+  // Initial data fetching
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const regs = await getRegistrationsAdmin();
+        const response = await getRegistrationsAdmin(currentPage);
+        console.log("API Response:", response); // Debug the response
+
+        let regs = [];
+        let is_last_page = true;
+
+        // Handle both list and single-object responses
+        if (response && Array.isArray(response.results)) {
+          regs = response.results;
+          is_last_page = response.is_last_page || false;
+        } else if (response && response.id) {
+          regs = [response];
+          is_last_page = true;
+        } else {
+          throw new Error("Invalid API response: neither a list nor a single registration");
+        }
+
         setRegistrations(regs);
+        setIsLastPage(is_last_page);
 
         const batchesData = await getBatches();
         setBatches(batchesData);
@@ -57,7 +76,10 @@ const PaymentsTab = () => {
         );
         setChildrenMap(childrenData);
       } catch (err) {
-        setError("خطا در دریافت اطلاعات پرداخت‌ها");
+        console.error("Fetch error:", err);
+        setError("خطا در دریافت اطلاعات پرداخت‌ها: " + err.message);
+        setRegistrations([]);
+        setIsLastPage(true);
       } finally {
         setLoading(false);
       }
@@ -68,22 +90,30 @@ const PaymentsTab = () => {
     // Clean up blob URLs on unmount
     return () => {
       Object.values(receiptImages).forEach((url) => {
-        if (url && url !== "/path/to/fallback-receipt.jpg") URL.revokeObjectURL(url);
+        if (url && url !== "/path/to/fallback-receipt.jpg")
+          URL.revokeObjectURL(url);
       });
       Object.values(installmentReceiptImages).forEach((url) => {
-        if (url && url !== "/path/to/fallback-receipt.jpg") URL.revokeObjectURL(url);
+        if (url && url !== "/path/to/fallback-receipt.jpg")
+          URL.revokeObjectURL(url);
       });
     };
-  }, []);
+  }, [currentPage]);
 
   // Fetch receipt images for non-installment payments when a batch is expanded
   useEffect(() => {
     async function fetchReceiptImages() {
-      const hasExpandedBatches = Object.values(expandedBatches).some((isExpanded) => isExpanded);
+      const hasExpandedBatches = Object.values(expandedBatches).some(
+        (isExpanded) => isExpanded
+      );
       if (!hasExpandedBatches || registrations.length === 0) return;
 
       const receiptImagePromises = registrations
-        .filter((reg) => reg.payment_method !== "installment" && !fetchedImages[`reg-${reg.id}`])
+        .filter(
+          (reg) =>
+            reg.payment_method !== "installment" &&
+            !fetchedImages[`reg-${reg.id}`]
+        )
         .map(async (reg) => {
           try {
             const receiptUrl = await getReceiptImageAdmin(reg.id);
@@ -106,12 +136,14 @@ const PaymentsTab = () => {
     }
 
     fetchReceiptImages();
-  }, [expandedBatches, registrations.length]);
+  }, [expandedBatches, registrations]);
 
   // Fetch installment receipt images when a card is flipped
   useEffect(() => {
     async function fetchInstallmentReceiptImages() {
-      const flippedRegIds = Object.keys(flippedCards).filter((id) => flippedCards[id]);
+      const flippedRegIds = Object.keys(flippedCards).filter(
+        (id) => flippedCards[id]
+      );
       if (flippedRegIds.length === 0) return;
 
       const updatedDetailsMap = { ...registrationDetailsMap };
@@ -120,27 +152,40 @@ const PaymentsTab = () => {
           if (!updatedDetailsMap[regId]) {
             try {
               const regDetails = await getRegistrationDetailsById(regId);
-              const installmentDetails = await getInstallmentDetailsRegistrationId(regId);
+              const installmentDetails = await getInstallmentDetailsRegistrationId(
+                regId
+              );
               const installmentsWithImages = await Promise.all(
                 installmentDetails.map(async (inst) => {
                   if (inst.secure_url && !fetchedImages[`installment-${inst.id}`]) {
                     try {
-                      const receiptUrl = await getInstallmentReceiptImageAdmin(inst.id);
-                      setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                      const receiptUrl = await getInstallmentReceiptImageAdmin(
+                        inst.id
+                      );
+                      setFetchedImages((prev) => ({
+                        ...prev,
+                        [`installment-${inst.id}`]: true,
+                      }));
                       setInstallmentReceiptImages((prev) => ({
                         ...prev,
                         [inst.id]: receiptUrl,
                       }));
                       return { ...inst, receiptUrl };
                     } catch (err) {
-                      setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                      setFetchedImages((prev) => ({
+                        ...prev,
+                        [`installment-${inst.id}`]: true,
+                      }));
                       return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
                     }
                   }
                   return { ...inst, receiptUrl: installmentReceiptImages[inst.id] || null };
                 })
               );
-              updatedDetailsMap[regId] = { ...regDetails, installments: installmentsWithImages };
+              updatedDetailsMap[regId] = {
+                ...regDetails,
+                installments: installmentsWithImages,
+              };
             } catch (error) {
               console.error("Error fetching registration details or installments", error);
             }
@@ -153,11 +198,11 @@ const PaymentsTab = () => {
     if (Object.values(flippedCards).some((isFlipped) => isFlipped)) {
       fetchInstallmentReceiptImages();
     }
-  }, [flippedCards]);
+  }, [flippedCards, fetchedImages]);
 
   const groupedByBatch = {};
   registrations.forEach((reg) => {
-    const batch = batches.find((b) => b.id === reg.batch);
+    const batch = batches.find((b) => b.id === (reg.batch?.id || reg.batch));
     const batchTitle = batch ? batch.title : "بچ نامشخص";
     if (!groupedByBatch[batchTitle]) {
       groupedByBatch[batchTitle] = [];
@@ -195,6 +240,35 @@ const PaymentsTab = () => {
     }
   };
 
+  const handleApproveInstallmentPayment = async (instId, regId) => {
+    try {
+      await approveInstallmentPayment(instId);
+      alert("قسط با موفقیت تایید شد");
+      setRegistrationDetailsMap((prev) => {
+        const updated = { ...prev };
+        const regDetails = updated[regId];
+        if (regDetails) {
+          const instIndex = regDetails.installments.findIndex(
+            (i) => i.id === instId
+          );
+          if (instIndex !== -1) {
+            regDetails.installments[instIndex].status = "paid";
+          }
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error approving installment payment:", error);
+      alert("خطا در تایید قسط");
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && !(newPage > currentPage && isLastPage)) {
+      setCurrentPage(newPage);
+    }
+  };
+
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
@@ -207,8 +281,10 @@ const PaymentsTab = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-b max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra">
-      <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">مدیریت پرداخت‌ها</h2>
+    <div className="p-6 bg-gradient-to-b max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
+      <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
+        مدیریت پرداخت‌ها
+      </h2>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <motion.div
@@ -218,9 +294,13 @@ const PaymentsTab = () => {
           ></motion.div>
         </div>
       ) : error ? (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg">{error}</p>
+        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg">
+          {error}
+        </p>
       ) : registrations.length === 0 ? (
-        <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ ثبت‌نامی یافت نشد.</p>
+        <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">
+          هیچ ثبت‌نامی یافت نشد.
+        </p>
       ) : (
         <div className="space-y-8">
           {Object.entries(groupedByBatch).map(([batchTitle, regs]) => (
@@ -254,7 +334,7 @@ const PaymentsTab = () => {
                   >
                     {regs.map((reg) => {
                       const child = childrenMap[reg.child];
-                      const batch = batches.find((b) => b.id === reg.batch);
+                      const batch = batches.find((b) => b.id === (reg.batch?.id || reg.batch));
                       const isFlipped = flippedCards[reg.id];
                       const regDetails = registrationDetailsMap[reg.id];
 
@@ -267,14 +347,20 @@ const PaymentsTab = () => {
                           className="relative border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-white cursor-pointer"
                           style={{ height: "320px", perspective: "1200px" }}
                           onClick={() => toggleFlipCard(reg.id)}
-                          whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                          whileHover={{
+                            scale: 1.02,
+                            boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                          }}
                         >
                           <div
                             className="relative w-full h-full"
                             style={{
                               transformStyle: "preserve-3d",
-                              transition: "transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-                              transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                              transition:
+                                "transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+                              transform: isFlipped
+                                ? "rotateY(180deg)"
+                                : "rotateY(0deg)",
                               height: "100%",
                             }}
                           >
@@ -284,30 +370,46 @@ const PaymentsTab = () => {
                               style={{ backfaceVisibility: "hidden" }}
                             >
                               <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-                                {child ? child.full_name : "نامشخص"}
+                                {child ? child.full_name : reg.child || "نامشخص"}
                               </h3>
                               <div className="space-y-1 text-lg text-gray-700">
                                 <p className="flex items-center">
-                                  <span className="inline-block w-24 font-medium">نام والد:</span>
+                                  <span className="inline-block w-24 font-medium">
+                                    نام والد:
+                                  </span>
                                   <span>{reg.parent_name || "نامشخص"}</span>
                                 </p>
                                 <p className="flex items-center">
-                                  <span className="inline-block w-24 font-medium">نام کاربری والد:</span>
-                                  <span>{reg.parent_username || "نامشخص"}</span>
+                                  <span className="inline-block w-24 font-medium">
+                                    نام کاربری والد:
+                                  </span>
+                                  <span>
+                                    {reg.parent_username || "نامشخص"}
+                                  </span>
                                 </p>
                               </div>
                               {batch ? (
                                 <div className="space-y-2 text-xl">
                                   <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">برنامه:</span>
-                                    <span className="text-gray-600">{batch.schedule || "-"}</span>
+                                    <span className="inline-block w-20 font-medium">
+                                      برنامه:
+                                    </span>
+                                    <span className="text-gray-600">
+                                      {batch.schedule || "-"}
+                                    </span>
                                   </p>
                                   <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">ظرفیت:</span>
-                                    <span className="text-gray-600">{batch.capacity}</span>
+                                    <span className="inline-block w-20 font-medium">
+                                      ظرفیت:
+                                    </span>
+                                    <span className="text-gray-600">
+                                      {batch.capacity}
+                                    </span>
                                   </p>
                                   <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">وضعیت:</span>
+                                    <span className="inline-block w-20 font-medium">
+                                      وضعیت:
+                                    </span>
                                     <span
                                       className={`px-2 py-1 rounded-full text-xs ${
                                         reg.payment_status === "paid"
@@ -315,23 +417,32 @@ const PaymentsTab = () => {
                                           : "bg-yellow-100 text-yellow-700"
                                       }`}
                                     >
-                                      {reg.payment_status}
+                                      {reg.payment_status === "partial" ? "پرداخت جزئی" : reg.payment_status === "paid" ? "پرداخت شده" : reg.payment_status}
                                     </span>
                                   </p>
                                   <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">مبلغ:</span>
-                                    <span className="text-gray-600">{reg.final_price}</span>
+                                    <span className="inline-block w-20 font-medium">
+                                      مبلغ:
+                                    </span>
+                                    <span className="text-gray-600">
+                                      {reg.final_price}
+                                    </span>
                                   </p>
                                 </div>
                               ) : (
-                                <p className="text-gray-600 text-sm">بچ نامشخص</p>
+                                <p className="text-gray-600 text-sm">
+                                  بچ نامشخص
+                                </p>
                               )}
                             </div>
 
                             {/* Back Side */}
                             <div
                               className="absolute w-full h-full p-5 bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl overflow-y-auto"
-                              style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                              style={{
+                                backfaceVisibility: "hidden",
+                                transform: "rotateY(180deg)",
+                              }}
                             >
                               {regDetails ? (
                                 <>
@@ -353,13 +464,18 @@ const PaymentsTab = () => {
                                           مشاهده رسید
                                         </motion.button>
                                       ) : (
-                                        <p className="text-gray-500 text-sm">رسید موجود نیست</p>
+                                        <p className="text-gray-500 text-sm">
+                                          رسید موجود نیست
+                                        </p>
                                       )}
                                       {reg.payment_status !== "paid" && (
                                         <motion.button
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
-                                          disabled={confirmedPaymentIds.has(reg.id) || confirmingPaymentIds.has(reg.id)}
+                                          disabled={
+                                            confirmedPaymentIds.has(reg.id) ||
+                                            confirmingPaymentIds.has(reg.id)
+                                          }
                                           onClick={async (e) => {
                                             e.stopPropagation();
                                             await handleConfirmPayment(reg.id);
@@ -391,11 +507,15 @@ const PaymentsTab = () => {
                                           >
                                             <div className="space-y-2 text-xl">
                                               <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">مبلغ:</span>
+                                                <span className="inline-block w-24 font-medium">
+                                                  مبلغ:
+                                                </span>
                                                 <span>{inst.amount}</span>
                                               </p>
                                               <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">وضعیت:</span>
+                                                <span className="inline-block w-24 font-medium">
+                                                  وضعیت:
+                                                </span>
                                                 <span
                                                   className={`px-2 py-1 rounded-full text-xs ${
                                                     inst.status === "paid"
@@ -403,12 +523,18 @@ const PaymentsTab = () => {
                                                       : "bg-yellow-100 text-yellow-700"
                                                   }`}
                                                 >
-                                                  {inst.status}
+                                                  {inst.status === "pending" ? "در انتظار" : inst.status === "paid" ? "پرداخت شده" : inst.status}
                                                 </span>
                                               </p>
                                               <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">سررسید:</span>
-                                                <span>{convertToJalali(inst.due_date)}</span>
+                                                <span className="inline-block w-24 font-medium">
+                                                  سررسید:
+                                                </span>
+                                                <span>
+                                                  {convertToJalali(
+                                                    inst.due_date
+                                                  )}
+                                                </span>
                                               </p>
                                             </div>
                                             {inst.secure_url && (
@@ -418,7 +544,12 @@ const PaymentsTab = () => {
                                                   whileTap={{ scale: 0.95 }}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setModalImage(installmentReceiptImages[inst.id] || "/path/to/fallback-receipt.jpg");
+                                                    setModalImage(
+                                                      installmentReceiptImages[
+                                                        inst.id
+                                                      ] ||
+                                                        "/path/to/fallback-receipt.jpg"
+                                                    );
                                                   }}
                                                   className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
                                                 >
@@ -430,24 +561,10 @@ const PaymentsTab = () => {
                                                   disabled={inst.status === "paid"}
                                                   onClick={async (e) => {
                                                     e.stopPropagation();
-                                                    try {
-                                                      await approveInstallmentPayment(inst.id);
-                                                      setRegistrationDetailsMap((prev) => {
-                                                        const updated = { ...prev };
-                                                        const regDetails = updated[reg.id];
-                                                        if (regDetails) {
-                                                          const instIndex = regDetails.installments.findIndex(
-                                                            (i) => i.id === inst.id
-                                                          );
-                                                          if (instIndex !== -1) {
-                                                            regDetails.installments[instIndex].status = "paid";
-                                                          }
-                                                        }
-                                                        return updated;
-                                                      });
-                                                    } catch (error) {
-                                                      alert("خطا در تایید پرداخت");
-                                                    }
+                                                    await handleApproveInstallmentPayment(
+                                                      inst.id,
+                                                      reg.id
+                                                    );
                                                   }}
                                                   className={`px-4 py-2 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
                                                     inst.status === "paid"
@@ -466,7 +583,9 @@ const PaymentsTab = () => {
                                   )}
                                 </>
                               ) : (
-                                <p className="text-gray-600 text-sm">در حال بارگذاری جزئیات...</p>
+                                <p className="text-gray-600 text-sm">
+                                  در حال بارگذاری جزئیات...
+                                </p>
                               )}
                             </div>
                           </div>
@@ -478,6 +597,36 @@ const PaymentsTab = () => {
               </AnimatePresence>
             </motion.div>
           ))}
+          {/* Pagination Controls */}
+          <div className="flex justify-center mt-6 sm:mt-8 space-x-3 space-x-reverse">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+              } transition-all duration-200`}
+            >
+              صفحه قبلی
+            </motion.button>
+            <span className="px-3 sm:px-4 py-2 text-gray-700 font-medium">صفحه {currentPage}</span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={isLastPage}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium ${
+                isLastPage
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+              } transition-all duration-200`}
+            >
+              صفحه بعدی
+            </motion.button>
+          </div>
         </div>
       )}
 
@@ -498,7 +647,11 @@ const PaymentsTab = () => {
               className="bg-white p-8 rounded-2xl shadow-2xl max-w-5xl max-h-[90vh] overflow-auto relative"
               onClick={(e) => e.stopPropagation()}
             >
-              <img src={modalImage} alt="Receipt Large" className="max-w-full max-h-[80vh] rounded-lg" />
+              <img
+                src={modalImage}
+                alt="Receipt Large"
+                className="max-w-full max-h-[80vh] rounded-lg"
+              />
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
