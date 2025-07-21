@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTrash, FaPlus, FaFileExport } from "react-icons/fa";
+import { FaTrash, FaPlus, FaFileExport, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import AddUserForm from "@/components/admin/AddUserForm";
 import { getUsers, addUser, deleteUser, getUsersExport } from "@/lib/api/api";
 
@@ -15,23 +15,27 @@ const UsersPage = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [exporting, setExporting] = useState(false);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getUsers();
-      setUsers(data);
+      // Pass currentPage and searchTerm to getUsers
+      const data = await getUsers(currentPage, searchTerm);
+      setUsers(data.results);
+      setIsLastPage(data.is_last_page);
     } catch (err) {
       setError(err.message || "خطا در دریافت کاربران");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage, searchTerm]); // Depend on currentPage and searchTerm
 
   const handleAddUser = () => {
     setShowAddForm(true);
@@ -42,7 +46,7 @@ const UsersPage = () => {
     setError(null);
     try {
       const response = await getUsersExport();
-      
+
       if (!(response instanceof Blob)) {
         throw new Error("دریافت پاسخ نامعتبر از سرور");
       }
@@ -70,7 +74,9 @@ const UsersPage = () => {
     try {
       await addUser(newUser);
       setShowAddForm(false);
-      await fetchUsers();
+      // After adding, reset to first page and refetch
+      setCurrentPage(1);
+      // No explicit call to fetchUsers here, as useEffect will handle it
     } catch (err) {
       setError(err.message || "خطا در افزودن کاربر");
     } finally {
@@ -100,11 +106,26 @@ const UsersPage = () => {
       await deleteUser(userToDelete);
       setShowConfirmDelete(false);
       setUserToDelete(null);
-      await fetchUsers();
+      // No explicit call to fetchUsers here, as useEffect will handle it
     } catch (err) {
       setError(err.message || "خطا در حذف کاربر");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    if (!isLastPage) {
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
@@ -151,9 +172,9 @@ const UsersPage = () => {
       <div className="mb-6 text-black">
         <input
           type="text"
-          placeholder="جستجو بر اساس نام یا شماره تلفن"
+          placeholder="جستجو بر اساس نام کاربری یا شماره تلفن"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full max-w-md border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm text-right"
         />
       </div>
@@ -230,8 +251,10 @@ const UsersPage = () => {
         <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-6">{error}</p>
       )}
 
-      {users.length === 0 && !loading ? (
+      {users.length === 0 && !loading && searchTerm === "" ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری وجود ندارد</p>
+      ) : users.length === 0 && !loading && searchTerm !== "" ? (
+        <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری با این مشخصات یافت نشد.</p>
       ) : (
         <motion.div
           initial="hidden"
@@ -282,53 +305,77 @@ const UsersPage = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               <AnimatePresence>
-                {users
-                  .filter(
-                    (user) =>
-                      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      (user.phone_number &&
-                        user.phone_number.toLowerCase().includes(searchTerm.toLowerCase()))
-                  )
-                  .map((user) => (
-                    <motion.tr
-                      key={user.id}
-                      variants={rowVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                      className="hover:bg-gray-50 transition-all duration-200"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                        {user.phone_number || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                        {user.groups && user.groups.length > 0 ? user.groups.join(", ") : "-"}
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm text-gray-600">
-                        {user.address || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                        {user.national_id || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => openConfirmDelete(user.id)}
-                          className="text-red-500 hover:text-red-700 transition-all duration-200 p-2 rounded-full bg-red-50 hover:bg-red-100"
-                          aria-label={`حذف کاربر ${user.username}`}
-                        >
-                          <FaTrash size={16} />
-                        </motion.button>
-                      </td>
-                    </motion.tr>
-                  ))}
+                {users.map((user) => (
+                  <motion.tr
+                    key={user.id}
+                    variants={rowVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="hover:bg-gray-50 transition-all duration-200"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                      {user.username}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                      {user.phone_number || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                      {user.groups && user.groups.length > 0 ? user.groups.join(", ") : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm text-gray-600">
+                      {user.address || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                      {user.national_id || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => openConfirmDelete(user.id)}
+                        className="text-red-500 hover:text-red-700 transition-all duration-200 p-2 rounded-full bg-red-50 hover:bg-red-100"
+                        aria-label={`حذف کاربر ${user.username}`}
+                      >
+                        <FaTrash size={16} />
+                      </motion.button>
+                    </td>
+                  </motion.tr>
+                ))}
               </AnimatePresence>
             </tbody>
           </table>
+          <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <motion.button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1 || loading}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                currentPage === 1 || loading
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+              }`}
+            >
+              <FaChevronRight className="w-4 h-4" />
+              قبلی
+            </motion.button>
+            <span className="text-sm font-medium text-gray-700">صفحه {currentPage}</span>
+            <motion.button
+              onClick={handleNextPage}
+              disabled={isLastPage || loading}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isLastPage || loading
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+              }`}
+            >
+              بعدی
+              <FaChevronLeft className="w-4 h-4" />
+            </motion.button>
+          </div>
         </motion.div>
       )}
     </div>
