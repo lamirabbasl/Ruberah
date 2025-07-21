@@ -1,78 +1,110 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { AiOutlineImport } from "react-icons/ai";
-import { getFirstPage } from "@/lib/api/api"; // Import the API function
+import { motion, AnimatePresence } from "framer-motion";
+import { getFirstPage } from "@/lib/api/api";
+
+// Array of image URLs (replace with your actual image URLs)
+const images = [
+  "/hero/n7.jpg",
+  "/hero/n8.jpg",
+  "/hero/n6.jpg",
+  "/hero/n5.jpg",
+  "/hero/n4.jpg",
+  "/hero/n3.jpg",
+  "/hero/n2.jpg",
+  "/hero/n1.jpg",
+];
 
 function Hero() {
-  // State to track the current image index
   const [currentImage, setCurrentImage] = useState(0);
-  // State to store the presentation text from the API
   const [presentationText, setPresentationText] = useState("");
-
-  // Array of image URLs (replace with your actual image URLs)
-  const images = [
-    "hero/n7.jpg",
-    "hero/n8.jpg",
-    "hero/n6.jpg",
-    "hero/n5.jpg",
-    "hero/n4.jpg",
-    "hero/n3.jpg",
-    "hero/n2.jpg",
-    "hero/n1.jpg",
-  ];
 
   // Effect to cycle through images every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 5000); // Change image every 5 seconds
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [images.length]);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Effect to fetch presentation text from the API
   useEffect(() => {
     const fetchPresentationText = async () => {
       try {
-        const data = await getFirstPage(); // Fetch data from the API
-        setPresentationText(data.presentation_text || ""); // Set the presentation text or fallback to empty string
+        const data = await getFirstPage();
+        setPresentationText(data.presentation_text || "");
       } catch (error) {
         console.error("Error fetching presentation text:", error);
-        setPresentationText(""); // Fallback in case of error
+        setPresentationText("");
       }
     };
-
     fetchPresentationText();
   }, []);
 
+  // Animation variants for the text
+  const textVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+  };
+
+  // Animation variants for the button
+  const buttonVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
+    hover: { scale: 1.05, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="relative flex flex-col w-screen h-screen justify-between font-iransas items-center bg-amber-50 p-4 overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center w-screen h-screen bg-gradient-to-b from-amber-100 to-amber-200 overflow-hidden">
       {/* Background Image Slider */}
-      {images.map((image, index) => (
-        <img
-          key={index}
-          src={image}
-          alt={`Background ${index + 1}`}
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            index === currentImage ? "opacity-50" : "opacity-0"
-          }`}
-        />
-      ))}
+      <AnimatePresence>
+        {images.map((image, index) => (
+          index === currentImage && (
+            <motion.img
+              key={index}
+              src={image}
+              alt={`Background ${index + 1}`}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+            />
+          )
+        ))}
+      </AnimatePresence>
+
       {/* Overlay for better contrast */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-70 z-2"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/60 to-black/40 z-0"></div>
 
       {/* Text Div */}
-      <div className="relative font-mitra text-2xl rounded-full cursor-default p-2 bg-black max-md:rounded-[10px] bg-opacity-80 max-md:w-9/10 mt-[180px] w-1/3 text-white text-center max-md:text-md z-10">
-        <span>{presentationText}</span> {/* Use the fetched presentation text */}
-      </div>
+      <motion.div
+        className="relative z-10 max-w-2xl mx-4 p-6 bg-white/10 backdrop-blur-md rounded-2xl text-center shadow-lg"
+        variants={textVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <h1 className="font-mitra text-3xl md:text-4xl cursor-default text-white font-bold leading-relaxed">
+          {presentationText }
+        </h1>
+      </motion.div>
 
       {/* Button */}
-      <Link href={"/enroll"}>
-        <button className="relative font-mitra flex items-center text-xl cursor-pointer mb-10 gap-1 bg-[#37B360] py-1 px-4 rounded-full z-10">
-          <span className="text-3xl">فرآیند ثبت نام</span>
-          <AiOutlineImport className="text-xl" />
-        </button>
-      </Link>
+      <motion.div
+        variants={buttonVariants}
+        initial="hidden"
+        animate="visible"
+        whileHover="hover"
+        className="relative z-10 mt-40"
+      >
+        <Link href="/enroll">
+          <button className="flex items-center cursor-pointer gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-mitra text-xl md:text-2xl py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+            <span>فرآیند ثبت نام</span>
+            <AiOutlineImport className="text-xl" />
+          </button>
+        </Link>
+      </motion.div>
     </div>
   );
 }

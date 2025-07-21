@@ -7,9 +7,17 @@ import { FaPhoneFlip } from "react-icons/fa6";
 import { PiSignInBold } from "react-icons/pi";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import Menu from "./Menu";
 import { useAuth } from "@/context/AuthContext";
 import { getUserMe } from "@/lib/api/api";
+
+// Animation variants for navbar items
+const itemVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  hover: { scale: 1.05, transition: { duration: 0.3 } },
+};
 
 export default function Navbar() {
   const router = useRouter();
@@ -27,18 +35,33 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between fixed z-99 bg-primary items-center h-20 px-6 max-md:px-2 w-full border-b font-semibold font-noto border-gray-400">
-      <div className="flex items-center space-x-4 max-md:hidden">
+    <motion.nav
+      className="fixed top-0 left-0 z-50 w-full h-20 bg-primary text-white font-noto shadow-lg flex items-center justify-between px-4 md:px-8 border-b border-gray-400"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      {/* Left Section: Auth/User Info */}
+      <motion.div
+        className="flex items-center space-x-4 max-md:hidden"
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {!user ? (
-          <Link href={"/api/auth/login"}>
-            <div className="flex border-2 rounded-md py-1 px-2 border-secondery text-secondery cursor-pointer gap-1 transition hover:text-white hover:border-white">
+          <Link href="/api/auth/login">
+            <motion.div
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-lg py-2 px-4 text-white hover:bg-white/20 transition"
+              variants={itemVariants}
+              whileHover="hover"
+            >
               <span>ورود/عضویت</span>
-              <PiSignInBold className="text-2xl" />
-            </div>
+              <PiSignInBold className="text-xl" />
+            </motion.div>
           </Link>
         ) : (
           <div className="flex items-center gap-4">
-            <div
+            <motion.div
               className="flex items-center gap-2 cursor-pointer"
               onClick={async () => {
                 try {
@@ -50,55 +73,73 @@ export default function Navbar() {
                   }
                 } catch (error) {
                   console.error("Error fetching user info:", error);
-                  // fallback redirect or show error
                   router.push("/profile");
                 }
               }}
+              variants={itemVariants}
+              whileHover="hover"
             >
-              <Image
-                src="/user.png"
-                alt="User Profile"
-                width={32}
-                height={32}
-                className="rounded-full"
-              />
-              <span className="text-white">{user.name}</span>
-            </div>
-            <button
+              <span className="text-white font-medium">{user.name}</span>
+            </motion.div>
+            <motion.button
               onClick={logout}
-              className="flex border-2 rounded-md py-1 px-2 border-red-500 text-red-500 cursor-pointer gap-1 transition hover:text-white hover:border-white"
+              className="bg-red-500/20 backlight-blur-md rounded-lg py-2 px-4 text-red-400 hover:bg-red-500/30 transition"
+              variants={itemVariants}
+              whileHover="hover"
             >
               <span>خروج</span>
-            </button>
+            </motion.button>
           </div>
         )}
-      </div>
-      <div className="md:hidden">
+      </motion.div>
+
+      {/* Mobile Menu */}
+      <motion.div
+        className="md:hidden"
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <Menu />
-      </div>
-      <div className="flex items-center justify-center gap-8">
-        <div className="flex items-center justify-center gap-6  max-md:hidden">
-          <div
+      </motion.div>
+
+      {/* Right Section: Navigation Links & Logo */}
+      <motion.div
+        className="flex items-center justify-center gap-6 md:gap-8"
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="flex items-center gap-6 max-md:hidden">
+          <motion.div
             onClick={() => handleScrollOrNavigate("contact")}
-            className="flex text-white items-center cursor-pointer gap-2 transition hover:text-secondery"
+            className="flex items-center cursor-pointer gap-2 text-white hover:text-secondery transition"
+            variants={itemVariants}
+            whileHover="hover"
           >
             <span>ارتباط با ما</span>
             <FaPhoneFlip className="text-md" />
-          </div>
-          <div
+          </motion.div>
+          <motion.div
             onClick={() => handleScrollOrNavigate("courses")}
-            className="flex text-white items-center cursor-pointer gap-1 transition hover:text-secondery"
+            className="flex items-center cursor-pointer gap-2 text-white hover:text-secondery transition"
+            variants={itemVariants}
+            whileHover="hover"
           >
             <span>دوره ها</span>
-            <IoMenu className="text-2xl" />
-          </div>
+            <IoMenu className="text-xl" />
+          </motion.div>
         </div>
         <Link href="/">
-          <div className="flex items-center self-center space-x-3 text-white cursor-pointer text-xl">
-            <h1 className="flex gap-1">
+          <motion.div
+            className="flex items-center gap-3 text-white text-xl cursor-pointer"
+            variants={itemVariants}
+            whileHover="hover"
+          >
+            <h1 className="flex gap-1 font-bold">
               <span className="text-secondery">روبه راه</span>
               <span>خانواده</span>
-              </h1> 
+            </h1>
             <Image
               width={40}
               height={40}
@@ -106,9 +147,9 @@ export default function Navbar() {
               alt="Logo"
               className="rounded-full"
             />
-          </div>
+          </motion.div>
         </Link>
-      </div>
-    </nav>
+      </motion.div>
+    </motion.nav>
   );
 }
