@@ -11,8 +11,9 @@ import { motion } from "framer-motion";
 import Menu from "./Menu";
 import { useAuth } from "@/context/AuthContext";
 import { getUserMe } from "@/lib/api/api";
+import { VscSignIn } from "react-icons/vsc";
 
-// Animation variants for navbar items
+
 const itemVariants = {
   hidden: { opacity: 0, y: -20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -120,6 +121,16 @@ export default function Navbar() {
             <span>ارتباط با ما</span>
             <FaPhoneFlip className="text-md" />
           </motion.div>
+          <Link href={"/enroll"}>
+          <motion.div
+            className="flex items-center cursor-pointer gap-2 text-white hover:text-secondery transition"
+            variants={itemVariants}
+            whileHover="hover"
+          >
+            <span>فرآیند ثبت نام</span>
+            <VscSignIn className="text-xl" />
+          </motion.div>
+          </Link>
           <motion.div
             onClick={() => handleScrollOrNavigate("courses")}
             className="flex items-center cursor-pointer gap-2 text-white hover:text-secondery transition"

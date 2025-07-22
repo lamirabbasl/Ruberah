@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { FaRegCalendarCheck, FaListUl } from "react-icons/fa";
 import { BiExit, BiMenu } from "react-icons/bi";
-import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
 import { FaUser } from "react-icons/fa";
 import { FaChildren } from "react-icons/fa6";
+import { IoHome } from "react-icons/io5";
+import Link from "next/link";
+
 
 
 
@@ -187,12 +188,19 @@ function ProfileMenu() {
     isActive={activeTab === "children"}
   />
 </nav>
-
+             <Link href={"/"}>
+             <button
+                className="absolute bottom-4 right-2 font-bold text-sm gap-1 items-center bg-green-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
+              >
+                <p>صفحه اصلی</p>
+                <IoHome className="text-xl" />
+              </button>
+             </Link>
 
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
+                className="absolute bottom-4 left-2 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
               >
                 <p>خارج شوید</p>
                 <BiExit className="text-xl" />

@@ -1,16 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { FaRegCalendarCheck } from "react-icons/fa";
 import { BiExit } from "react-icons/bi";
 import { FaListUl } from "react-icons/fa";
-import { VscSignIn } from "react-icons/vsc";
 import { useRouter, usePathname } from "next/navigation";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
 import { FaUser } from "react-icons/fa";
 import { FaChildren } from "react-icons/fa6";
+import { IoHome } from "react-icons/io5";
+import Link from "next/link";
+
 
 
 
@@ -125,7 +126,16 @@ function ProfileNavbar() {
         />
       </nav>
 
-      {/* Logout Button */}
+      <Link href={"/"}>
+      <button
+        className="absolute bottom-4 right-4 font-bold text-sm gap-1 items-center bg-green-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
+      >
+        <p>صفحه اصلی</p>
+        <IoHome className="text-xl text-white" />
+      </button>
+      </Link>
+
+       {/* Logout Button */}
       <button
         className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
         onClick={handleLogout}
@@ -133,7 +143,8 @@ function ProfileNavbar() {
         <p>خارج شوید</p>
         <BiExit className="text-xl" />
       </button>
-    </div>
+      </div>
+
   );
 }
 
