@@ -11,8 +11,7 @@ const tabLabels = [
   "آموزش ها",
   "فصل‌ها",
   "دوره ها",
-  "اقساط",
-  "پرداخت‌ها",
+  "اقساط"
 ];
 
 const AdminCoursesPage = () => {
@@ -20,11 +19,9 @@ const AdminCoursesPage = () => {
   const router = useRouter();
 
   const handleTabClick = (index) => {
-    if (index === 4) {
-      router.push("/admin/dashboard/courses/batches");
-    } else {
+
       setActiveTab(index);
-    }
+
   };
 
   const renderTabContent = () => {
@@ -37,8 +34,6 @@ const AdminCoursesPage = () => {
         return <BatchesTab />;
       case 3:
         return <InstallmentsTab />;
-      case 4:
-        return <PaymentsTab />;
       default:
         return null;
     }

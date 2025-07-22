@@ -15,6 +15,10 @@ import {
   confirmPaymentNonInstallment,
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
+import { useRouter } from "next/navigation";
+import { IoChevronBackOutline } from "react-icons/io5";
+
+
 
 const PaymentsTab = ({ batchId = null }) => {
   const [registrations, setRegistrations] = useState([]);
@@ -33,6 +37,9 @@ const PaymentsTab = ({ batchId = null }) => {
   const [fetchedImages, setFetchedImages] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
+
+  const router = useRouter(); 
+
 
   // Initial data fetching
   useEffect(() => {
@@ -282,6 +289,16 @@ const PaymentsTab = ({ batchId = null }) => {
 
   return (
     <div className="p-6 bg-gradient-to-b w-5/6 max-md:w-screen text-black max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
+
+        {/* ✅ Back button */}
+        <button
+        onClick={() => router.push("/admin/dashboard/payments")}
+        className="left-6 flex justify-center items-center absolute px-4 py-2 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition rounded-lg text-lg font-medium"
+      >
+        <IoChevronBackOutline /> 
+        <span> بازگشت</span>
+      </button>
+
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         مدیریت پرداخت‌ها
       </h2>

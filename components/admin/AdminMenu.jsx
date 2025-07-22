@@ -14,6 +14,7 @@ import { FaUser } from "react-icons/fa";
 import { FaChildren } from "react-icons/fa6";
 import Link from "next/link";
 import { IoHome } from "react-icons/io5";
+import { MdOutlinePayment } from "react-icons/md";
 
 
 
@@ -185,6 +186,12 @@ function AdminMenu() {
                   isActive={activeTab === "reserve"}
                 />
                 <NavItem
+                  label="پرداخت ها"
+                  icon={<MdOutlinePayment className="text-xl ml-2" />}
+                  onClick={() => handleTabClick("payments")}
+                  isActive={activeTab === "payments"}
+                />
+                <NavItem
                   label="فرآیند ثبت نام"
                   icon={<VscSignIn className="text-xl ml-2" />}
                   onClick={() => handleTabClick("signup")}
@@ -263,6 +270,12 @@ function AdminMenu() {
             onClick={() => handleTabClick("reserve")}
             isActive={activeTab === "reserve"}
           />
+          <NavItem
+                  label="پرداخت ها"
+                  icon={<MdOutlinePayment className="text-xl ml-2" />}
+                  onClick={() => handleTabClick("payments")}
+                  isActive={activeTab === "payments"}
+                />
           <NavItem
             label="فرآیند ثبت نام"
             icon={<VscSignIn className="text-xl ml-2" />}

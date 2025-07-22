@@ -2,19 +2,20 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { IoClose, IoPencil } from "react-icons/io5";
+import { useRouter } from 'next/navigation'
 import { cardVariants } from "./batches/BatchAnimations";
-import Link from "next/link";
 
 const BatchRegistration = ({ batch, courses, seasons}) => {
   const courseName = courses.find((c) => c.id === batch.course)?.name || "-";
   const seasonName = seasons.find((s) => s.id === batch.season)?.name || "-";
+  const router = useRouter()
+
 
   return (
-    <Link href={`/admin/dashboard/courses/batches/${batch.id}`}>
     <motion.div
     dir="rtl"
     variants={cardVariants}
+    onClick={()=>router.push(`/admin/dashboard/payments/${batch.id}`)}
     initial="hidden"
     animate="visible"
     exit="hidden"
@@ -31,7 +32,7 @@ const BatchRegistration = ({ batch, courses, seasons}) => {
       <p>مکان: {batch.location}</p>
       <p>ظرفیت: {batch.capacity}</p>
     </div>
-  </motion.div></Link>
+  </motion.div>
   );
 };
 

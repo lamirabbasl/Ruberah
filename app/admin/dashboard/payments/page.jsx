@@ -9,11 +9,10 @@ import {
   searchBatches, 
 } from "@/lib/api/api";
 
-import BatchSearch from "./../../../../../components/admin/batches/BatchSearch";
-import BatchHeader from "./../../../../../components/admin/batches/BatchHeader";
+import BatchSearch from "../../../../components/admin/batches/BatchSearch";
 import BatchListRegistration from "@/components/admin/BatchListRegistration";
 
-const BatchesTab = () => {
+const RegistrationsBatchesTab = () => {
   const [batches, setBatches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [seasons, setSeasons] = useState([]);
@@ -94,4 +93,4 @@ const BatchesTab = () => {
   );
 };
 
-export default BatchesTab;
+export default RegistrationsBatchesTab;

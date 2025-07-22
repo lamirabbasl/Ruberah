@@ -22,7 +22,7 @@ const BatchesPage = () => {
       <ul className="space-y-4">
         {batches.map((batch) => (
           <li key={batch.id} className="p-4 bg-white rounded-xl shadow">
-            <Link href={`/admin/courses/batches/${batch.id}`} className="text-indigo-600 hover:underline text-xl">
+            <Link href={`/admin/payments/batches/${batch.id}`} className="text-indigo-600 hover:underline text-xl">
               {batch.title}
             </Link>
           </li>
