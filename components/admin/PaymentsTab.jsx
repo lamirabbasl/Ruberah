@@ -16,7 +16,7 @@ import {
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
-const PaymentsTab = () => {
+const PaymentsTab = ({ batchId = null }) => {
   const [registrations, setRegistrations] = useState([]);
   const [childrenMap, setChildrenMap] = useState({});
   const [batches, setBatches] = useState([]);
@@ -39,7 +39,7 @@ const PaymentsTab = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getRegistrationsAdmin(currentPage);
+        const response = await getRegistrationsAdmin(currentPage, "", batchId);
         console.log("API Response:", response); // Debug the response
 
         let regs = [];
@@ -281,7 +281,7 @@ const PaymentsTab = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-b max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
+    <div className="p-6 bg-gradient-to-b w-5/6 max-md:w-screen text-black max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         مدیریت پرداخت‌ها
       </h2>
@@ -315,7 +315,7 @@ const PaymentsTab = () => {
                 onClick={() => toggleBatch(batchTitle)}
                 className="w-full text-right px-6 py-4 font-semibold text-xl bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 rounded-t-2xl focus:outline-none transition-all duration-300 flex justify-between items-center"
               >
-                <span>{batchTitle}</span>
+                
                 <motion.span
                   animate={{ rotate: expandedBatches[batchTitle] ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
@@ -323,6 +323,7 @@ const PaymentsTab = () => {
                 >
                   ▼
                 </motion.span>
+                <span>{batchTitle}</span>
               </button>
               <AnimatePresence>
                 {expandedBatches[batchTitle] && (
@@ -372,44 +373,21 @@ const PaymentsTab = () => {
                               <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
                                 {child ? child.full_name : reg.child || "نامشخص"}
                               </h3>
-                              <div className="space-y-1 text-lg text-gray-700">
-                                <p className="flex items-center">
-                                  <span className="inline-block w-24 font-medium">
-                                    نام والد:
-                                  </span>
-                                  <span>{reg.parent_name || "نامشخص"}</span>
+                              <div className="space-y-1 text-lg text-right text-gray-700">
+                                <p className=""> 
+                                  {reg.parent_name || "نامشخص"}   :نام والد
                                 </p>
-                                <p className="flex items-center">
-                                  <span className="inline-block w-24 font-medium">
-                                    نام کاربری والد:
-                                  </span>
-                                  <span>
-                                    {reg.parent_username || "نامشخص"}
-                                  </span>
+                                <p className="">
+                                    {reg.parent_username || "نامشخص"} :نام کاربری والد
                                 </p>
                               </div>
                               {batch ? (
-                                <div className="space-y-2 text-xl">
-                                  <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">
-                                      برنامه:
-                                    </span>
-                                    <span className="text-gray-600">
-                                      {batch.schedule || "-"}
-                                    </span>
+                                <div className="space-y-2 text-right text-xl">
+                                  <p className=""> 
+                                      {batch.capacity}         :ظرفیت
                                   </p>
-                                  <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">
-                                      ظرفیت:
-                                    </span>
-                                    <span className="text-gray-600">
-                                      {batch.capacity}
-                                    </span>
-                                  </p>
-                                  <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">
-                                      وضعیت:
-                                    </span>
+                                  <p className="">
+                                 وضعیت: 
                                     <span
                                       className={`px-2 py-1 rounded-full text-xs ${
                                         reg.payment_status === "paid"
@@ -420,11 +398,9 @@ const PaymentsTab = () => {
                                       {reg.payment_status === "partial" ? "پرداخت جزئی" : reg.payment_status === "paid" ? "پرداخت شده" : reg.payment_status}
                                     </span>
                                   </p>
-                                  <p className="text-gray-700 flex items-center">
-                                    <span className="inline-block w-20 font-medium">
+                                  <p className="">
                                       مبلغ:
-                                    </span>
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 mr-2">
                                       {reg.final_price}
                                     </span>
                                   </p>
@@ -451,24 +427,8 @@ const PaymentsTab = () => {
                                       <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
                                         رسید پرداخت
                                       </h3>
-                                      {receiptImages[reg.id] ? (
-                                        <motion.button
-                                          whileHover={{ scale: 1.05 }}
-                                          whileTap={{ scale: 0.95 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setModalImage(receiptImages[reg.id]);
-                                          }}
-                                          className="px-5 py-2 rounded-lg text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
-                                        >
-                                          مشاهده رسید
-                                        </motion.button>
-                                      ) : (
-                                        <p className="text-gray-500 text-sm">
-                                          رسید موجود نیست
-                                        </p>
-                                      )}
-                                      {reg.payment_status !== "paid" && (
+                                     
+                                       <div className="flex flex-row-reverse gap-4">{ (reg.payment_status !== "paid" &&
                                         <motion.button
                                           whileHover={{ scale: 1.05 }}
                                           whileTap={{ scale: 0.95 }}
@@ -480,7 +440,7 @@ const PaymentsTab = () => {
                                             e.stopPropagation();
                                             await handleConfirmPayment(reg.id);
                                           }}
-                                          className={`px-5 py-2 rounded-lg text-white text-sm font-medium transition-all duration-200 ${
+                                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
                                             confirmedPaymentIds.has(reg.id)
                                               ? "bg-gray-400 cursor-not-allowed"
                                               : "bg-green-600 hover:bg-green-700"
@@ -493,6 +453,24 @@ const PaymentsTab = () => {
                                             : "تایید پرداخت"}
                                         </motion.button>
                                       )}
+                                      {receiptImages[reg.id] ? (
+                                        <motion.button
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setModalImage(receiptImages[reg.id]);
+                                          }}
+                                          className="px-3 py-2 rounded-xl text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
+                                        >
+                                          مشاهده رسید
+                                        </motion.button>
+                                      ) : (
+                                        <p className="text-gray-500 text-sm">
+                                          رسید موجود نیست
+                                        </p>
+                                      )}
+                                     </div>
                                     </div>
                                   ) : (
                                     <>
@@ -506,18 +484,14 @@ const PaymentsTab = () => {
                                             className="text-sm text-gray-700 bg-white p-3 rounded-lg shadow-sm"
                                           >
                                             <div className="space-y-2 text-xl">
-                                              <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">
+                                              <p className="">
                                                   مبلغ:
-                                                </span>
-                                                <span>{inst.amount}</span>
+                                                <span className="mr-2">{inst.amount}</span>
                                               </p>
-                                              <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">
+                                              <p className="">
                                                   وضعیت:
-                                                </span>
                                                 <span
-                                                  className={`px-2 py-1 rounded-full text-xs ${
+                                                  className={`px-2 py-1 rounded-full mr-2 text-xs ${
                                                     inst.status === "paid"
                                                       ? "bg-green-100 text-green-700"
                                                       : "bg-yellow-100 text-yellow-700"
@@ -526,11 +500,9 @@ const PaymentsTab = () => {
                                                   {inst.status === "pending" ? "در انتظار" : inst.status === "paid" ? "پرداخت شده" : inst.status}
                                                 </span>
                                               </p>
-                                              <p className="flex items-center">
-                                                <span className="inline-block w-24 font-medium">
+                                              <p className="">
                                                   سررسید:
-                                                </span>
-                                                <span>
+                                                <span className="mr-2">
                                                   {convertToJalali(
                                                     inst.due_date
                                                   )}
@@ -538,7 +510,7 @@ const PaymentsTab = () => {
                                               </p>
                                             </div>
                                             {inst.secure_url && (
-                                              <div className="flex items-center space-x-4 mt-6">
+                                              <div className="flex flex-row-reverse gap-4 items-center space-x-4 mt-6">
                                                 <motion.button
                                                   whileHover={{ scale: 1.05 }}
                                                   whileTap={{ scale: 0.95 }}
