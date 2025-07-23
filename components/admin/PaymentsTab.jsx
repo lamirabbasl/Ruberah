@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { IoClose } from "react-icons/io5";
+import { motion } from "framer-motion";
+import { IoChevronBackOutline } from "react-icons/io5";
 import {
   getRegistrationsAdmin,
   getChildByIdAdmin,
@@ -14,11 +14,10 @@ import {
   getReceiptImageAdmin,
   confirmPaymentNonInstallment,
 } from "@/lib/api/api";
-import { convertToJalali } from "@/lib/utils/convertDate";
-import { useRouter } from "next/navigation";
-import { IoChevronBackOutline } from "react-icons/io5";
-
-
+import { useRouter, useSearchParams } from "next/navigation";
+import BatchSection from "@/components/admin/payments/BatchSection";
+import PaginationControls from "@/components/admin/payments/PaginationControls";
+import ImageModal from "@/components/admin/payments/ImageModal";
 
 const PaymentsTab = ({ batchId = null }) => {
   const [registrations, setRegistrations] = useState([]);
@@ -37,22 +36,28 @@ const PaymentsTab = ({ batchId = null }) => {
   const [fetchedImages, setFetchedImages] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const router = useRouter(); 
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // Initialize search state from URL
+  useEffect(() => {
+    const searchQuery = searchParams.get("search") || "";
+    setSearch(searchQuery);
+  }, [searchParams]);
 
   // Initial data fetching
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getRegistrationsAdmin(currentPage, "", batchId);
-        console.log("API Response:", response); // Debug the response
+        const response = await getRegistrationsAdmin(currentPage, search, batchId);
+        console.log("API Response:", response);
 
         let regs = [];
         let is_last_page = true;
 
-        // Handle both list and single-object responses
         if (response && Array.isArray(response.results)) {
           regs = response.results;
           is_last_page = response.is_last_page || false;
@@ -94,7 +99,6 @@ const PaymentsTab = ({ batchId = null }) => {
 
     fetchData();
 
-    // Clean up blob URLs on unmount
     return () => {
       Object.values(receiptImages).forEach((url) => {
         if (url && url !== "/path/to/fallback-receipt.jpg")
@@ -105,9 +109,9 @@ const PaymentsTab = ({ batchId = null }) => {
           URL.revokeObjectURL(url);
       });
     };
-  }, [currentPage]);
+  }, [currentPage, search, batchId]);
 
-  // Fetch receipt images for non-installment payments when a batch is expanded
+  // Fetch receipt images for non-installment payments
   useEffect(() => {
     async function fetchReceiptImages() {
       const hasExpandedBatches = Object.values(expandedBatches).some(
@@ -145,7 +149,7 @@ const PaymentsTab = ({ batchId = null }) => {
     fetchReceiptImages();
   }, [expandedBatches, registrations]);
 
-  // Fetch installment receipt images when a card is flipped
+  // Fetch installment receipt images
   useEffect(() => {
     async function fetchInstallmentReceiptImages() {
       const flippedRegIds = Object.keys(flippedCards).filter(
@@ -276,32 +280,32 @@ const PaymentsTab = ({ batchId = null }) => {
     }
   };
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
-  };
-
-  const modalVariants = {
-    hidden: { opacity: 0, scale: 0.85 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    exit: { opacity: 0, scale: 0.85, transition: { duration: 0.2 } },
+  const handleSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setSearch(searchValue);
   };
 
   return (
     <div className="p-6 bg-gradient-to-b w-5/6 max-md:w-screen text-black max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
-
-        {/* ✅ Back button */}
-        <button
+      <button
         onClick={() => router.push("/admin/dashboard/payments")}
         className="left-6 flex justify-center items-center absolute px-4 py-2 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition rounded-lg text-lg font-medium"
       >
-        <IoChevronBackOutline /> 
+        <IoChevronBackOutline />
         <span> بازگشت</span>
       </button>
-
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         مدیریت پرداخت‌ها
       </h2>
+      <div className="mb-6">
+        <input
+          type="text"
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="جستجوی نام..."
+          className="w-full max-w-md p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-right text-lg"
+        />
+      </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <motion.div
@@ -321,338 +325,34 @@ const PaymentsTab = ({ batchId = null }) => {
       ) : (
         <div className="space-y-8">
           {Object.entries(groupedByBatch).map(([batchTitle, regs]) => (
-            <motion.div
+            <BatchSection
               key={batchTitle}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              className="border border-gray-200 rounded-2xl max-md:ml-4 shadow-lg overflow-hidden"
-            >
-              <button
-                onClick={() => toggleBatch(batchTitle)}
-                className="w-full text-right px-6 py-4 font-semibold text-xl bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 rounded-t-2xl focus:outline-none transition-all duration-300 flex justify-between items-center"
-              >
-                
-                <motion.span
-                  animate={{ rotate: expandedBatches[batchTitle] ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-indigo-600"
-                >
-                  ▼
-                </motion.span>
-                <span>{batchTitle}</span>
-              </button>
-              <AnimatePresence>
-                {expandedBatches[batchTitle] && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }}
-                    exit={{ height: 0, opacity: 0, transition: { duration: 0.3 } }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
-                  >
-                    {regs.map((reg) => {
-                      const child = childrenMap[reg.child];
-                      const batch = batches.find((b) => b.id === (reg.batch?.id || reg.batch));
-                      const isFlipped = flippedCards[reg.id];
-                      const regDetails = registrationDetailsMap[reg.id];
-
-                      return (
-                        <motion.div
-                          key={reg.id}
-                          variants={cardVariants}
-                          initial="hidden"
-                          animate="visible"
-                          className="relative border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-white cursor-pointer"
-                          style={{ height: "320px", perspective: "1200px" }}
-                          onClick={() => toggleFlipCard(reg.id)}
-                          whileHover={{
-                            scale: 1.02,
-                            boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-                          }}
-                        >
-                          <div
-                            className="relative w-full h-full"
-                            style={{
-                              transformStyle: "preserve-3d",
-                              transition:
-                                "transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-                              transform: isFlipped
-                                ? "rotateY(180deg)"
-                                : "rotateY(0deg)",
-                              height: "100%",
-                            }}
-                          >
-                            {/* Front Side */}
-                            <div
-                              className="absolute w-full h-full p-5 overflow-y-auto bg-white rounded-xl"
-                              style={{ backfaceVisibility: "hidden" }}
-                            >
-                              <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-                                {child ? child.full_name : reg.child || "نامشخص"}
-                              </h3>
-                              <div className="space-y-1 text-lg text-right text-gray-700">
-                                <p className=""> 
-                                  {reg.parent_name || "نامشخص"}   :نام والد
-                                </p>
-                                <p className="">
-                                    {reg.parent_username || "نامشخص"} :نام کاربری والد
-                                </p>
-                              </div>
-                              {batch ? (
-                                <div className="space-y-2 text-right text-xl">
-                                  <p className=""> 
-                                      {batch.capacity}         :ظرفیت
-                                  </p>
-                                  <p className="">
-                                 وضعیت: 
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs ${
-                                        reg.payment_status === "paid"
-                                          ? "bg-green-100 text-green-700"
-                                          : "bg-yellow-100 text-yellow-700"
-                                      }`}
-                                    >
-                                      {reg.payment_status === "partial" ? "پرداخت جزئی" : reg.payment_status === "paid" ? "پرداخت شده" : reg.payment_status}
-                                    </span>
-                                  </p>
-                                  <p className="">
-                                      مبلغ:
-                                    <span className="text-gray-600 mr-2">
-                                      {reg.final_price}
-                                    </span>
-                                  </p>
-                                </div>
-                              ) : (
-                                <p className="text-gray-600 text-sm">
-                                  بچ نامشخص
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Back Side */}
-                            <div
-                              className="absolute w-full h-full p-5 bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl overflow-y-auto"
-                              style={{
-                                backfaceVisibility: "hidden",
-                                transform: "rotateY(180deg)",
-                              }}
-                            >
-                              {regDetails ? (
-                                <>
-                                  {reg.payment_method !== "installment" ? (
-                                    <div className="space-y-4">
-                                      <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-                                        رسید پرداخت
-                                      </h3>
-                                     
-                                       <div className="flex flex-row-reverse gap-4">{ (reg.payment_status !== "paid" &&
-                                        <motion.button
-                                          whileHover={{ scale: 1.05 }}
-                                          whileTap={{ scale: 0.95 }}
-                                          disabled={
-                                            confirmedPaymentIds.has(reg.id) ||
-                                            confirmingPaymentIds.has(reg.id)
-                                          }
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-                                            await handleConfirmPayment(reg.id);
-                                          }}
-                                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
-                                            confirmedPaymentIds.has(reg.id)
-                                              ? "bg-gray-400 cursor-not-allowed"
-                                              : "bg-green-600 hover:bg-green-700"
-                                          }`}
-                                        >
-                                          {confirmingPaymentIds.has(reg.id)
-                                            ? "در حال تایید..."
-                                            : confirmedPaymentIds.has(reg.id)
-                                            ? "تایید شده"
-                                            : "تایید پرداخت"}
-                                        </motion.button>
-                                      )}
-                                      {receiptImages[reg.id] ? (
-                                        <motion.button
-                                          whileHover={{ scale: 1.05 }}
-                                          whileTap={{ scale: 0.95 }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setModalImage(receiptImages[reg.id]);
-                                          }}
-                                          className="px-3 py-2 rounded-xl text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
-                                        >
-                                          مشاهده رسید
-                                        </motion.button>
-                                      ) : (
-                                        <p className="text-gray-500 text-sm">
-                                          رسید موجود نیست
-                                        </p>
-                                      )}
-                                     </div>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-                                        جزئیات قسط
-                                      </h3>
-                                      <ul className="space-y-4">
-                                        {regDetails.installments.map((inst) => (
-                                          <li
-                                            key={inst.id}
-                                            className="text-sm text-gray-700 bg-white p-3 rounded-lg shadow-sm"
-                                          >
-                                            <div className="space-y-2 text-xl">
-                                              <p className="">
-                                                  مبلغ:
-                                                <span className="mr-2">{inst.amount}</span>
-                                              </p>
-                                              <p className="">
-                                                  وضعیت:
-                                                <span
-                                                  className={`px-2 py-1 rounded-full mr-2 text-xs ${
-                                                    inst.status === "paid"
-                                                      ? "bg-green-100 text-green-700"
-                                                      : "bg-yellow-100 text-yellow-700"
-                                                  }`}
-                                                >
-                                                  {inst.status === "pending" ? "در انتظار" : inst.status === "paid" ? "پرداخت شده" : inst.status}
-                                                </span>
-                                              </p>
-                                              <p className="">
-                                                  سررسید:
-                                                <span className="mr-2">
-                                                  {convertToJalali(
-                                                    inst.due_date
-                                                  )}
-                                                </span>
-                                              </p>
-                                            </div>
-                                            {inst.secure_url && (
-                                              <div className="flex flex-row-reverse gap-4 items-center space-x-4 mt-6">
-                                                <motion.button
-                                                  whileHover={{ scale: 1.05 }}
-                                                  whileTap={{ scale: 0.95 }}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setModalImage(
-                                                      installmentReceiptImages[
-                                                        inst.id
-                                                      ] ||
-                                                        "/path/to/fallback-receipt.jpg"
-                                                    );
-                                                  }}
-                                                  className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
-                                                >
-                                                  مشاهده رسید
-                                                </motion.button>
-                                                <motion.button
-                                                  whileHover={{ scale: 1.05 }}
-                                                  whileTap={{ scale: 0.95 }}
-                                                  disabled={inst.status === "paid"}
-                                                  onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    await handleApproveInstallmentPayment(
-                                                      inst.id,
-                                                      reg.id
-                                                    );
-                                                  }}
-                                                  className={`px-4 py-2 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
-                                                    inst.status === "paid"
-                                                      ? "bg-gray-400 cursor-not-allowed"
-                                                      : "bg-green-600 hover:bg-green-700"
-                                                  }`}
-                                                >
-                                                  تایید پرداخت
-                                                </motion.button>
-                                              </div>
-                                            )}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <p className="text-gray-600 text-sm">
-                                  در حال بارگذاری جزئیات...
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              batchTitle={batchTitle}
+              regs={regs}
+              expandedBatches={expandedBatches}
+              toggleBatch={toggleBatch}
+              childrenMap={childrenMap}
+              batches={batches}
+              flippedCards={flippedCards}
+              toggleFlipCard={toggleFlipCard}
+              registrationDetailsMap={registrationDetailsMap}
+              receiptImages={receiptImages}
+              confirmingPaymentIds={confirmingPaymentIds}
+              confirmedPaymentIds={confirmedPaymentIds}
+              handleConfirmPayment={handleConfirmPayment}
+              installmentReceiptImages={installmentReceiptImages}
+              handleApproveInstallmentPayment={handleApproveInstallmentPayment}
+              setModalImage={setModalImage}
+            />
           ))}
-          {/* Pagination Controls */}
-          <div className="flex justify-center mt-6 sm:mt-8 space-x-3 space-x-reverse">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium ${
-                currentPage === 1
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700"
-              } transition-all duration-200`}
-            >
-              صفحه قبلی
-            </motion.button>
-            <span className="px-3 sm:px-4 py-2 text-gray-700 font-medium">صفحه {currentPage}</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={isLastPage}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium ${
-                isLastPage
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700"
-              } transition-all duration-200`}
-            >
-              صفحه بعدی
-            </motion.button>
-          </div>
+          <PaginationControls
+            currentPage={currentPage}
+            isLastPage={isLastPage}
+            handlePageChange={handlePageChange}
+          />
         </div>
       )}
-
-      <AnimatePresence>
-        {modalImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-            onClick={() => setModalImage(null)}
-          >
-            <motion.div
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="bg-white p-8 rounded-2xl shadow-2xl max-w-5xl max-h-[90vh] overflow-auto relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={modalImage}
-                alt="Receipt Large"
-                className="max-w-full max-h-[80vh] rounded-lg"
-              />
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setModalImage(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all duration-200"
-              >
-                <IoClose size={24} />
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ImageModal modalImage={modalImage} setModalImage={setModalImage} />
     </div>
   );
 };
