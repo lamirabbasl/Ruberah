@@ -1,8 +1,6 @@
 "use client";
 
-import AdminSignupQuiz from "@/components/admin/AdminSignupQuiz";
-import AdminSignupTerms from "@/components/admin/AdminSignupTerms";
-import AdminSignupVideos from "@/components/admin/AdminSignupVideos";
+
 import FirstPageSetting from "@/components/admin/FirstPageSetting";
 import React, { useState } from "react";
 

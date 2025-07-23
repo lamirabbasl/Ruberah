@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
-import { getFirstPageManager, editFirstPage } from "@/lib/api/api"; // Hypothetical API functions
+import { getFirstPageManager, editFirstPage } from "@/lib/api/api"; 
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -131,16 +131,20 @@ const SettingsPage = () => {
               <span className="text-right">{settings.phone_number}</span>
               <span className="inline-block w-32 font-medium text-right mr-4">شماره تلفن:</span>
             </p>
-            <p className="flex items-center justify-end flex-row-reverse">
-              <span className="text-right">{settings.presentation_text}</span>
-              <span className="inline-block w-32 font-medium text-right mr-4">متن معرفی:</span>
+            <p className="flex items-start justify-end flex-row-reverse">
+            <span style={{ whiteSpace: 'normal', overflowWrap: 'break-word', maxWidth: '100%' }}>
+            {settings.presentation_text}
+            </span>
+            <span className="inline-block w-32 font-medium text-right mr-4">متن معرفی:</span>
             </p>
             {settings.show_address && (
-              <p className="flex items-center justify-end flex-row-reverse">
-                <span className="text-right">{settings.address}</span>
-                <span className="inline-block w-32 font-medium text-right mr-4">آدرس:</span>
-              </p>
-            )}
+  <p className="flex items-start justify-end flex-row-reverse">
+    <span style={{ whiteSpace: 'normal', overflowWrap: 'break-word', maxWidth: '100%' }}>
+      {settings.address}
+    </span>
+    <span className="inline-block w-32 font-medium text-right mr-4">آدرس:</span>
+  </p>
+)}
             <p className="flex items-center justify-end flex-row-reverse">
               <span className="text-right">{settings.show_address ? "بله" : "خیر"}</span>
               <span className="inline-block w-32 font-medium text-right mr-4">نمایش آدرس:</span>

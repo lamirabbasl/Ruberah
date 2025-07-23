@@ -1,24 +1,12 @@
 "use client";
-
 import React, { useState, useEffect, useRef } from "react";
-import { FaRegCalendarCheck, FaListUl } from "react-icons/fa";
-import { BiExit, BiMenu } from "react-icons/bi";
-import { VscSignIn } from "react-icons/vsc";
+import { BiMenu } from "react-icons/bi";
 import { useRouter, usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { getUserMe, getProfilePhotoUrl } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
-import LoadingSpinner from "../common/LoadingSpinner";
-import { IoIosHome } from "react-icons/io";
-import { FaUser } from "react-icons/fa";
-import { FaChildren } from "react-icons/fa6";
-import Link from "next/link";
-import { IoHome } from "react-icons/io5";
-import { MdOutlinePayment } from "react-icons/md";
-
-
-
-
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import MobileMenu from "@/components/admin/menu/MobileMenu";
+import DesktopSidebar from "@/components/admin/menu/DesktopSidebar";
 
 function AdminMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -102,7 +90,7 @@ function AdminMenu() {
   }, [isMenuOpen]);
 
   if (loading) {
-    return <LoadingSpinner/>
+    return <LoadingSpinner />;
   }
 
   if (error) {
@@ -122,214 +110,27 @@ function AdminMenu() {
         </button>
       </div>
 
-      {/* Mobile Menu (Modal) */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            ref={menuRef}
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 25,
-              duration: 0.15,
-            }}
-            className="fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out"
-          >
-            <div className="p-4">
-              {/* Close Button */}
-              <div className="flex justify-start mb-4">
-                <button
-                  onClick={toggleMenu}
-                  className="bg-gray-800/90 backdrop-blur-md text-white p-2 rounded-md shadow-md hover:bg-gray-700 transition-colors"
-                  aria-label="Close Menu"
-                >
-                  <BiExit className="text-2xl" />
-                </button>
-              </div>
-
-              {/* Header Section */}
-              <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
-                <div className="flex flex-col items-end">
-                  <p className="font-semibold text-white">{user?.username || "کاربر"}</p>
-                  <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
-                </div>
-                <div className="relative rounded-full overflow-hidden">
-                  <img
-                    className="w-14 h-14 object-cover"
-                    src={profilePhotoUrl || "/user.png"}
-                    alt="user avatar"
-                  />
-                </div>
-              </div>
-
-              {/* Navigation Links */}
-              <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
-              <NavItem
-                  label="صفحه اصلی"
-                  icon={<IoIosHome className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("firstPage")}
-                  isActive={activeTab === "firstPage"}
-                />
-                <NavItem
-                  label="دوره ها"
-                  icon={<FaListUl className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("courses")}
-                  isActive={activeTab === "courses"}
-                />
-                <NavItem
-                  label="رزرو شده ها"
-                  icon={<FaRegCalendarCheck className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("reserve")}
-                  isActive={activeTab === "reserve"}
-                />
-                <NavItem
-                  label="پرداخت ها"
-                  icon={<MdOutlinePayment className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("payments")}
-                  isActive={activeTab === "payments"}
-                />
-                <NavItem
-                  label="فرآیند ثبت نام"
-                  icon={<VscSignIn className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("signup")}
-                  isActive={activeTab === "signup"}
-                />
-                 <NavItem
-            label="کودکان"
-            icon={<FaChildren className="text-2xl ml-2" />}
-            onClick={() => handleTabClick("children")}
-            isActive={activeTab === "children"}
-          />
-                <NavItem
-                  label="کاربران"
-                  icon={<FaUser className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("users")}
-                  isActive={activeTab === "users"}
-                />
-              </nav>
-
-              <Link href={"/"}>
-      <button
-        className="absolute bottom-4 right-2 font-bold text-sm gap-1 items-center bg-green-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
-      >
-        <p>صفحه اصلی</p>
-        <IoHome className="text-xl text-white" />
-      </button>
-      </Link>
-
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="absolute bottom-4 left-2 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
-              >
-                <p>خارج شوید</p>
-                <BiExit className="text-xl" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Menu */}
+      <MobileMenu
+        isMenuOpen={isMenuOpen}
+        menuRef={menuRef}
+        toggleMenu={toggleMenu}
+        user={user}
+        profilePhotoUrl={profilePhotoUrl}
+        activeTab={activeTab}
+        handleTabClick={handleTabClick}
+        handleLogout={handleLogout}
+      />
 
       {/* Desktop Sidebar */}
-      <aside className="max-md:hidden fixed right-0 flex text-lg font-noto text-white flex-col gap-6 justify-start items-end p-4 h-screen w-1/6 bg-gray-900 shadow-md z-10 transition-transform duration-300 ease-in-out">
-        {/* Header Section */}
-        <div className="flex justify-end items-center gap-4 pb-4 border-b border-gray-800 w-full">
-          <div className="flex flex-col items-end">
-            <p className="font-semibold">{user?.username || "کاربر"}</p>
-            <p className="text-sm text-gray-400">{user?.phone_number || ""}</p>
-          </div>
-          <div className="relative rounded-full overflow-hidden">
-            <img
-              className="w-14 h-14 object-cover"
-              src={profilePhotoUrl || "/user.png"}
-              alt="user avatar"
-            />
-          </div>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
-        <NavItem
-                  label="صفحه اصلی"
-                  icon={<IoIosHome className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("firstPage")}
-                  isActive={activeTab === "firstPage"}
-                />
-          <NavItem
-            label="دوره ها"
-            icon={<FaListUl className="text-xl ml-2" />}
-            onClick={() => handleTabClick("courses")}
-            isActive={activeTab === "courses"}
-          />
-          <NavItem
-            label="رزرو شده ها"
-            icon={<FaRegCalendarCheck className="text-xl ml-2" />}
-            onClick={() => handleTabClick("reserve")}
-            isActive={activeTab === "reserve"}
-          />
-          <NavItem
-                  label="پرداخت ها"
-                  icon={<MdOutlinePayment className="text-xl ml-2" />}
-                  onClick={() => handleTabClick("payments")}
-                  isActive={activeTab === "payments"}
-                />
-          <NavItem
-            label="فرآیند ثبت نام"
-            icon={<VscSignIn className="text-xl ml-2" />}
-            onClick={() => handleTabClick("signup")}
-            isActive={activeTab === "signup"}
-          />
-          <NavItem
-            label="کودکان"
-            icon={<FaChildren className="text-2xl ml-2" />}
-            onClick={() => handleTabClick("children")}
-            isActive={activeTab === "children"}
-          />
-          <NavItem
-            label="کاربران"
-            icon={<FaUser className="text-xl ml-2" />}
-            onClick={() => handleTabClick("users")}
-            isActive={activeTab === "users"}
-          />
-        </nav>
-        <Link href={"/"}>
-      <button
-        className="absolute bottom-4 right-2 font-bold text-sm gap-1 items-center bg-green-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
-      >
-        <p>صفحه اصلی</p>
-        <IoHome className="text-xl text-white" />
-      </button>
-      </Link>
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="absolute bottom-4 left-4 font-bold text-sm gap-1 items-center bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg flex text-white transition-colors duration-200"
-        >
-          <p>خارج شوید</p>
-          <BiExit className="text-xl" />
-        </button>
-      </aside>
+      <DesktopSidebar
+        user={user}
+        profilePhotoUrl={profilePhotoUrl}
+        activeTab={activeTab}
+        handleTabClick={handleTabClick}
+        handleLogout={handleLogout}
+      />
     </>
-  );
-}
-
-function NavItem({ label, icon, onClick, isActive }) {
-  return (
-    <div
-      className={`relative flex justify-end items-center gap-3 w-full cursor-pointer rounded-md transition-colors duration-200 ${
-        isActive ? "bg-gray-800" : "hover:bg-gray-800/50"
-      } p-2`}
-      onClick={onClick}
-    >
-      <p className="text-white">{label}</p>
-      {icon}
-      {isActive && (
-        <div className="absolute top-0 right-0 h-full w-1 bg-indigo-500 rounded-r-md shadow-md"></div>
-      )}
-    </div>
   );
 }
 
