@@ -2,7 +2,6 @@
 
 import AdminSignupIntroText from "@/components/admin/AdminSignupIntroText";
 import AdminSignupQuiz from "@/components/admin/AdminSignupQuiz";
-import AdminSignupTerms from "@/components/admin/AdminSignupTerms";
 import AdminSignupVideos from "@/components/admin/AdminSignupVideos";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";

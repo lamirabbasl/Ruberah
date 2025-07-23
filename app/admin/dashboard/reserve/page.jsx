@@ -1,7 +1,6 @@
 "use client";
 
 import ReserveList from "@/components/admin/ReserveList";
-import ReserveSetting from "@/components/admin/ReserveSetting";
 import ReserveTimes from "@/components/admin/RserveTimes";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
