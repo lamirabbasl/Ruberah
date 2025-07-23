@@ -23,7 +23,7 @@ const ReservePage = () => {
           <div className="relative">
             <button
               onClick={() => handleTabChange("list")}
-              className={`relative px-8 py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
                 activeTab === "list" ? "text-white" : "text-gray-700 hover:text-indigo-500"
               }`}
             >
@@ -40,7 +40,7 @@ const ReservePage = () => {
           <div className="relative">
             <button
               onClick={() => handleTabChange("calendar")}
-              className={`relative px-8 py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6  py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
                 activeTab === "calendar" ? "text-white" : "text-gray-700 hover:text-indigo-500"
               }`}
             >

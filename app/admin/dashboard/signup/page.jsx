@@ -24,7 +24,7 @@ const AdminSignUpPage = () => {
           <div className="relative">
             <button
               onClick={() => handleTabChange("videos")}
-              className={`relative px-8 py-3 text-base   rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 py-3 font-semibold text-base   rounded-full transition-all duration-300 z-10 ${
                 activeTab === "videos" ? "text-white" : "text-gray-700 hover:text-indigo-500"
               }`}
             >
@@ -41,7 +41,7 @@ const AdminSignUpPage = () => {
           <div className="relative">
             <button
               onClick={() => handleTabChange("quiz")}
-              className={`relative px-8 py-3 text-base  rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 py-3 font-semibold text-base  rounded-full transition-all duration-300 z-10 ${
                 activeTab === "quiz" ? "text-white" : "text-gray-700 hover:text-indigo-500"
               }`}
             >
@@ -58,7 +58,7 @@ const AdminSignUpPage = () => {
           <div className="relative">
             <button
               onClick={() => handleTabChange("introText")}
-              className={`relative px-8 py-3 text-base  rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 font-semibold py-3 text-base  rounded-full transition-all duration-300 z-10 ${
                 activeTab === "introText" ? "text-white" : "text-gray-700 hover:text-indigo-500"
               }`}
             >

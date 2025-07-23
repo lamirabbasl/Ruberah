@@ -36,14 +36,14 @@ const AdminCoursesPage = () => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen whitespace-nowrap max-md:pt-14 max-md:text-sm w-5/6 max-md:w-screen p-8 font-noto bg-gray-100 text-black"
+      className="min-h-screen whitespace-nowrap max-md:pt-14 max-md:text-sm w-5/6 max-md:w-screen p-8 max-md:p-4 font-noto bg-gray-100 text-black"
     >
       <div className="relative flex gap-1 mb-8 bg-white rounded-full shadow-lg p-1 w-fit">
         {tabLabels.map((label, index) => (
           <div key={index} className="relative">
             <button
               onClick={() => handleTabClick(index)}
-              className={`relative px-8 py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 max-md:px-5  py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
                 activeTab === index ? "text-white" : "text-gray-700 hover:text-blue-500"
               }`}
             >
