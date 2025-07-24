@@ -87,7 +87,6 @@ const InformationPage = () => {
       toast.success(successMessage);
       const updatedPhotoUrl = await getProfilePhotoUrl(user.id);
       setProfilePhotoUrl(updatedPhotoUrl);
-      window.location.reload();
     } catch (err) {
       console.error("Error uploading profile photo:", err);
       const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
