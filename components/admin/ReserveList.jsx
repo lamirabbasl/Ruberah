@@ -31,11 +31,13 @@ const ReserveList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
 
   useEffect(() => {
-    fetchReservations();
+    fetchReservations(currentPage);
     fetchSessions();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
     const filteredReservations = reservations.filter((reservation) => {
@@ -63,13 +65,15 @@ const ReserveList = () => {
     setExpandedDates(initialExpanded);
   }, [reservations, searchTerm]);
 
-  const fetchReservations = async () => {
+  const fetchReservations = async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getReservations();
+      const response = await getReservations(page);
+      const data = response.results || [];
       data.sort((a, b) => new Date(a.reserved_at) - new Date(b.reserved_at));
       setReservations(data);
+      setIsLastPage(response.is_last_page);
     } catch (err) {
       setError(err.message || "خطا در دریافت رزروها");
     } finally {
@@ -91,7 +95,7 @@ const ReserveList = () => {
     setError(null);
     try {
       await toggleReservationActivation(id);
-      await fetchReservations();
+      await fetchReservations(currentPage);
     } catch (err) {
       setError(err.message || "خطا در تغییر وضعیت فعال‌سازی");
     } finally {
@@ -105,11 +109,9 @@ const ReserveList = () => {
       setError(null);
       try {
         await deleteReservation(itemToDelete);
-        setReservations(reservations.filter((item) => item.id !== itemToDelete));
-        await fetchReservations();
-        window.location.reload();
+        setReservations((prev) => prev.filter((item) => item.id !== itemToDelete));
+        await fetchReservations(currentPage);
       } catch (err) {
-        window.location.reload();
         setError(err.message || "خطا در حذف رزرو");
       } finally {
         setShowConfirmDelete(false);
@@ -144,7 +146,7 @@ const ReserveList = () => {
       });
       setNewReservation({ name: "", email: "", phone: "", session: "" });
       setShowAddForm(false);
-      await fetchReservations();
+      await fetchReservations(currentPage);
     } catch (err) {
       setError(err.message || "خطا در افزودن رزرو");
     } finally {
@@ -166,7 +168,9 @@ const ReserveList = () => {
           افزودن رزرو
         </motion.button>
       </div>
+
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
       <AddReservationModal
         showAddForm={showAddForm}
         setShowAddForm={setShowAddForm}
@@ -177,6 +181,7 @@ const ReserveList = () => {
         setError={setError}
         handleAddReservation={handleAddReservation}
       />
+
       <ConfirmDeleteModal
         showConfirmDelete={showConfirmDelete}
         closeConfirmDelete={() => {
@@ -186,10 +191,13 @@ const ReserveList = () => {
         handleDelete={handleDelete}
         error={error}
       />
+
       {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
+
       {error && !showAddForm && !showConfirmDelete && (
         <p className="text-center text-red-500">{error}</p>
       )}
+
       {Object.keys(groupedReservations).length === 0 ? (
         <p className="text-center text-gray-600">هیچ رزروی ثبت نشده است</p>
       ) : (
@@ -207,6 +215,25 @@ const ReserveList = () => {
           ))}
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-4 mt-8">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+        >
+          قبلی
+        </button>
+        <span>صفحه {currentPage}</span>
+        <button
+          disabled={isLastPage}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+        >
+          بعدی
+        </button>
+      </div>
     </div>
   );
 };
