@@ -1,6 +1,8 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { getChildren, addChild, patchChild } from "@/lib/api/api";
 import EditableChild from "./EditableChild";
 import AddChildForm from "./AddChildForm";
@@ -20,7 +22,10 @@ const ChildrenPage = () => {
         const data = await getChildren();
         setChildren(data);
       } catch (err) {
-        setError("خطا در دریافت اطلاعات فرزندان");
+        console.error("Error fetching children:", err);
+        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        toast.error(errorMessage);
+        setError(errorMessage);
       } finally {
         setLoadingChildren(false);
       }
@@ -32,33 +37,43 @@ const ChildrenPage = () => {
   // Add new child
   const handleAddChild = async (newChild) => {
     try {
-      const addedChild = await addChild({
+      const response = await addChild({
         full_name: newChild.full_name,
         birth_date: newChild.birth_date,
         gender: newChild.gender,
       });
-      setChildren([...children, addedChild]);
+      const successMessage = response.data?.message || "فرزند با موفقیت اضافه شد.";
+      toast.success(successMessage);
+      setChildren([...children, response]);
       setShowAddChildForm(false);
     } catch (err) {
-      setError("خطا در افزودن فرزند");
+      console.error("Error adding child:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
+      setError(errorMessage);
     }
   };
 
   // Update existing child
   const handleUpdateChild = async (updatedChild) => {
     try {
-      const patchedChild = await patchChild(updatedChild.id, {
+      const response = await patchChild(updatedChild.id, {
         full_name: updatedChild.full_name,
         gender: updatedChild.gender,
         birth_date: updatedChild.birth_date,
       });
+      const successMessage = response.data?.message || "اطلاعات با موفقیت بروزرسانی شد.";
+      toast.success(successMessage);
       setChildren(
         children.map((child) =>
-          child.id === patchedChild.id ? patchedChild : child
+          child.id === response.id ? response : child
         )
       );
     } catch (err) {
-      setError("خطا در بروزرسانی فرزند");
+      console.error("Error updating child:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
+      setError(errorMessage);
     }
   };
 
@@ -79,6 +94,16 @@ const ChildrenPage = () => {
       transition={{ duration: 0.5 }}
       className="flex flex-col text-black font-mitra items-center p-6 max-w-2xl max-md:w-screen mx-auto bg-gradient-to-br from-white to-gray-50 shadow-2xl rounded-2xl mt-4 space-y-6"
     >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <motion.h1
         initial={{ y: -20 }}
         animate={{ y: 0 }}

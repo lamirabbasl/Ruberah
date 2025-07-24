@@ -1,6 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { getUserMe, patchUserMeJson, getProfilePhotoUrl, uploadProfilePicture } from "@/lib/api/api";
 import EditableField from "./EditableField";
 import LoadingSpinner from "../common/LoadingSpinner";
@@ -24,11 +26,17 @@ const InformationPage = () => {
             const photoUrl = await getProfilePhotoUrl(data.id);
             setProfilePhotoUrl(photoUrl);
           } catch (err) {
+            console.error("Error fetching profile photo:", err);
+            const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+            toast.error(errorMessage);
             setProfilePhotoUrl(null);
           }
         }
       } catch (err) {
-        setError("خطا در دریافت اطلاعات کاربر");
+        console.error("Error fetching user info:", err);
+        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        toast.error(errorMessage);
+        setError(errorMessage);
       } finally {
         setLoadingUser(false);
       }
@@ -52,26 +60,38 @@ const InformationPage = () => {
       groups: user.groups,
     };
     try {
-      const patchedUser = await patchUserMeJson(updatedUser);
-      setUser(patchedUser);
+      const response = await patchUserMeJson(updatedUser);
+      const successMessage = response.data?.message || "اطلاعات با موفقیت بروزرسانی شد.";
+      toast.success(successMessage);
+      setUser(response);
     } catch (err) {
-      setError("خطا در بروزرسانی اطلاعات کاربر");
+      console.error("Error updating user info:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
     }
   };
 
   // Handle profile photo upload
   const handleProfilePhotoChange = async (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+      const errorMessage = "لطفا یک فایل تصویر انتخاب کنید";
+      toast.error(errorMessage);
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
-      await uploadProfilePicture(file);
+      const response = await uploadProfilePicture(file);
+      const successMessage = response.data?.message || "اطلاعات با موفقیت بروزرسانی شد.";
+      toast.success(successMessage);
       const updatedPhotoUrl = await getProfilePhotoUrl(user.id);
       setProfilePhotoUrl(updatedPhotoUrl);
       window.location.reload();
     } catch (err) {
-      setError("خطا در آپلود عکس پروفایل");
+      console.error("Error uploading profile photo:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -94,6 +114,16 @@ const InformationPage = () => {
       transition={{ duration: 0.5 }}
       className="flex flex-col font-mitra items-center p-6 max-w-xl max-md:w-screen mx-auto bg-gradient-to-br from-white to-gray-100 shadow-2xl rounded-2xl mt-4 space-y-6"
     >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       {/* Profile photo */}
       <motion.div
         className="relative mb-4"
@@ -172,4 +202,4 @@ const InformationPage = () => {
   );
 };
 
-export default InformationPage;
+export default InformationPage; 

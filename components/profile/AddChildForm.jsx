@@ -1,16 +1,22 @@
 "use client";
 import React, { useState } from "react";
-import JalaliCalendar from "../common/JalaliCalendar"; // Import JalaliCalendar
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
 const AddChildForm = ({ onAdd }) => {
   const [fullName, setFullName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("boy");
-  const [showCalendar, setShowCalendar] = useState(false); // State to control calendar visibility
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleAdd = () => {
-    if (!fullName || !birthDate) return;
+    if (!fullName || !birthDate) {
+      const errorMessage = "لطفا تمام فیلدهای ضروری را پر کنید";
+      toast.error(errorMessage);
+      return;
+    }
     onAdd({ full_name: fullName, birth_date: birthDate, gender });
     setFullName("");
     setBirthDate("");
@@ -22,6 +28,16 @@ const AddChildForm = ({ onAdd }) => {
       className="mt-4 relative bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-3"
       dir="rtl"
     >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <input
         type="text"
         placeholder="نام و نام خانوادگی"

@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   getRegistrations,
   getChildById,
@@ -64,6 +66,8 @@ function CoursesPage() {
             batchInfo = await getBatchById(reg.batch);
           } catch (e) {
             console.error("Error fetching batch info for batch", reg.batch, e);
+            const errorMessage = e.response?.data?.message || e.message || "خطا در ثبت نام";
+            toast.error(errorMessage);
           }
 
           let installments = [];
@@ -75,6 +79,8 @@ function CoursesPage() {
             }));
           } catch (e) {
             console.error("Error fetching installments for registration", reg.id, e);
+            const errorMessage = e.response?.data?.message || e.message || "خطا در ثبت نام";
+            toast.error(errorMessage);
           }
 
           let paymentStatus = "unpaid";
@@ -113,7 +119,9 @@ function CoursesPage() {
         setChildren(Object.values(childDataMap));
       } catch (error) {
         console.error("Error fetching registrations or children:", error);
-        setError("خطا در دریافت اطلاعات دوره‌ها یا فرزندان");
+        const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
+        toast.error(errorMessage);
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -134,6 +142,8 @@ function CoursesPage() {
               return { ...child, image: photoUrl };
             } catch (err) {
               setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
+              const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+              toast.error(errorMessage);
               return { ...child, image: "/path/to/fallback-image.jpg" };
             }
           }
@@ -166,6 +176,8 @@ function CoursesPage() {
                     updatedCourse = { ...course, receiptUrl };
                   } catch (err) {
                     setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
+                    const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+                    toast.error(errorMessage);
                     updatedCourse = { ...course, receiptUrl: null };
                   }
                 }
@@ -180,6 +192,10 @@ function CoursesPage() {
                           return { ...inst, receiptUrl };
                         } catch (err) {
                           setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                          if (err.status !== 404) {
+                            const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+                            toast.error(errorMessage);
+                          }
                           return { ...inst, receiptUrl: null };
                         }
                       }
@@ -212,13 +228,16 @@ function CoursesPage() {
     e.preventDefault();
     const fileInput = e.target.elements.receipt_image;
     if (fileInput.files.length === 0) {
-      alert("لطفا یک فایل تصویر انتخاب کنید");
+      const errorMessage = "لطفا یک فایل تصویر انتخاب کنید";
+      toast.error(errorMessage);
       return;
     }
 
     try {
       if (installmentId) {
-        await uploadInstallmentPayment(installmentId, fileInput.files[0]);
+        const response = await uploadInstallmentPayment(installmentId, fileInput.files[0]);
+        const successMessage = response.data?.message || "رسید با موفقیت بارگذاری شد.";
+        toast.success(successMessage);
         const updatedInstallments = await getRegistrationInstallments(registrationId);
         const updatedInstallmentsWithReceipts = await Promise.all(
           updatedInstallments.map(async (inst) => {
@@ -229,6 +248,10 @@ function CoursesPage() {
                 return { ...inst, receiptUrl };
               } catch (err) {
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                if (err.status !== 404) {
+                  const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+                  toast.error(errorMessage);
+                }
                 return { ...inst, receiptUrl: null };
               }
             }
@@ -254,7 +277,9 @@ function CoursesPage() {
           }))
         );
       } else {
-        await UploadReceiptPicture(registrationId, fileInput.files[0]);
+        const response = await UploadReceiptPicture(registrationId, fileInput.files[0]);
+        const successMessage = response.data?.message || "رسید با موفقیت بارگذاری شد.";
+        toast.success(successMessage);
         const receiptUrl = await getReceiptImage(registrationId);
         setFetchedImages((prev) => ({ ...prev, [`registration-${registrationId}`]: true }));
 
@@ -271,7 +296,8 @@ function CoursesPage() {
       }
     } catch (error) {
       console.error("Error uploading receipt:", error);
-      alert("خطا در بارگذاری رسید. لطفا دوباره تلاش کنید.");
+      const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
     }
   };
 
@@ -288,6 +314,16 @@ function CoursesPage() {
       dir="rtl"
       className="min-h-screen font-mitra p-6 flex flex-col items-center"
     >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <h1 className="text-4xl font-bold text-gray-700 mb-6">دوره‌های فرزندان</h1>
       {children.map((child, childIndex) => (
         <ChildCard

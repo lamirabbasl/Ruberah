@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   getCourses,
   getCourseBatches,
@@ -25,7 +26,6 @@ function AllCourses() {
   const [selectedChildId, setSelectedChildId] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [signupLoading, setSignupLoading] = useState(false);
-  const [signupError, setSignupError] = useState(null);
   const [signupSuccess, setSignupSuccess] = useState(null);
 
   useEffect(() => {
@@ -39,7 +39,10 @@ function AllCourses() {
         setCourses(coursesData);
         setSeasons(seasonsData);
       } catch (err) {
-        setError(err.message || "خطا در دریافت داده‌ها");
+        console.error("Error fetching courses or seasons:", err);
+        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        toast.error(errorMessage);
+        setError(errorMessage);
       } finally {
         setLoadingCourses(false);
       }
@@ -58,7 +61,9 @@ function AllCourses() {
         const data = await getCourseBatches(courseId);
         setBatchesByCourse((prev) => ({ ...prev, [courseId]: data }));
       } catch (err) {
-        setError(err.message || "خطا در دریافت بچ‌ها");
+        console.error("Error fetching batches for course", courseId, err);
+        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        toast.error(errorMessage);
       }
     }
   };
@@ -68,21 +73,21 @@ function AllCourses() {
       setOpenSignupBatchId(null);
       setSelectedChildId(null);
       setSelectedPaymentMethod(null);
-      setSignupError(null);
       setSignupSuccess(null);
       return;
     }
     setOpenSignupBatchId(batchId);
     setSelectedChildId(null);
     setSelectedPaymentMethod(null);
-    setSignupError(null);
     setSignupSuccess(null);
     setLoadingChildren(true);
     try {
       const childrenData = await getChildren();
       setChildren(childrenData);
     } catch (err) {
-      setSignupError(err.message || "خطا در دریافت فرزندان");
+      console.error("Error fetching children:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
     } finally {
       setLoadingChildren(false);
     }
@@ -94,25 +99,28 @@ function AllCourses() {
 
   const handleSignup = async (batchId) => {
     if (!selectedChildId || !selectedPaymentMethod) {
-      setSignupError("لطفا فرزند و روش پرداخت را انتخاب کنید.");
+      const errorMessage = "لطفا فرزند و روش پرداخت را انتخاب کنید.";
+      toast.error(errorMessage);
       return;
     }
     setSignupLoading(true);
-    setSignupError(null);
     setSignupSuccess(null);
     try {
-      await registerChildToBatch(
+      const response = await registerChildToBatch(
         batchId,
         selectedChildId,
         selectedPaymentMethod
       );
-      setSignupSuccess("ثبت نام با موفقیت انجام شد.");
-      // Optionally close the signup card or reset selections
+      const successMessage = response.data?.message || "ثبت نام با موفقیت انجام شد.";
+      toast.success(successMessage);
+      setSignupSuccess(successMessage);
       setOpenSignupBatchId(null);
       setSelectedChildId(null);
       setSelectedPaymentMethod(null);
     } catch (err) {
-      setSignupError(err.message || "خطا در ثبت نام");
+      console.error("Error registering child to batch:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      toast.error(errorMessage);
     } finally {
       setSignupLoading(false);
     }
@@ -148,9 +156,7 @@ function AllCourses() {
   };
 
   if (loadingCourses) {
-    return (
-      <LoadingSpinner />
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
@@ -169,6 +175,16 @@ function AllCourses() {
       dir="rtl"
       className="min-h-screen p-6 font-mitra w-5/6 flex flex-col items-center max-md:mx-auto"
     >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <h1 className="text-4xl font-bold text-gray-700 md:mt-14 mb-8">
         دوره‌ها
       </h1>
@@ -274,10 +290,6 @@ function AllCourses() {
                                 <p className="text-center text-gray-600">
                                   در حال بارگذاری فرزندان...
                                 </p>
-                              ) : signupError ? (
-                                <p className="text-center text-red-600">
-                                  {signupError}
-                                </p>
                               ) : (
                                 <>
                                   <div className="mb-6">
@@ -351,6 +363,11 @@ function AllCourses() {
                                       ? "در حال ثبت نام..."
                                       : "ثبت نام فرزندم"}
                                   </button>
+                                  {signupSuccess && (
+                                    <p className="text-center text-green-600 mt-4">
+                                      {signupSuccess}
+                                    </p>
+                                  )}
                                 </>
                               )}
                             </div>
