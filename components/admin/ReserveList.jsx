@@ -44,7 +44,8 @@ const ReserveList = () => {
       const term = searchTerm.toLowerCase();
       return (
         reservation.registration_code.toLowerCase().includes(term) ||
-        reservation.name.toLowerCase().includes(term)
+        reservation.name.toLowerCase().includes(term) ||
+        reservation.phone.toLowerCase().includes(term) 
       );
     });
 

@@ -36,6 +36,12 @@ function ReservationTable({ reservations, handleToggleActivation, openConfirmDel
               scope="col"
               className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
+                   شماره همراه  
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               ایمیل
             </th>
             <th
@@ -68,6 +74,9 @@ function ReservationTable({ reservations, handleToggleActivation, openConfirmDel
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
                 {item.name}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                {item.phone}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
                 {item.email}
