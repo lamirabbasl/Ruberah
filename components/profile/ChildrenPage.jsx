@@ -23,7 +23,7 @@ const ChildrenPage = () => {
         setChildren(data);
       } catch (err) {
         console.error("Error fetching children:", err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت اطلاعات";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -48,7 +48,7 @@ const ChildrenPage = () => {
       setShowAddChildForm(false);
     } catch (err) {
       console.error("Error adding child:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن فرزند";
       toast.error(errorMessage);
       setError(errorMessage);
     }
@@ -71,7 +71,7 @@ const ChildrenPage = () => {
       );
     } catch (err) {
       console.error("Error updating child:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     }

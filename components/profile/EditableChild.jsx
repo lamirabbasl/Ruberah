@@ -33,7 +33,7 @@ const EditableChild = ({ child, onUpdate }) => {
         setChildPhotoUrl(childPhoto);
       } catch (error) {
         console.error("Error fetching child photo:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
+        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت عکس فرزند";
         toast.error(errorMessage);
         setChildPhotoUrl(null);
       }
@@ -44,7 +44,7 @@ const EditableChild = ({ child, onUpdate }) => {
         setParentPhotoUrl(parentPhoto);
       } catch (error) {
         console.error("Error fetching parent photo:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
+        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت عکس والدین";
         toast.error(errorMessage);
         setParentPhotoUrl(null);
       }
@@ -97,7 +97,7 @@ const EditableChild = ({ child, onUpdate }) => {
       setChildPhotoUrl(updatedChildPhoto);
     } catch (err) {
       console.error("Error uploading child photo:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -123,7 +123,7 @@ const EditableChild = ({ child, onUpdate }) => {
       setParentPhotoUrl(updatedParentPhoto);
     } catch (err) {
       console.error("Error uploading parent photo:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
