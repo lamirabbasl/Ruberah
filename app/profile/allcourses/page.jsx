@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getCourses,
   getCourseBatches,
@@ -173,7 +174,7 @@ function AllCourses() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen p-6 font-mitra w-5/6 flex flex-col items-center max-md:mx-auto"
+      className="min-h-screen p-6 text-black font-mitra w-5/6 flex flex-col items-center max-md:mx-auto"
     >
       <ToastContainer
         position="bottom-right"
@@ -277,102 +278,123 @@ function AllCourses() {
                             </button>
                           </div>
                         </div>
-                        {openSignupBatchId === batch.id && (
-                          <div className="fixed inset-0 flex items-center text-black justify-center backdrop-blur-3xl z-50">
-                            <div className="bg-white rounded-lg shadow-lg p-6 w-96 max-w-full">
-                              <button
-                                onClick={() => setOpenSignupBatchId(null)}
-                                className="mb-4 flex mr-auto text-right text-red-600 hover:text-red-800 font-bold"
+                        <AnimatePresence>
+                          {openSignupBatchId === batch.id && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+                            >
+                              <motion.div
+                                initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.8, y: 50, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative"
                               >
-                                <IoClose className="text-2xl" />
-                              </button>
-                              {loadingChildren ? (
-                                <p className="text-center text-gray-600">
-                                  در حال بارگذاری فرزندان...
-                                </p>
-                              ) : (
-                                <>
-                                  <div className="mb-6">
-                                    <h3 className="font-semibold text-xl mb-4">
-                                      انتخاب فرزند
-                                    </h3>
-                                    {children.length === 0 ? (
-                                      <p>فرزندی یافت نشد.</p>
-                                    ) : (
-                                      <ul className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2">
-                                        {children.map((child) => (
-                                          <li
-                                            key={child.id}
-                                            className={`cursor-pointer relative p-2 rounded ${
-                                              selectedChildId === child.id
-                                                ? "bg-green-300"
-                                                : ""
-                                            }`}
-                                            onClick={() =>
-                                              setSelectedChildId(child.id)
-                                            }
-                                          >
-                                            {child.full_name}{" "}
-                                            <p className=" absolute top-2 left-1 bg-blue-500 px-2  rounded-2xl text-white">
-                                              انتخاب
-                                            </p>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    )}
+                                <button
+                                  onClick={() => setOpenSignupBatchId(null)}
+                                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                                >
+                                  <IoClose className="text-2xl" />
+                                </button>
+                                {loadingChildren ? (
+                                  <div className="flex justify-center py-8">
+                                    <LoadingSpinner />
                                   </div>
-                                  <div className="mb-4">
-                                    <h3 className="font-semibold text-xl mb-4">
-                                      انتخاب روش پرداخت
+                                ) : (
+                                  <>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-6 text-right">
+                                      ثبت نام فرزند
                                     </h3>
-                                    {paymentMethods.length === 0 ? (
-                                      <p>روش پرداختی یافت نشد.</p>
-                                    ) : (
-                                      <ul className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2">
-                                        {paymentMethods.map((method) => (
-                                          <li
-                                            key={method.key}
-                                            className={`cursor-pointer relative p-2 rounded ${
-                                              selectedPaymentMethod ===
-                                              method.key
-                                                ? "bg-green-300"
-                                                : ""
-                                            }`}
-                                            onClick={() =>
-                                              setSelectedPaymentMethod(
-                                                method.key
-                                              )
-                                            }
-                                          >
-                                            {method.label} - {method.price}{" "}
-                                            تومان
-                                            <p className=" absolute top-2 left-1 bg-blue-500 px-2  rounded-2xl text-white">
-                                              انتخاب
-                                            </p>
-                                          </li>
-                                        ))}
-                                      </ul>
+                                    <div className="mb-6">
+                                      <h4 className="font-semibold text-lg mb-3 text-right">
+                                        انتخاب فرزند
+                                      </h4>
+                                      {children.length === 0 ? (
+                                        <p className="text-gray-600 text-right">فرزندی یافت نشد.</p>
+                                      ) : (
+                                        <motion.ul
+                                          className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50"
+                                          initial={{ height: 0 }}
+                                          animate={{ height: "auto" }}
+                                          transition={{ duration: 0.3 }}
+                                        >
+                                          {children.map((child) => (
+                                            <motion.li
+                                              key={child.id}
+                                              className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
+                                                selectedChildId === child.id
+                                                  ? "bg-green-100 border-green-500"
+                                                  : "hover:bg-gray-100"
+                                              }`}
+                                              onClick={() => setSelectedChildId(child.id)}
+                                              whileHover={{ scale: 1.02 }}
+                                              whileTap={{ scale: 0.98 }}
+                                            >
+                                              {child.full_name}
+                                            </motion.li>
+                                          ))}
+                                        </motion.ul>
+                                      )}
+                                    </div>
+                                    <div className="mb-6">
+                                      <h4 className="font-semibold text-lg mb-3 text-right">
+                                        انتخاب روش پرداخت
+                                      </h4>
+                                      {paymentMethods.length === 0 ? (
+                                        <p className="text-gray-600 text-right">روش پرداختی یافت نشد.</p>
+                                      ) : (
+                                        <motion.ul
+                                          className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50"
+                                          initial={{ height: 0 }}
+                                          animate={{ height: "auto" }}
+                                          transition={{ duration: 0.3 }}
+                                        >
+                                          {paymentMethods.map((method) => (
+                                            <motion.li
+                                              key={method.key}
+                                              className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
+                                                selectedPaymentMethod === method.key
+                                                  ? "bg-green-100 border-green-500"
+                                                  : "hover:bg-gray-100"
+                                              }`}
+                                              onClick={() => setSelectedPaymentMethod(method.key)}
+                                              whileHover={{ scale: 1.02 }}
+                                              whileTap={{ scale: 0.98 }}
+                                            >
+                                              {method.label} - {method.price} تومان
+                                            </motion.li>
+                                          ))}
+                                        </motion.ul>
+                                      )}
+                                    </div>
+                                    <motion.button
+                                      onClick={() => handleSignup(batch.id)}
+                                      disabled={signupLoading}
+                                      className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
+                                      {signupLoading ? "در حال ثبت نام..." : "ثبت نام فرزندم"}
+                                    </motion.button>
+                                    {signupSuccess && (
+                                      <motion.p
+                                        className="text-center text-green-600 mt-4"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                      >
+                                        {signupSuccess}
+                                      </motion.p>
                                     )}
-                                  </div>
-                                  <button
-                                    onClick={() => handleSignup(batch.id)}
-                                    disabled={signupLoading}
-                                    className="bg-blue-600 flex mt-10 mx-auto text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                                  >
-                                    {signupLoading
-                                      ? "در حال ثبت نام..."
-                                      : "ثبت نام فرزندم"}
-                                  </button>
-                                  {signupSuccess && (
-                                    <p className="text-center text-green-600 mt-4">
-                                      {signupSuccess}
-                                    </p>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                                  </>
+                                )}
+                              </motion.div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
                   })

@@ -8,7 +8,6 @@ import { IoIosArrowBack, IoIosArrowForward, IoIosArrowDown } from "react-icons/i
 moment.loadPersian({ usePersianDigits: true, dialect: "persian-modern" });
 
 let daysOfWeek = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
-daysOfWeek = daysOfWeek.reverse();
 
 const JalaliCalendar = ({ onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(
