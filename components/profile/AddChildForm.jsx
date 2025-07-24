@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
@@ -28,16 +28,6 @@ const AddChildForm = ({ onAdd }) => {
       className="mt-4 relative bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-3"
       dir="rtl"
     >
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="light"
-        rtl={true}
-      />
       <input
         type="text"
         placeholder="نام و نام خانوادگی"

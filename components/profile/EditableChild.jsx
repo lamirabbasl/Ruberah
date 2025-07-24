@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Pencil, Check } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos } from "@/lib/api/api";
 import JalaliCalendar from "../common/JalaliCalendar";
@@ -33,8 +33,7 @@ const EditableChild = ({ child, onUpdate }) => {
         setChildPhotoUrl(childPhoto);
       } catch (error) {
         console.error("Error fetching child photo:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت عکس فرزند";
-        toast.error(errorMessage);
+
         setChildPhotoUrl(null);
       }
     };
@@ -44,8 +43,6 @@ const EditableChild = ({ child, onUpdate }) => {
         setParentPhotoUrl(parentPhoto);
       } catch (error) {
         console.error("Error fetching parent photo:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت عکس والدین";
-        toast.error(errorMessage);
         setParentPhotoUrl(null);
       }
     };
@@ -140,21 +137,12 @@ const EditableChild = ({ child, onUpdate }) => {
       transition={{ type: "spring", stiffness: 200 }}
       className="flex flex-col md:flex-row md:items-start gap-6 pb-8 bg-white rounded-2xl shadow-lg p-6 w-full max-w-4xl mx-auto border border-gray-100 hover:shadow-xl transition-shadow duration-300"
     >
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="light"
-        rtl={true}
-      />
+
       {/* Images in one row always */}
       <div className="flex flex-row gap-6 justify-center">
         {/* Child Photo */}
         <motion.div
-          className="relative flex flex-col items-center"
+          className="relative flex flex-col z-99 items-center"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
