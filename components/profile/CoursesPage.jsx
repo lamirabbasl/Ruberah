@@ -66,7 +66,7 @@ function CoursesPage() {
             batchInfo = await getBatchById(reg.batch);
           } catch (e) {
             console.error("Error fetching batch info for batch", reg.batch, e);
-            const errorMessage = e.response?.data?.message || e.message || "خطا در ثبت نام";
+            const errorMessage = e.response?.data?.message || e.message || "خطا در دریافت اطلاعات";
             toast.error(errorMessage);
           }
 
@@ -79,7 +79,7 @@ function CoursesPage() {
             }));
           } catch (e) {
             console.error("Error fetching installments for registration", reg.id, e);
-            const errorMessage = e.response?.data?.message || e.message || "خطا در ثبت نام";
+            const errorMessage = e.response?.data?.message || e.message || "خطا در دریافت اقساط";
             toast.error(errorMessage);
           }
 
@@ -119,7 +119,7 @@ function CoursesPage() {
         setChildren(Object.values(childDataMap));
       } catch (error) {
         console.error("Error fetching registrations or children:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
+        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت فرزندان";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -142,7 +142,7 @@ function CoursesPage() {
               return { ...child, image: photoUrl };
             } catch (err) {
               setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
-              const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+              const errorMessage = err.response?.data?.message || err.message || "خطا در عکس فرزندان";
               toast.error(errorMessage);
               return { ...child, image: "/path/to/fallback-image.jpg" };
             }
@@ -176,8 +176,6 @@ function CoursesPage() {
                     updatedCourse = { ...course, receiptUrl };
                   } catch (err) {
                     setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
-                    const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
-                    toast.error(errorMessage);
                     updatedCourse = { ...course, receiptUrl: null };
                   }
                 }
@@ -193,8 +191,6 @@ function CoursesPage() {
                         } catch (err) {
                           setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                           if (err.status !== 404) {
-                            const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
-                            toast.error(errorMessage);
                           }
                           return { ...inst, receiptUrl: null };
                         }
@@ -249,8 +245,6 @@ function CoursesPage() {
               } catch (err) {
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                 if (err.status !== 404) {
-                  const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
-                  toast.error(errorMessage);
                 }
                 return { ...inst, receiptUrl: null };
               }
@@ -296,8 +290,6 @@ function CoursesPage() {
       }
     } catch (error) {
       console.error("Error uploading receipt:", error);
-      const errorMessage = error.response?.data?.message || error.message || "خطا در ثبت نام";
-      toast.error(errorMessage);
     }
   };
 
