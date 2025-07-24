@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-  
+
 import SignupForm from "./signup/SignupForm";
 
 import { useSignupHandlers } from "@/lib/hooks/signup/useSignupHandlers";
@@ -30,7 +30,6 @@ const Signup = () => {
     setValidationCode,
     isVerifyingCode,
     handleVerifyCode,
-    validationMessage,
     phoneValidated,
   } = useSignupHandlers();
 
@@ -45,7 +44,7 @@ const Signup = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-primary mt-16 to-gray-600  flex items-center justify-center p-4 font-noto"
+      className="min-h-screen bg-gradient-to-b from-primary mt-16 to-gray-600 flex items-center justify-center p-4 font-noto"
       dir="rtl"
     >
       <motion.div
@@ -54,6 +53,16 @@ const Signup = () => {
         animate="visible"
         className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-[90%] sm:max-w-md shadow-2xl border border-gray-300"
       >
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+          rtl={true}
+        />
         <SignupForm
           name={name}
           setName={setName}
@@ -74,10 +83,8 @@ const Signup = () => {
           setValidationCode={setValidationCode}
           isVerifyingCode={isVerifyingCode}
           handleVerifyCode={handleVerifyCode}
-          validationMessage={validationMessage}
           phoneValidated={phoneValidated}
         />
-        <ToastContainer />
       </motion.div>
     </div>
   );

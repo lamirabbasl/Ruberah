@@ -53,6 +53,16 @@ const Login = () => {
         animate="visible"
         className="bg-white rounded-xl p-6 sm:p-8 w-full max-w-[90%] sm:max-w-md shadow-2xl border border-gray-300"
       >
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+          rtl={true}
+        />
         <LoginForm
           phone={phone}
           setPhone={setPhone}
@@ -80,7 +90,6 @@ const Login = () => {
           loading={loading}
           handleResetPassword={handleResetPassword}
         />
-        <ToastContainer />
       </motion.div>
     </div>
   );
