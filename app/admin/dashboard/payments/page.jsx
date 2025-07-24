@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react"; 
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   getBatches,
   getCourses,
   getSeasons,
-  searchBatches, 
+  searchBatches,
+  getRegistrationSummary,
 } from "@/lib/api/api";
 
 import BatchSearch from "../../../../components/admin/batches/BatchSearch";
@@ -16,9 +17,10 @@ const RegistrationsBatchesTab = () => {
   const [batches, setBatches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [seasons, setSeasons] = useState([]);
+  const [registrationSummary, setRegistrationSummary] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchBatches = useCallback(async (term = "") => {
     setLoading(true);
@@ -32,45 +34,42 @@ const RegistrationsBatchesTab = () => {
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
-    fetchBatches(searchTerm); 
+    fetchBatches(searchTerm);
   }, [searchTerm, fetchBatches]);
 
-  const fetchCourses = async () => {
-    try {
-      const data = await getCourses();
-      setCourses(data);
-    } catch (err) {
-      setError("خطا در دریافت دوره‌ها");
-    }
-  };
-
-  const fetchSeasons = async () => {
-    try {
-      const data = await getSeasons();
-      setSeasons(data);
-    } catch (err) {
-      setError("خطا در دریافت فصل‌ها");
-    }
-  };
-
   useEffect(() => {
-    fetchCourses();
-    fetchSeasons();
+    const fetchInitialData = async () => {
+      try {
+        const [courseData, seasonData, summaryData] = await Promise.all([
+          getCourses(),
+          getSeasons(),
+          getRegistrationSummary(),
+        ]);
+        setCourses(courseData);
+        setSeasons(seasonData);
+        setRegistrationSummary(summaryData);
+      } catch (err) {
+        console.error("Error fetching initial data:", err);
+        setError("خطا در دریافت اطلاعات اولیه");
+      }
+    };
+
+    fetchInitialData();
   }, []);
 
   return (
     <div className="p-6 bg-gradient-to-b text-black text-right w-5/6 max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra">
       <h1 className="text-4xl mb-10">دوره‌های آموزشی</h1>
 
-      <BatchSearch
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm} 
-      />
+      <BatchSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
       {error && (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-4">{error}</p>
+        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-4">
+          {error}
+        </p>
       )}
 
       {loading ? (
@@ -87,6 +86,7 @@ const RegistrationsBatchesTab = () => {
           courses={courses}
           seasons={seasons}
           searchTerm={searchTerm}
+          registrationSummary={registrationSummary}
         />
       )}
     </div>
