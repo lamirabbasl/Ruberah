@@ -31,7 +31,7 @@ const FrontCard = ({ reg, child, batch }) => {
                   : "bg-yellow-100 text-yellow-700"
               }`}
             >
-              {reg.payment_status === "partial" ? "پرداخت جزئی" : reg.payment_status === "paid" ? "پرداخت شده" : reg.payment_status}
+              {reg.payment_status === "partial" ? "پرداخت جزئی" : reg.payment_status === "paid" ? "پرداخت شده" : "پرداخت نشده"} 
             </span>
           </p>
           <p className="">
