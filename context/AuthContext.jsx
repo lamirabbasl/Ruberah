@@ -9,6 +9,8 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // <== NEW
+
 
   const verifyUser = async (token) => {
     try {
@@ -17,13 +19,11 @@ export function AuthProvider({ children }) {
           Authorization: token,
         },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to verify user");
-      }
-
+  
+      if (!response.ok) throw new Error("Failed to verify user");
+  
       const data = await response.json();
-
+  
       setIsAuthenticated(true);
       setIsAdmin(data.groups.includes("manager"));
       setUser({
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
         phone: data.phone_number,
         groups: data.groups,
       });
-
+  
       return data;
     } catch (error) {
       console.error("Verification error:", error.message);
@@ -41,17 +41,21 @@ export function AuthProvider({ children }) {
       setUser(null);
       removeToken();
       throw error;
+    } finally {
+      setLoading(false); // <== Always stop loading
     }
   };
+  
 
   useEffect(() => {
     const token = getToken();
     if (token) {
-      verifyUser(token).catch((error) => 
-        console.error("Auto-verification error:", error.message)
-      );
+      verifyUser(token).catch(() => {}); // Already handled
+    } else {
+      setLoading(false); // No token, done loading
     }
   }, []);
+  
 
   const login = async (token) => {
     setToken(token);

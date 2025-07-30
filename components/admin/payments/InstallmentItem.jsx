@@ -39,8 +39,7 @@ const InstallmentItem = ({ inst, regId, installmentReceiptImages, handleApproveI
             onClick={(e) => {
               e.stopPropagation();
               setModalImage(
-                installmentReceiptImages[inst.id] ||
-                "/path/to/fallback-receipt.jpg"
+                installmentReceiptImages[inst.id]
               );
             }}
             className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
