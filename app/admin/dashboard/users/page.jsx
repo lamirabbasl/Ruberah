@@ -1,5 +1,7 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import AddUserForm from "@/components/admin/AddUserForm";
 import { getUsers, addUser, deleteUser, getUsersExport } from "@/lib/api/api";
 import SearchBar from "@/components/admin/users/SearchBar";
@@ -7,8 +9,8 @@ import ActionButtons from "@/components/admin/users/ActionButtons";
 import ConfirmDeleteModal from "@/components/admin/users/ConfirmDeleteModal";
 import UsersTable from "@/components/admin/users/UsersTable";
 import Pagination from "@/components/admin/users/Pagination";
-import { motion } from "framer-motion";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -30,7 +32,9 @@ const UsersPage = () => {
       setUsers(data.results);
       setIsLastPage(data.is_last_page);
     } catch (err) {
-      setError(err.message || "خطا در دریافت کاربران");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت کاربران";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -61,9 +65,11 @@ const UsersPage = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      toast.success("فایل اکسل با موفقیت صادر شد.");
     } catch (err) {
-      console.error("Error exporting Excel:", err);
-      setError(err.message || "خطا در صادرات به اکسل");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در صادرات به اکسل";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setExporting(false);
     }
@@ -73,11 +79,16 @@ const UsersPage = () => {
     setLoading(true);
     setError(null);
     try {
-      await addUser(newUser);
+      const response = await addUser(newUser);
+      const successMessage = response.data?.message || "کاربر با موفقیت اضافه شد.";
+      toast.success(successMessage);
       setShowAddForm(false);
       setCurrentPage(1);
+      await fetchUsers();
     } catch (err) {
-      setError(err.message || "خطا در افزودن کاربر");
+      const errorMessage = err.response?.data?.message ||  "خطا در افزودن کاربر";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -103,10 +114,15 @@ const UsersPage = () => {
     setError(null);
     try {
       await deleteUser(userToDelete);
+      const successMessage = "کاربر با موفقیت حذف شد.";
+      toast.success(successMessage);
       setShowConfirmDelete(false);
       setUserToDelete(null);
+      await fetchUsers();
     } catch (err) {
-      setError(err.message || "خطا در حذف کاربر");
+      const errorMessage = err.response?.data?.message || "خطا در حذف کاربر";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,6 +130,16 @@ const UsersPage = () => {
 
   return (
     <div className="p-6 bg-gradient-to-b text-black from-gray-50 w-5/6 max-md:w-screen to-gray-100 min-h-screen font-mitra text-right" dir="rtl">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت کاربران</h1>
         <ActionButtons handleAddUser={handleAddUser} handleExportExcel={handleExportExcel} exporting={exporting} />
@@ -125,6 +151,7 @@ const UsersPage = () => {
         closeConfirmDelete={closeConfirmDelete}
         handleDeleteUser={handleDeleteUser}
         error={error}
+        loading={loading}
       />
       {loading && (
         <div className="flex justify-center items-center h-64">

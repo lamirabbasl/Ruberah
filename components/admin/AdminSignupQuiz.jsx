@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, Trash2, X } from "lucide-react";
 import { getQuizQuestions, addQuizQuestion, deleteQuizQuestion } from "@/lib/api/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminSignupQuiz = () => {
   const [quizzes, setQuizzes] = useState([]);
@@ -29,7 +31,9 @@ const AdminSignupQuiz = () => {
       const data = await getQuizQuestions();
       setQuizzes(data);
     } catch (err) {
-      setError(err.message || "خطا در دریافت سوالات");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت سوالات";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -45,26 +49,36 @@ const AdminSignupQuiz = () => {
 
   const handleAddQuiz = async () => {
     if (!newQuiz.question_text.trim()) {
-      setError("لطفاً سوال را وارد کنید.");
+      const errorMessage = "لطفاً سوال را وارد کنید.";
+      toast.error(errorMessage);
+      setError(errorMessage);
       return;
     }
     if (newQuiz.choices.some((choice) => !choice.trim())) {
-      setError("لطفاً هر چهار گزینه را وارد کنید.");
+      const errorMessage = "لطفاً هر چهار گزینه را وارد کنید.";
+      toast.error(errorMessage);
+      setError(errorMessage);
       return;
     }
     if (!newQuiz.correct_answer.trim()) {
-      setError("لطفاً پاسخ صحیح را انتخاب کنید.");
+      const errorMessage = "لطفاً پاسخ صحیح را انتخاب کنید.";
+      toast.error(errorMessage);
+      setError(errorMessage);
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      await addQuizQuestion(newQuiz);
+      const response = await addQuizQuestion(newQuiz);
+      const successMessage = response.data?.message || "سوال با موفقیت اضافه شد.";
+      toast.success(successMessage);
       setNewQuiz({ question_text: "", choices: ["", "", "", ""], correct_answer: "" });
       setIsAddModalOpen(false);
       fetchQuizzes();
     } catch (err) {
-      setError(err.message || "خطا در افزودن سوال");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن سوال";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -82,10 +96,14 @@ const AdminSignupQuiz = () => {
     try {
       await deleteQuizQuestion(quizToDelete.id);
       setQuizzes(quizzes.filter((quiz) => quiz.id !== quizToDelete.id));
+      const successMessage = `سوال "${quizToDelete.question_text}" با موفقیت حذف شد.`;
+      toast.success(successMessage);
       setIsDeleteModalOpen(false);
       setQuizToDelete(null);
     } catch (err) {
-      setError(err.message || "خطا در حذف سوال");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف سوال";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -104,6 +122,16 @@ const AdminSignupQuiz = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-mitra text-right" dir="rtl">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
           سوالات فرآیند ثبت‌نام
@@ -208,7 +236,7 @@ const AdminSignupQuiz = () => {
                     loading ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
                   } transition`}
                 >
-                  افزودن
+                  {loading ? "در حال افزودن..." : "افزودن"}
                 </motion.button>
               </div>
             </motion.div>
@@ -255,9 +283,12 @@ const AdminSignupQuiz = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={confirmDelete}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                  } transition`}
                 >
-                  حذف
+                  {loading ? "در حال حذف..." : "حذف"}
                 </motion.button>
               </div>
             </motion.div>

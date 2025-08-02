@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, UploadCloud, Trash2, X } from "lucide-react";
 import { getIntroVideos, addIntroVideo, deleteIntroVideo } from "@/lib/api/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminSignupVideos = () => {
   const [videos, setVideos] = useState([]);
@@ -32,7 +34,9 @@ const AdminSignupVideos = () => {
       const data = await getIntroVideos();
       setVideos(data);
     } catch (err) {
-      setError(err.message || "خطا در دریافت ویدیوها");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت ویدیوها";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,15 +48,18 @@ const AdminSignupVideos = () => {
       setFile(selectedFile);
       setError(null);
     } else {
-      setError("لطفاً یک فایل ویدیویی معتبر انتخاب کنید.");
-      setFile(null);
+      const errorMessage = "لطفاً یک فایل ویدیویی معتبر انتخاب کنید.";
+      toast.error(errorMessage);
+      setError(errorMessage);
     }
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !videoTitle.trim()) {
-      setError("لطفاً عنوان ویدیو و فایل ویدیویی را وارد کنید.");
+      const errorMessage = "لطفاً عنوان ویدیو و فایل ویدیویی را وارد کنید.";
+      toast.error(errorMessage);
+      setError(errorMessage);
       return;
     }
 
@@ -65,7 +72,9 @@ const AdminSignupVideos = () => {
       formData.append("description", videoDescription);
       formData.append("video", file);
 
-      await addIntroVideo(formData);
+      const response = await addIntroVideo(formData);
+      const successMessage = response.data?.message || "ویدیو با موفقیت بارگذاری شد.";
+      toast.success(successMessage);
 
       setVideoTitle("");
       setVideoDescription("");
@@ -74,7 +83,9 @@ const AdminSignupVideos = () => {
       setIsAddModalOpen(false);
       fetchVideos();
     } catch (err) {
-      setError(err.message || "خطا در بارگذاری ویدیو");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری ویدیو";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -92,10 +103,14 @@ const AdminSignupVideos = () => {
     try {
       await deleteIntroVideo(videoToDelete.id);
       setVideos(videos.filter((video) => video.id !== videoToDelete.id));
+      const successMessage = `ویدیوی "${videoToDelete.title}" با موفقیت حذف شد.`;
+      toast.success(successMessage);
       setIsDeleteModalOpen(false);
       setVideoToDelete(null);
     } catch (err) {
-      setError(err.message || "خطا در حذف ویدیو");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف ویدیو";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,6 +129,16 @@ const AdminSignupVideos = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-mitra text-right" dir="rtl">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">ویدیوهای ثبت‌نام</h1>
         <motion.button
@@ -283,9 +308,12 @@ const AdminSignupVideos = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={confirmDelete}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                  } transition`}
                 >
-                  حذف
+                  {loading ? "در حال حذف..." : "حذف"}
                 </motion.button>
               </div>
             </motion.div>
