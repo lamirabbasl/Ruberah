@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react"; // Added useCallback
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   getBatches,
@@ -9,11 +9,9 @@ import {
   deleteBatch,
   getCourses,
   getSeasons,
-  searchBatches, // Import the new search function
+  searchBatches,
 } from "@/lib/api/api";
-
-// Import the new components
-import BatchCard from "./batches/BatchCard"; // Note: This will be used indirectly via BatchList
+import BatchCard from "./batches/BatchCard";
 import BatchForm from "./batches/BatchForm";
 import BatchModal from "./batches/BatchModal";
 import BatchSearch from "./batches/BatchSearch";
@@ -21,6 +19,8 @@ import BatchList from "./batches/BatchList";
 import BatchHeader from "./batches/BatchHeader";
 import DeleteConfirmModal from "./batches/DeleteConfirmModal";
 import { validateBatch } from "./batches/BatchValidation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BatchesTab = () => {
   const [batches, setBatches] = useState([]);
@@ -49,38 +49,35 @@ const BatchesTab = () => {
   });
   const [editingBatch, setEditingBatch] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // This will directly control the search
+  const [searchTerm, setSearchTerm] = useState("");
   const [formErrors, setFormErrors] = useState({});
 
-  // Modified fetchBatches to accept a search term
   const fetchBatches = useCallback(async (term = "") => {
     setLoading(true);
-    setError(null);
     try {
       const data = term ? await searchBatches(term) : await getBatches();
       setBatches(data);
     } catch (err) {
-      console.error("Error fetching batches:", err);
-      setError("خطا در دریافت دوره‌ها. لطفا دوباره تلاش کنید.");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها. لطفا دوباره تلاش کنید.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, []); // Empty dependency array means this function is created once
+  }, []);
 
-  // Initial fetch and re-fetch on searchTerm changes
   useEffect(() => {
-    fetchBatches(searchTerm); // Trigger fetch immediately on searchTerm change
-  }, [searchTerm, fetchBatches]); // Depend on searchTerm and fetchBatches
+    fetchBatches(searchTerm);
+  }, [searchTerm, fetchBatches]);
 
   const fetchCourses = async () => {
     try {
       const data = await getCourses();
       setCourses(data);
     } catch (err) {
-      setError("خطا در دریافت دوره‌ها");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها";
+      toast.error(errorMessage);
     }
   };
 
@@ -89,11 +86,11 @@ const BatchesTab = () => {
       const data = await getSeasons();
       setSeasons(data);
     } catch (err) {
-      setError("خطا در دریافت فصل‌ها");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت فصل‌ها";
+      toast.error(errorMessage);
     }
   };
 
-  // Fetch courses and seasons only once on component mount
   useEffect(() => {
     fetchCourses();
     fetchSeasons();
@@ -103,14 +100,14 @@ const BatchesTab = () => {
     const errors = validateBatch(newBatch);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      setError("لطفا تمام فیلدهای ضروری را پر کنید");
+      toast.error("لطفا تمام فیلدهای ضروری را پر کنید");
       return;
     }
 
-    setError(null);
     setFormErrors({});
     try {
       await addBatch(newBatch);
+      toast.success("دوره جدید با موفقیت اضافه شد");
       setNewBatch({
         course: "",
         season: "",
@@ -131,9 +128,10 @@ const BatchesTab = () => {
         loyalty_discount_percent: 0,
       });
       setShowAddForm(false);
-      fetchBatches(searchTerm); // Refresh batches, maintaining current search
+      fetchBatches(searchTerm);
     } catch (err) {
-      setError("خطا در افزودن دوره");
+      const errorMessage = err.response?.data?.message || err.message ||"خطا در افزودن دوره";
+      toast.error(errorMessage);
     }
   };
 
@@ -141,37 +139,20 @@ const BatchesTab = () => {
     const errors = validateBatch(editingBatch);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      setError("لطفا تمام فیلدهای ضروری را پر کنید");
+      toast.error("لطفا تمام فیلدهای ضروری را پر کنید");
       return;
     }
 
-    setError(null);
     setFormErrors({});
     try {
-      await editBatch(editingBatch.id, {
-        title: editingBatch.title,
-        course: editingBatch.course,
-        season: editingBatch.season,
-        min_age: editingBatch.min_age,
-        max_age: editingBatch.max_age,
-        schedule: editingBatch.schedule,
-        location: editingBatch.location,
-        capacity: editingBatch.capacity,
-        allow_gateway: editingBatch.allow_gateway,
-        allow_receipt: editingBatch.allow_receipt,
-        allow_installment: editingBatch.allow_installment,
-        price_gateway: editingBatch.price_gateway,
-        price_receipt: editingBatch.price_receipt,
-        price_installment: editingBatch.price_installment,
-        installment_count: editingBatch.installment_count,
-        colleague_discount_percent: editingBatch.colleague_discount_percent,
-        loyalty_discount_percent: editingBatch.loyalty_discount_percent,
-      });
+      await editBatch(editingBatch.id, { ...editingBatch });
+      toast.success("ویرایش دوره با موفقیت انجام شد");
       setShowEditForm(false);
       setEditingBatch(null);
-      fetchBatches(searchTerm); // Refresh batches, maintaining current search
+      fetchBatches(searchTerm);
     } catch (err) {
-      setError("خطا در ویرایش دوره");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش دوره";
+      toast.error(errorMessage);
     }
   };
 
@@ -189,56 +170,31 @@ const BatchesTab = () => {
     if (!batchToDelete) return;
     try {
       await deleteBatch(batchToDelete.id);
+      toast.success("دوره با موفقیت حذف شد");
       setShowDeleteConfirm(false);
       setBatchToDelete(null);
-      fetchBatches(searchTerm); // Refresh batches, maintaining current search
+      fetchBatches(searchTerm);
     } catch (err) {
-      setError("خطا در حذف دوره");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف دوره";
+      toast.error(errorMessage);
     }
   };
 
   const handleEditClick = (batch) => {
-    setEditingBatch({
-      id: batch.id,
-      title: batch.title,
-      course: batch.course,
-      season: batch.season,
-      min_age: batch.min_age,
-      max_age: batch.max_age,
-      schedule: batch.schedule,
-      location: batch.location,
-      capacity: batch.capacity,
-      allow_gateway: batch.allow_gateway,
-      allow_receipt: batch.allow_receipt,
-      allow_installment: batch.allow_installment,
-      price_gateway: batch.price_gateway,
-      price_receipt: batch.price_receipt,
-      price_installment: batch.price_installment,
-      installment_count: batch.installment_count,
-      colleague_discount_percent: batch.colleague_discount_percent,
-      loyalty_discount_percent: batch.loyalty_discount_percent,
-    });
+    setEditingBatch({ ...batch });
     setShowEditForm(true);
   };
-
-  // filteredBatches is no longer needed here, BatchList will directly display 'batches'
-  // which are already filtered by the API call based on 'searchTerm'
 
   return (
     <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra">
       <BatchHeader onAddClick={() => setShowAddForm(true)} />
-
-      <BatchSearch
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm} // Direct update, no debounce
-      />
+      <BatchSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <BatchModal
         isOpen={showAddForm}
         onClose={() => {
           setShowAddForm(false);
           setFormErrors({});
-          setError(null);
         }}
       >
         <BatchForm
@@ -259,7 +215,6 @@ const BatchesTab = () => {
           setShowEditForm(false);
           setEditingBatch(null);
           setFormErrors({});
-          setError(null);
         }}
       >
         <BatchForm
@@ -277,10 +232,7 @@ const BatchesTab = () => {
         />
       </BatchModal>
 
-      <BatchModal
-        isOpen={showDeleteConfirm}
-        onClose={cancelDelete}
-      >
+      <BatchModal isOpen={showDeleteConfirm} onClose={cancelDelete}>
         <DeleteConfirmModal
           isOpen={showDeleteConfirm}
           onClose={cancelDelete}
@@ -288,10 +240,6 @@ const BatchesTab = () => {
           batchTitle={batchToDelete?.title || ""}
         />
       </BatchModal>
-
-      {error && (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-4">{error}</p>
-      )}
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -303,14 +251,25 @@ const BatchesTab = () => {
         </div>
       ) : (
         <BatchList
-          batches={batches} // Pass the directly fetched batches (which are already filtered)
+          batches={batches}
           courses={courses}
           seasons={seasons}
           onEdit={handleEditClick}
           onDelete={confirmDeleteBatch}
-          searchTerm={searchTerm} // Keep passing searchTerm for the "No results" message
+          searchTerm={searchTerm}
         />
       )}
+
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
     </div>
   );
 };

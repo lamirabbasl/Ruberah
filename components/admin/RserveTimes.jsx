@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import AddTimeForm from "./AddTimeForm";
 import { getSessions, addSession, deleteSession } from "@/lib/api/api";
 
@@ -25,32 +28,32 @@ const ReserveTimes = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      setError(err.message || "خطا در دریافت جلسات");
+      const message = err.response?.data?.message || err.message || "خطا در دریافت جلسات";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddItem = () => {
-    setShowAddForm(true);
-  };
+  const handleAddItem = () => setShowAddForm(true);
+  const handleCancelAdd = () => setShowAddForm(false);
 
   const handleSaveNewItem = async (newItem) => {
     setLoading(true);
     setError(null);
     try {
       await addSession(newItem);
+      toast.success("جلسه با موفقیت افزوده شد.");
       setShowAddForm(false);
       await fetchSessions();
     } catch (err) {
-      setError(err.message || "خطا در افزودن جلسه");
+      const message = err.response?.data?.message || err.message || "خطا در افزودن جلسه";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCancelAdd = () => {
-    setShowAddForm(false);
   };
 
   const openConfirmDelete = (id) => {
@@ -69,11 +72,14 @@ const ReserveTimes = () => {
     setError(null);
     try {
       await deleteSession(sessionToDelete);
+      toast.success("جلسه با موفقیت حذف شد.");
       setShowConfirmDelete(false);
       setSessionToDelete(null);
       await fetchSessions();
     } catch (err) {
-      setError(err.message || "خطا در حذف جلسه");
+      const message = err.response?.data?.message || err.message || "خطا در حذف جلسه";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -92,6 +98,17 @@ const ReserveTimes = () => {
 
   return (
     <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra text-right" dir="rtl">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
+
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت جلسات رزرو</h1>
         <motion.button
@@ -129,13 +146,9 @@ const ReserveTimes = () => {
               exit="exit"
               className="bg-white rounded-2xl p-8 w-full max-w-md relative"
             >
-             
               <p className="mb-6 text-red-600 font-semibold text-center text-lg text-right">
                 آیا مطمئن هستید که می‌خواهید این جلسه را حذف کنید؟
               </p>
-              {error && (
-                <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg mb-4 text-right">{error}</p>
-              )}
               <div className="flex justify-end space-x-3">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -168,11 +181,8 @@ const ReserveTimes = () => {
           ></motion.div>
         </div>
       )}
-      {error && (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-6">{error}</p>
-      )}
 
-      {sessions.length === 0 ? (
+      {sessions.length === 0 && !loading ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ جلسه‌ای وجود ندارد</p>
       ) : (
         <motion.div
@@ -184,36 +194,11 @@ const ReserveTimes = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  عنوان
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  زمان معارفه
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  آدرس
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  ظرفیت
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider"
-                >
-                  عملیات
-                </th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">عنوان</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">زمان معارفه</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">آدرس</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">ظرفیت</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">عملیات</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -227,10 +212,8 @@ const ReserveTimes = () => {
                     exit="hidden"
                     className="hover:bg-gray-50 transition-all duration-200"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                      {session.title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                    <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">{session.title}</td>
+                    <td className="px-6 py-4 text-right text-sm text-gray-600">
                       {new Date(session.date_time).toLocaleString("fa-IR", {
                         year: "numeric",
                         month: "long",
@@ -239,19 +222,14 @@ const ReserveTimes = () => {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-6 py-4 text-right text-sm text-gray-600">
-                      {session.address}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                      {session.capacity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="px-6 py-4 text-right text-sm text-gray-600">{session.address}</td>
+                    <td className="px-6 py-4 text-right text-sm text-gray-600">{session.capacity}</td>
+                    <td className="px-6 py-4 text-right">
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => openConfirmDelete(session.id)}
                         className="text-red-500 hover:text-red-700 transition-all duration-200 p-2 rounded-full bg-red-50 hover:bg-red-100"
-                        aria-label={`حذف جلسه ${session.title}`}
                       >
                         <FaTrash size={16} />
                       </motion.button>

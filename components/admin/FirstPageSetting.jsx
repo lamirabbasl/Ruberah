@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
-import { getFirstPageManager, editFirstPage } from "@/lib/api/api"; 
+import { getFirstPageManager, editFirstPage } from "@/lib/api/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -15,11 +17,10 @@ const SettingsPage = () => {
     address: "",
     show_address: false,
   });
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState(settings);
-  const [formError, setFormError] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -43,9 +44,10 @@ const SettingsPage = () => {
         address: data.address || "",
         show_address: data.show_address || false,
       });
-      setLoading(false);
     } catch (err) {
-      setError("خطا در بارگذاری داده‌ها");
+      const errorMessage = err?.response?.data?.message || err.message || "خطا در بارگذاری داده‌ها";
+      toast.error(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -66,12 +68,14 @@ const SettingsPage = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      await editFirstPage(formData); // Send JSON body via PATCH
+      await editFirstPage(formData);
+      toast.success("تنظیمات با موفقیت به‌روزرسانی شد.");
       setShowEditForm(false);
-      setFormError(null);
-      await fetchData(); // Refresh data after update
+      await fetchData();
     } catch (err) {
-      setFormError("خطا در به‌روزرسانی تنظیمات");
+      const errorMessage = err?.response?.data?.message || err.message || "خطا در به‌روزرسانی تنظیمات";
+      toast.error(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -84,6 +88,17 @@ const SettingsPage = () => {
 
   return (
     <div dir="rtl" className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
+
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-4xl font-bold text-gray-900 tracking-tight">تنظیمات صفحه</h2>
         <motion.button
@@ -104,8 +119,6 @@ const SettingsPage = () => {
             className="w-12 h-12 border-4 border-t-indigo-600 border-gray-200 rounded-full"
           ></motion.div>
         </div>
-      ) : error ? (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg text-lg">{error}</p>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -132,19 +145,19 @@ const SettingsPage = () => {
               <span className="inline-block w-32 font-medium text-right mr-4">شماره تلفن:</span>
             </p>
             <p className="flex items-start justify-end flex-row-reverse">
-            <span style={{ whiteSpace: 'normal', overflowWrap: 'break-word', maxWidth: '100%' }}>
-            {settings.presentation_text}
-            </span>
-            <span className="inline-block w-32 font-medium text-right mr-4">متن معرفی:</span>
+              <span style={{ whiteSpace: "normal", overflowWrap: "break-word", maxWidth: "100%" }}>
+                {settings.presentation_text}
+              </span>
+              <span className="inline-block w-32 font-medium text-right mr-4">متن معرفی:</span>
             </p>
             {settings.show_address && (
-  <p className="flex items-start justify-end flex-row-reverse">
-    <span style={{ whiteSpace: 'normal', overflowWrap: 'break-word', maxWidth: '100%' }}>
-      {settings.address}
-    </span>
-    <span className="inline-block w-32 font-medium text-right mr-4">آدرس:</span>
-  </p>
-)}
+              <p className="flex items-start justify-end flex-row-reverse">
+                <span style={{ whiteSpace: "normal", overflowWrap: "break-word", maxWidth: "100%" }}>
+                  {settings.address}
+                </span>
+                <span className="inline-block w-32 font-medium text-right mr-4">آدرس:</span>
+              </p>
+            )}
             <p className="flex items-center justify-end flex-row-reverse">
               <span className="text-right">{settings.show_address ? "بله" : "خیر"}</span>
               <span className="inline-block w-32 font-medium text-right mr-4">نمایش آدرس:</span>
@@ -159,7 +172,7 @@ const SettingsPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-start z-50 overflow-y-auto "
+            className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-start z-50 overflow-y-auto"
           >
             <motion.div
               variants={modalVariants}
@@ -178,9 +191,6 @@ const SettingsPage = () => {
                 <IoClose size={28} />
               </motion.button>
               <h3 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight text-right">ویرایش اطلاعات صفحه</h3>
-              {formError && (
-                <p className="mb-4 text-red-500 text-base bg-red-50 p-3 rounded-lg text-right">{formError}</p>
-              )}
               <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
                 <div>
                   <label className="block text-base font-medium text-gray-700 text-right">آدرس اینستاگرام</label>
@@ -280,4 +290,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;  
+export default SettingsPage;

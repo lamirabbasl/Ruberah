@@ -101,11 +101,11 @@ const PaymentsTab = ({ batchId = null }) => {
 
     return () => {
       Object.values(receiptImages).forEach((url) => {
-        if (url && url !== "/path/to/fallback-receipt.jpg")
+        if (url )
           URL.revokeObjectURL(url);
       });
       Object.values(installmentReceiptImages).forEach((url) => {
-        if (url && url !== "/path/to/fallback-receipt.jpg")
+        if (url )
           URL.revokeObjectURL(url);
       });
     };
@@ -132,7 +132,7 @@ const PaymentsTab = ({ batchId = null }) => {
             return { id: reg.id, url: receiptUrl };
           } catch (err) {
             setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
-            return { id: reg.id, url: "/path/to/fallback-receipt.jpg" };
+            return { id: reg.id };
           }
         });
 
@@ -187,7 +187,7 @@ const PaymentsTab = ({ batchId = null }) => {
                         ...prev,
                         [`installment-${inst.id}`]: true,
                       }));
-                      return { ...inst, receiptUrl: "/path/to/fallback-receipt.jpg" };
+                      return { ...inst};
                     }
                   }
                   return { ...inst, receiptUrl: installmentReceiptImages[inst.id] || null };

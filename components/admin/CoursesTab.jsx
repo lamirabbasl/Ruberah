@@ -7,6 +7,8 @@ import AddCourseModal from "@/components/admin/courses/AddCourseModal";
 import EditCourseModal from "@/components/admin/courses/EditCourseModal";
 import DeleteConfirmModal from "@/components/admin/courses/DeleteConfirmModal";
 import CourseList from "@/components/admin/courses/CourseList";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CoursesTab = () => {
   const [courses, setCourses] = useState([]);
@@ -15,19 +17,18 @@ const CoursesTab = () => {
   const [newCourse, setNewCourse] = useState({ name: "", description: "" });
   const [editingCourse, setEditingCourse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchCourses = async (searchQuery = "") => {
     setLoading(true);
-    setError(null);
     try {
       const data = searchQuery ? await searchCourses(searchQuery) : await getAdminCourses();
       setCourses(data);
     } catch (err) {
-      setError("خطا در دریافت دوره‌ها");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -43,26 +44,26 @@ const CoursesTab = () => {
 
   const handleAddCourse = async () => {
     if (!newCourse.name.trim()) {
-      setError("نام دوره نمی‌تواند خالی باشد");
+      toast.error("نام دوره نمی‌تواند خالی باشد");
       return;
     }
-    setError(null);
     try {
       await addCourse(newCourse);
       setNewCourse({ name: "", description: "" });
       setShowAddForm(false);
       fetchCourses(searchTerm);
+      toast.success("دوره با موفقیت اضافه شد.");
     } catch (err) {
-      setError("خطا در افزودن دوره");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن دوره";
+      toast.error(errorMessage);
     }
   };
 
   const handleEditCourse = async () => {
     if (!editingCourse.name.trim()) {
-      setError("نام دوره نمی‌تواند خالی باشد");
+      toast.error("نام دوره نمی‌تواند خالی باشد");
       return;
     }
-    setError(null);
     try {
       await editCourse(editingCourse.id, {
         name: editingCourse.name,
@@ -71,8 +72,10 @@ const CoursesTab = () => {
       setShowEditForm(false);
       setEditingCourse(null);
       fetchCourses(searchTerm);
+      toast.success("ویرایش با موفقیت انجام شد.");
     } catch (err) {
-      setError("خطا در ویرایش دوره");
+      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش دوره";
+      toast.error(errorMessage);
     }
   };
 
@@ -88,13 +91,25 @@ const CoursesTab = () => {
       setShowDeleteConfirm(false);
       setCourseToDelete(null);
       fetchCourses(searchTerm);
+      toast.success("دوره با موفقیت حذف شد.");
     } catch (err) {
-      setError("خطا در حذف دوره");
+      const errorMessage = err.response?.data?.message || "خطا در حذف دوره";
+      toast.error(errorMessage);
     }
   };
 
   return (
     <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت دوره‌ها</h2>
         <motion.button
@@ -112,8 +127,6 @@ const CoursesTab = () => {
         setShowAddForm={setShowAddForm}
         newCourse={newCourse}
         setNewCourse={setNewCourse}
-        error={error}
-        setError={setError}
         handleAddCourse={handleAddCourse}
       />
       <EditCourseModal
@@ -121,8 +134,6 @@ const CoursesTab = () => {
         setShowEditForm={setShowEditForm}
         editingCourse={editingCourse}
         setEditingCourse={setEditingCourse}
-        error={error}
-        setError={setError}
         handleEditCourse={handleEditCourse}
       />
       <DeleteConfirmModal
@@ -137,7 +148,6 @@ const CoursesTab = () => {
       <CourseList
         courses={courses}
         loading={loading}
-        error={error}
         searchTerm={searchTerm}
         confirmDeleteCourse={confirmDeleteCourse}
         setEditingCourse={setEditingCourse}
