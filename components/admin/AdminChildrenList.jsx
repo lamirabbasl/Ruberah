@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoClose } from "react-icons/io5";
 import { getAdminChildren, getAdminChildrenImage, getAdminChildrenwithParentImage } from "@/lib/api/api";
 
 const AdminChildrenList = () => {
@@ -12,9 +11,6 @@ const AdminChildrenList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [childToDelete, setChildToDelete] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
   const [childImages, setChildImages] = useState({});
   const [parentImages, setParentImages] = useState({});
 
@@ -55,32 +51,7 @@ const AdminChildrenList = () => {
     fetchChildren(currentPage);
   }, [currentPage]);
 
-  const handleDeleteChild = async () => {
-    if (!childToDelete) return;
-    try {
-      setLoading(true);
-      await deleteChild(childToDelete.id);
-      setShowDeleteConfirm(false);
-      setChildToDelete(null);
-      setDeleteError(null);
-      await fetchChildren(currentPage);
-    } catch (err) {
-      setDeleteError("خطا در حذف کودک");
-      setLoading(false);
-    }
-  };
 
-  const confirmDeleteChild = (child) => {
-    setChildToDelete(child);
-    setShowDeleteConfirm(true);
-    setDeleteError(null);
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-    setChildToDelete(null);
-    setDeleteError(null);
-  };
 
   const filteredChildren = children.filter((child) =>
     child.full_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -118,50 +89,6 @@ const AdminChildrenList = () => {
           className="w-full max-w-md border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm text-right"
         />
       </div>
-
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50"
-          >
-            <motion.div
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md relative text-right"
-            >
-              <p className="mb-6 text-red-600 font-semibold text-center text-base sm:text-lg">
-                آیا از حذف کودک "{childToDelete?.full_name}" مطمئن هستید؟
-              </p>
-              {deleteError && (
-                <p className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-lg">{deleteError}</p>
-              )}
-              <div className="flex justify-end space-x-3 space-x-reverse">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={cancelDelete}
-                  className="px-4 sm:px-5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-200 text-sm font-medium"
-                >
-                  لغو
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDeleteChild}
-                  className="px-4 sm:px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 text-sm font-medium"
-                >
-                  حذف
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -231,15 +158,6 @@ const AdminChildrenList = () => {
                       </p>
                     </div>
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => confirmDeleteChild(child)}
-                    className="text-red-500 hover:text-red-700 absolute left-[-1px] top-[-1px] transition-all duration-200 top-3 left-3"
-                    aria-label={`حذف کودک ${child.full_name}`}
-                  >
-                    <IoClose size={20} />
-                  </motion.button>
                 </motion.div>
               ))}
             </AnimatePresence>
