@@ -14,10 +14,10 @@ const AdminChildrenList = () => {
   const [childImages, setChildImages] = useState({});
   const [parentImages, setParentImages] = useState({});
 
-  const fetchChildren = async (page = 1) => {
+  const fetchChildren = async (page = 1, search = "") => {
     try {
       setLoading(true);
-      const data = await getAdminChildren(page);
+      const data = await getAdminChildren(page, search);
       setChildren(data.results);
       setIsLastPage(data.is_last_page);
 
@@ -48,14 +48,13 @@ const AdminChildrenList = () => {
   };
 
   useEffect(() => {
-    fetchChildren(currentPage);
-  }, [currentPage]);
+    fetchChildren(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
 
-
-
-  const filteredChildren = children.filter((child) =>
-    child.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when search term changes
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && !(newPage > currentPage && isLastPage)) {
@@ -79,13 +78,13 @@ const AdminChildrenList = () => {
       <div className="flex justify-between items-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-right w-full tracking-tight">مدیریت کودکان</h2>
       </div>
-
+ 
       <div className="mb-6">
         <input
           type="text"
           placeholder="جستجو بر اساس نام کودک"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearch}
           className="w-full max-w-md border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm text-right"
         />
       </div>
@@ -100,13 +99,13 @@ const AdminChildrenList = () => {
         </div>
       ) : error ? (
         <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg">{error}</p>
-      ) : filteredChildren.length === 0 ? (
+      ) : children.length === 0 ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کودکی یافت نشد.</p>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             <AnimatePresence>
-              {filteredChildren.map((child) => (
+              {children.map((child) => (
                 <motion.div
                   key={child.id}
                   variants={cardVariants}
@@ -164,7 +163,7 @@ const AdminChildrenList = () => {
           </div>
 
           <div className="flex justify-center mt-6 sm:mt-8 space-x-3 space-x-reverse">
-          <motion.button
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handlePageChange(currentPage + 1)}
