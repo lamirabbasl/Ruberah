@@ -4,9 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import SignupForm from "./signup/SignupForm";
-
 import { useSignupHandlers } from "@/lib/hooks/signup/useSignupHandlers";
 
 const Signup = () => {
@@ -21,6 +19,14 @@ const Signup = () => {
     setPasswordConfirm,
     registrationCode,
     setRegistrationCode,
+    address,
+    setAddress,
+    isColleague,
+    setIsColleague,
+    howDidYouKnowAboutUs,
+    setHowDidYouKnowAboutUs,
+    profile,
+    setProfile,
     loading,
     handleSignup,
     onRequestCodeClick,
@@ -31,6 +37,8 @@ const Signup = () => {
     isVerifyingCode,
     handleVerifyCode,
     phoneValidated,
+    showProfileModal,
+    setShowProfileModal,
   } = useSignupHandlers();
 
   const formVariants = {
@@ -44,7 +52,7 @@ const Signup = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-primary mt-16 to-gray-600 flex items-center justify-center p-4 font-noto"
+      className="min-h-screen bg-gradient-to-b from-primary mt-20 to-gray-600 flex items-center justify-center p-4 font-sans"
       dir="rtl"
     >
       <motion.div
@@ -74,6 +82,14 @@ const Signup = () => {
           setPasswordConfirm={setPasswordConfirm}
           registrationCode={registrationCode}
           setRegistrationCode={setRegistrationCode}
+          address={address}
+          setAddress={setAddress}
+          isColleague={isColleague}
+          setIsColleague={setIsColleague}
+          howDidYouKnowAboutUs={howDidYouKnowAboutUs}
+          setHowDidYouKnowAboutUs={setHowDidYouKnowAboutUs}
+          profile={profile}
+          setProfile={setProfile}
           loading={loading}
           handleSignup={handleSignup}
           onRequestCodeClick={onRequestCodeClick}
@@ -84,6 +100,8 @@ const Signup = () => {
           isVerifyingCode={isVerifyingCode}
           handleVerifyCode={handleVerifyCode}
           phoneValidated={phoneValidated}
+          showProfileModal={showProfileModal}
+          setShowProfileModal={setShowProfileModal}
         />
       </motion.div>
     </div>

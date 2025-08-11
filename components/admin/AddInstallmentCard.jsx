@@ -90,13 +90,13 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
         <h2 className="text-xl font-bold mb-4">افزودن اقساط جدید</h2>
 
         <div className="mb-4">
-          <label className="block mb-1">انتخاب بچه</label>
+          <label className="block mb-1">انتخاب دوره</label>
           <select
             value={selectedBatchName}
             onChange={(e) => setSelectedBatchName(e.target.value)}
             className="w-full border rounded px-3 py-2"
           >
-            <option value="">انتخاب بچه</option>
+            <option value="">انتخاب دوره</option>
             {batches.map((batch) => (
               <option key={batch.id} value={batch.title || batch.name}>
                 {batch.title || batch.name}
