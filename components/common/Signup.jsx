@@ -19,14 +19,6 @@ const Signup = () => {
     setPasswordConfirm,
     registrationCode,
     setRegistrationCode,
-    address,
-    setAddress,
-    isColleague,
-    setIsColleague,
-    howDidYouKnowAboutUs,
-    setHowDidYouKnowAboutUs,
-    profile,
-    setProfile,
     loading,
     handleSignup,
     onRequestCodeClick,
@@ -37,8 +29,6 @@ const Signup = () => {
     isVerifyingCode,
     handleVerifyCode,
     phoneValidated,
-    showProfileModal,
-    setShowProfileModal,
   } = useSignupHandlers();
 
   const formVariants = {
@@ -82,14 +72,6 @@ const Signup = () => {
           setPasswordConfirm={setPasswordConfirm}
           registrationCode={registrationCode}
           setRegistrationCode={setRegistrationCode}
-          address={address}
-          setAddress={setAddress}
-          isColleague={isColleague}
-          setIsColleague={setIsColleague}
-          howDidYouKnowAboutUs={howDidYouKnowAboutUs}
-          setHowDidYouKnowAboutUs={setHowDidYouKnowAboutUs}
-          profile={profile}
-          setProfile={setProfile}
           loading={loading}
           handleSignup={handleSignup}
           onRequestCodeClick={onRequestCodeClick}
@@ -100,8 +82,6 @@ const Signup = () => {
           isVerifyingCode={isVerifyingCode}
           handleVerifyCode={handleVerifyCode}
           phoneValidated={phoneValidated}
-          showProfileModal={showProfileModal}
-          setShowProfileModal={setShowProfileModal}
         />
       </motion.div>
     </div>

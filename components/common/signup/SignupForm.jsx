@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import ProfileModal from "./ProfileModal";
 
 const SignupForm = ({
   name,
@@ -15,14 +14,6 @@ const SignupForm = ({
   setPasswordConfirm,
   registrationCode,
   setRegistrationCode,
-  address,
-  setAddress,
-  isColleague,
-  setIsColleague,
-  howDidYouKnowAboutUs,
-  setHowDidYouKnowAboutUs,
-  profile,
-  setProfile,
   loading,
   handleSignup,
   onRequestCodeClick,
@@ -33,66 +24,32 @@ const SignupForm = ({
   isVerifyingCode,
   handleVerifyCode,
   phoneValidated,
-  showProfileModal,
-  setShowProfileModal,
 }) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleSignup(e);
+  };
+
   return (
     <div className="font-mitra">
-      <h2 className="text-xl sm:text-3xl  mb-4 text-right text-gray-800">
+      <h2 className="text-xl sm:text-3xl mb-4 text-right text-gray-800">
         ثبت‌نام
       </h2>
       <div className="mb-4">
         <label
           htmlFor="name"
-          className="block text-gray-700 text-sm  mb-2 text-right"
+          className="block text-gray-700 text-sm mb-2 text-right"
         >
-          نام:
+          نام کاربری:
         </label>
         <input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="نام کامل"
+          placeholder="نام کاربری"
           className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
         />
-      </div>
-      <div className="mb-4">
-        <label
-          htmlFor="address"
-          className="block text-gray-700 text-sm  mb-2 text-right"
-        >
-          آدرس:
-        </label>
-        <input
-          type="text"
-          id="address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="آدرس کامل"
-          className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
-        />
-      </div>
-    
-      <div className="mb-4">
-        <label
-          htmlFor="howDidYouKnowAboutUs"
-          className="block text-gray-700 text-sm  mb-2 text-right"
-        >
-          چگونه با ما آشنا شدید؟
-        </label>
-        <select
-          id="howDidYouKnowAboutUs"
-          value={howDidYouKnowAboutUs}
-          onChange={(e) => setHowDidYouKnowAboutUs(e.target.value)}
-          className="appearance-none border border-gray-300 text-right rounded-md w-full py-2 sm:py-3 px-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-all duration-200"
-        >
-          <option value="">انتخاب کنید</option>
-          <option value="Instagram ad">تبلیغ اینستاگرام</option>
-          <option value="Friend">دوست</option>
-          <option value="Website">وب‌سایت</option>
-          <option value="Other">سایر</option>
-        </select>
       </div>
       <div className="mb-4 flex items-center gap-2">
         <div className="flex-grow">
@@ -148,7 +105,7 @@ const SignupForm = ({
       <div className="mb-4">
         <label
           htmlFor="password"
-          className="block text-gray-700 text-sm  mb-2 text-right"
+          className="block text-gray-700 text-sm mb-2 text-right"
         >
           رمز عبور:
         </label>
@@ -164,7 +121,7 @@ const SignupForm = ({
       <div className="mb-4">
         <label
           htmlFor="passwordConfirm"
-          className="block text-gray-700 text-sm  mb-2 text-right"
+          className="block text-gray-700 text-sm mb-2 text-right"
         >
           تکرار رمز عبور:
         </label>
@@ -180,7 +137,7 @@ const SignupForm = ({
       <div className="mb-6">
         <label
           htmlFor="registrationCode"
-          className="block text-gray-700 text-sm  mb-2 text-right"
+          className="block text-gray-700 text-sm mb-2 text-right"
         >
           کد معارفه:
         </label>
@@ -194,19 +151,12 @@ const SignupForm = ({
         />
       </div>
       <button
-        onClick={() => setShowProfileModal(true)}
-        disabled={!phoneValidated}
-        className={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md w-full shadow-md hover:shadow-lg transition-all duration-200 ${!phoneValidated ? 'opacity-50 cursor-not-allowed' : ''}`}
+        onClick={handleSubmit}
+        disabled={!phoneValidated || loading}
+        className={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-md w-full shadow-md hover:shadow-lg transition-all duration-200 ${!phoneValidated || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        تکمیل پروفایل
+        {loading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
       </button>
-      <ProfileModal
-        show={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        profile={profile}
-        setProfile={setProfile}
-        handleSignup={handleSignup}
-      />
       <p className="mt-4 text-center text-gray-600">
         قبلا ثبت نام کرده اید؟{" "}
         <Link
