@@ -142,7 +142,7 @@ const EditableChild = ({ child, onUpdate }) => {
       <div className="flex flex-row gap-6 justify-center">
         {/* Child Photo */}
         <motion.div
-          className="relative flex flex-col z-99 items-center"
+          className="relative flex flex-col  items-center"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
