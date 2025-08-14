@@ -56,7 +56,7 @@ const InformationPage = () => {
             setProfilePhotoUrl(photoUrl);
           } catch (err) {
             console.error("Error fetching profile photo:", err);
-            toast.error(err.response?.data?.message || "خطا در دریافت عکس پروفایل");
+            toast.error(err.response?.data?.message);
           }
         }
       } catch (err) {
@@ -243,6 +243,8 @@ const InformationPage = () => {
   const userData = user ? {
     ...user.profile,
     username: user.username,
+    phone_number: user.phone_number, // Use top-level phone_number
+    full_address: user.address,
     how_did_you_know_about_us: user.how_did_you_know_about_us,
   } : {};
 
@@ -317,7 +319,7 @@ const InformationPage = () => {
         occupation: tempUser.occupation,
         field_of_study: tempUser.field_of_study,
         highest_education: tempUser.highest_education,
-        phone_number: tempUser.phone_number,
+        phone_number: tempUser.phone_number, // Update phone_number in profile
         national_id: tempUser.national_id,
         full_address: tempUser.full_address,
         landline_number: tempUser.landline_number,
@@ -326,7 +328,7 @@ const InformationPage = () => {
       };
       const updatedUser = {
         username: tempUser.username,
-        phone_number: tempUser.phone_number,
+        phone_number: tempUser.phone_number, // Update top-level phone_number
         address: tempUser.full_address,
         is_colleague: user.is_colleague,
         full_name: `${tempUser.first_name} ${tempUser.last_name}`,
@@ -453,7 +455,7 @@ const InformationPage = () => {
               setTempOtherParent({ ...otherParent });
               setEditingOtherParent(true);
             }}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200"
+            className="w-full bg-blue-600 text-black py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200"
           >
             ویرایش اطلاعات والد دیگر
           </button>
