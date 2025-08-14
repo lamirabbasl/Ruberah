@@ -1,4 +1,3 @@
-// components/information/EditModal.jsx
 "use client";
 import React from "react";
 import RenderInput from "./RenderInput";

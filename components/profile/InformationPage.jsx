@@ -56,7 +56,7 @@ const InformationPage = () => {
             setProfilePhotoUrl(photoUrl);
           } catch (err) {
             console.error("Error fetching profile photo:", err);
-            toast.error(err.response?.data?.message || err.message || "خطا در دریافت عکس پروفایل");
+            toast.error(err.response?.data?.message || "خطا در دریافت عکس پروفایل");
           }
         }
       } catch (err) {
@@ -251,6 +251,7 @@ const InformationPage = () => {
     if (requiredFields.some((f) => !tempOtherParent[f] || tempOtherParent[f].trim() === "")) {
       setShowNotification(true);
       toast.error("لطفا تمام فیلدهای الزامی را پر کنید.");
+      setTimeout(() => setShowNotification(false), 3000);
       return;
     }
     setShowNotification(false);
@@ -301,6 +302,7 @@ const InformationPage = () => {
     if (userRequiredFields.some((f) => !tempUser[f] || tempUser[f].trim() === "")) {
       setShowNotification(true);
       toast.error("لطفا تمام فیلدهای الزامی را پر کنید.");
+      setTimeout(() => setShowNotification(false), 3000);
       return;
     }
     setShowNotification(false);
@@ -341,11 +343,25 @@ const InformationPage = () => {
       console.error("Error updating user info:", err);
       if (err.response?.data && typeof err.response.data === 'object') {
         Object.keys(err.response.data).forEach((key) => {
-          const messages = err.response.data[key];
-          if (Array.isArray(messages)) {
-            messages.forEach((message) => toast.error(`${getLabel(key)}: ${message}`));
+          if (key === 'profile') {
+            const profileErrors = err.response.data[key];
+            if (typeof profileErrors === 'object' && profileErrors !== null) {
+              Object.keys(profileErrors).forEach((subKey) => {
+                const messages = profileErrors[subKey];
+                if (Array.isArray(messages)) {
+                  messages.forEach((message) => toast.error(`${getLabel(subKey)}: ${message}`));
+                } else {
+                  toast.error(`${getLabel(subKey)}: ${messages}`);
+                }
+              });
+            }
           } else {
-            toast.error(`${getLabel(key)}: ${messages}`);
+            const messages = err.response.data[key];
+            if (Array.isArray(messages)) {
+              messages.forEach((message) => toast.error(`${getLabel(key)}: ${message}`));
+            } else {
+              toast.error(`${getLabel(key)}: ${messages}`);
+            }
           }
         });
       } else {

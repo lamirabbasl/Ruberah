@@ -14,7 +14,6 @@ export default function SessionSignup() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    email: "",
   });
 
   useEffect(() => {
@@ -46,7 +45,6 @@ export default function SessionSignup() {
         answered_correctly: true,
         session: sessionId,
         name: formData.name,
-        email: formData.email,
         phone: formData.phone
       };
 
@@ -132,20 +130,6 @@ export default function SessionSignup() {
             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             pattern="^09\d{9}$"
             placeholder="09123456789"
-          />
-        </div>
-
-        <div>
-          <label className="block text-lg font-bold text-gray-700 mb-1">
-            ایمیل
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

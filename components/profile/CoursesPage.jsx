@@ -317,16 +317,20 @@ function CoursesPage() {
         rtl={true}
       />
       <h1 className="text-4xl font-bold text-gray-700 mb-6">دوره‌های فرزندان</h1>
-      {children.map((child, childIndex) => (
-        <ChildCard
-          key={childIndex}
-          child={child}
-          childIndex={childIndex}
-          openCourseIdx={openCourseIdx}
-          toggleCourse={toggleCourse}
-          handleImageUpload={handleImageUpload}
-        />
-      ))}
+      {children.length === 0 ? (
+        <p className="text-center text-gray-600 mt-10">هیچ دوره‌ای ثبت نشده است.</p>
+      ) : (
+        children.map((child, childIndex) => (
+          <ChildCard
+            key={childIndex}
+            child={child}
+            childIndex={childIndex}
+            openCourseIdx={openCourseIdx}
+            toggleCourse={toggleCourse}
+            handleImageUpload={handleImageUpload}
+          />
+        ))
+      )}
     </div>
   );
 }

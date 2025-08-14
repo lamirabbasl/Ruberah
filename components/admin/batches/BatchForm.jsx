@@ -191,6 +191,14 @@ const BatchForm = ({
             />
           </FormField>
         </div>
+
+        <div className="flex items-center space-x-2">
+          <CheckboxInput
+            checked={formData.booking_open}
+            onChange={(e) => onChange({ ...formData, booking_open: e.target.checked })}
+            label="فعال بودن دوره"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end space-x-3 mt-6">

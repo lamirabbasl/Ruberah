@@ -46,6 +46,7 @@ const BatchesTab = () => {
     installment_count: 0,
     colleague_discount_percent: 0,
     loyalty_discount_percent: 0,
+    booking_open: false,
   });
   const [editingBatch, setEditingBatch] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -126,6 +127,7 @@ const BatchesTab = () => {
         installment_count: 0,
         colleague_discount_percent: 0,
         loyalty_discount_percent: 0,
+        booking_open: false,
       });
       setShowAddForm(false);
       fetchBatches(searchTerm);
