@@ -8,8 +8,9 @@ import SeasonsTab from "@/components/admin/SeasonsTab";
 import BatchesTab from "@/components/admin/BatchesTab";
 import InstallmentsTab from "@/components/admin/InstallmentsTab";
 import BankAccounts from "@/components/admin/BankAccounts";
+import TermsTab from "@/components/admin/TermsTab";
 
-const tabLabels = ["آموزش ها", "فصل‌ها", "دوره ها", "اقساط" , "حساب های بانکی"];
+const tabLabels = ["آموزش ها", "فصل‌ها", "دوره ها", "اقساط", "حساب های بانکی", "قوانین"];
 
 const AdminCoursesPage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -31,6 +32,8 @@ const AdminCoursesPage = () => {
         return <InstallmentsTab />;
       case 4:
         return <BankAccounts />;
+      case 5:
+        return <TermsTab />;
       default:
         return null;
     }
@@ -39,14 +42,14 @@ const AdminCoursesPage = () => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen whitespace-nowrap max-md:pt-14 max-md:text-sm w-5/6 max-md:w-screen p-8 max-md:p-4 font-noto bg-gray-100 text-black"
+      className="min-h-screen whitespace-nowrap max-md:pt-14 max-md:text-sm w-5/6 max-md:w-full p-8 max-md:p-4 font-noto bg-gray-100 text-black"
     >
-      <div className="relative flex gap-1 mb-8 bg-white rounded-full shadow-lg p-1 w-fit">
+      <div className="relative mb-8 bg-white rounded-full shadow-lg p-1 w-fit max-md:overflow-x-auto max-md:whitespace-nowrap max-md:flex max-md:w-full max-md:snap-x max-md:snap-mandatory">
         {tabLabels.map((label, index) => (
-          <div key={index} className="relative">
+          <div key={index} className="relative inline-block max-md:snap-start">
             <button
               onClick={() => handleTabClick(index)}
-              className={`relative px-6 max-md:px-5  py-3 text-base font-semibold rounded-full transition-all duration-300 z-10 ${
+              className={`relative px-6 max-md:px-3 py-3 text-base max-md:text-sm font-semibold rounded-full transition-all duration-300 z-10 ${
                 activeTab === index ? "text-white" : "text-gray-700 hover:text-blue-500"
               }`}
             >

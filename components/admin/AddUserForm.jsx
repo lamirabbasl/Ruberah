@@ -17,9 +17,7 @@ const AddUserForm = ({ onSave, onCancel }) => {
     if (
       !username.trim() ||
       !password ||
-      !role.trim() ||
-      !address.trim() ||
-      !nationalId.trim()
+      !role.trim()
     ) {
       alert("لطفاً تمام فیلدهای ضروری را پر کنید.");
       return;
@@ -29,8 +27,6 @@ const AddUserForm = ({ onSave, onCancel }) => {
       phone_number: phoneNumber,
       password,
       role,
-      address,
-      national_id: nationalId,
       is_colleague: isColleague,
     });
   };
@@ -94,26 +90,6 @@ const AddUserForm = ({ onSave, onCancel }) => {
               <option value="admin">ادمین</option>
               <option value="user">کاربر</option>
             </select>
-          </div>
-          <div className="mb-4">
-            <label className="block mb-1 font-semibold">آدرس:</label>
-            <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-1 font-semibold">کد ملی:</label>
-            <input
-              type="text"
-              value={nationalId}
-              onChange={(e) => setNationalId(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2"
-              required
-            />
           </div>
           <div className="mb-4 flex items-center justify-between">
             <label className="font-semibold">همکار:</label>
