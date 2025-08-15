@@ -122,6 +122,23 @@ const InformationPage = () => {
     "how_did_you_know_about_us",
   ];
 
+  const editUserFields = [
+    "first_name",
+    "last_name",
+    "national_id",
+    "full_address",
+    "date_of_birth",
+    "place_of_birth",
+    "marital_status",
+    "occupation",
+    "field_of_study",
+    "highest_education",
+    "landline_number",
+    "emergency_contact_number",
+    "gender",
+    "how_did_you_know_about_us",
+  ];
+
   const otherParentFields = [
     "first_name",
     "last_name",
@@ -319,7 +336,6 @@ const InformationPage = () => {
         occupation: tempUser.occupation,
         field_of_study: tempUser.field_of_study,
         highest_education: tempUser.highest_education,
-        phone_number: tempUser.phone_number, // Update phone_number in profile
         national_id: tempUser.national_id,
         full_address: tempUser.full_address,
         landline_number: tempUser.landline_number,
@@ -327,8 +343,7 @@ const InformationPage = () => {
         gender: tempUser.gender,
       };
       const updatedUser = {
-        username: tempUser.username,
-        phone_number: tempUser.phone_number, // Update top-level phone_number
+
         address: tempUser.full_address,
         is_colleague: user.is_colleague,
         full_name: `${tempUser.first_name} ${tempUser.last_name}`,
@@ -455,7 +470,7 @@ const InformationPage = () => {
               setTempOtherParent({ ...otherParent });
               setEditingOtherParent(true);
             }}
-            className="w-full bg-blue-600 text-black py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-200"
           >
             ویرایش اطلاعات والد دیگر
           </button>
@@ -465,7 +480,7 @@ const InformationPage = () => {
         isOpen={editingUser}
         onClose={() => setEditingUser(false)}
         title="ویرایش اطلاعات شخصی"
-        fields={userFields}
+        fields={editUserFields}
         tempData={tempUser}
         setTempData={setTempUser}
         onSave={handleSaveUser}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getChildren, addChild, patchChild } from "@/lib/api/api";
+import { getChildren, addChild, patchChild, deleteChild } from "@/lib/api/api";
 import EditableChild from "./EditableChild";
 import AddChildForm from "./AddChildForm";
 import LoadingSpinner from "../common/LoadingSpinner";
@@ -77,6 +77,24 @@ const ChildrenPage = () => {
     }
   };
 
+  // Delete child
+  const handleDeleteChild = async (id) => {
+    try {
+      const response = await deleteChild(id);
+      const successMessage = response.data?.message || "فرزند با موفقیت حذف شد.";
+      toast.success(successMessage);
+      setChildren(children.filter((child) => child.id !== id));
+      // Refresh the page after successful deletion
+      
+    } catch (err) {
+      console.error("Error deleting child:", err);
+      const errorMessage = err.response?.data?.message;
+      toast.error(errorMessage);
+      setError(errorMessage);
+      window.location.reload();
+    }
+  };
+
   if (loadingChildren) {
     return <div className="w-screen"><LoadingSpinner /></div>;
   }
@@ -133,7 +151,7 @@ const ChildrenPage = () => {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ type: "spring", stiffness: 200 }}
               >
-                <EditableChild child={child} onUpdate={handleUpdateChild} />
+                <EditableChild child={child} onUpdate={handleUpdateChild} onDelete={handleDeleteChild} />
               </motion.div>
             ))
           )}

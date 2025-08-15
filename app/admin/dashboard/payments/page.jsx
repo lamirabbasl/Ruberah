@@ -62,7 +62,7 @@ const RegistrationsBatchesTab = () => {
 
   return (
     <div className="p-6 bg-gradient-to-b text-black text-right w-5/6 max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra">
-      <h1 className="text-4xl mb-10">دوره‌های آموزشی</h1>
+      <h1 className="text-4xl mb-10">پرداخت ها</h1>
 
       <BatchSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 

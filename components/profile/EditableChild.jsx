@@ -1,6 +1,6 @@
 "use client";
-import { motion } from "framer-motion";
-import { Pencil, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Pencil, Check, Trash2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,7 +8,7 @@ import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos } from 
 import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
-const EditableChild = ({ child, onUpdate }) => {
+const EditableChild = ({ child, onUpdate, onDelete }) => {
   const [editing, setEditing] = useState(false);
   const [tempFullName, setTempFullName] = useState(child.full_name);
   const [tempGender, setTempGender] = useState(child.gender);
@@ -19,6 +19,7 @@ const EditableChild = ({ child, onUpdate }) => {
   const [uploadingParentPhoto, setUploadingParentPhoto] = useState(false);
   const [error, setError] = useState(null);
   const [showBirthCalendar, setShowBirthCalendar] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     setTempFullName(child.full_name);
@@ -33,7 +34,6 @@ const EditableChild = ({ child, onUpdate }) => {
         setChildPhotoUrl(childPhoto);
       } catch (error) {
         console.error("Error fetching child photo:", error);
-
         setChildPhotoUrl(null);
       }
     };
@@ -128,6 +128,19 @@ const EditableChild = ({ child, onUpdate }) => {
     }
   };
 
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(child.id);
+    setShowDeleteModal(false);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
   return (
     <motion.div
       layout
@@ -137,12 +150,11 @@ const EditableChild = ({ child, onUpdate }) => {
       transition={{ type: "spring", stiffness: 200 }}
       className="flex flex-col md:flex-row md:items-start gap-6 pb-8 bg-white rounded-2xl shadow-lg p-6 w-full max-w-4xl mx-auto border border-gray-100 hover:shadow-xl transition-shadow duration-300"
     >
-
       {/* Images in one row always */}
       <div className="flex flex-row gap-6 justify-center">
         {/* Child Photo */}
         <motion.div
-          className="relative flex flex-col  items-center"
+          className="relative flex flex-col items-center"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
@@ -287,19 +299,73 @@ const EditableChild = ({ child, onUpdate }) => {
         )}
       </div>
 
-      {/* Action Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={editing ? handleSave : handleEditToggle}
-        className={`mt-6 sm:mt-0 px-4 max-md:w-14 py-2 rounded-lg transition-colors duration-200 shadow-md text-sm ${
-          editing
-            ? "bg-green-500 text-white hover:bg-green-600"
-            : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
-      >
-        {editing ? <Check size={20} /> : <Pencil size={20} />}
-      </motion.button>
+      {/* Action Buttons */}
+      <div className="flex gap-2 mt-6 sm:mt-0">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={editing ? handleSave : handleEditToggle}
+          className={`px-4 max-md:w-14 py-2 rounded-lg transition-colors duration-200 shadow-md text-sm ${
+            editing
+              ? "bg-green-500 text-white hover:bg-green-600"
+              : "bg-blue-500 text-white hover:bg-blue-600"
+          }`}
+        >
+          {editing ? <Check size={20} /> : <Pencil size={20} />}
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleDelete}
+          className="px-4 max-md:w-14 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 shadow-md text-sm"
+        >
+          <Trash2 size={20} />
+        </motion.button>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl"
+            >
+              <h2 className="text-lg font-bold text-gray-800 mb-4 text-right">
+                تأیید حذف
+              </h2>
+              <p className="text-gray-600 mb-6 text-right">
+                آیا مطمئن هستید که می‌خواهید اطلاعات فرزند {child.full_name} را حذف کنید؟
+              </p>
+              <div className="flex justify-end gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={cancelDelete}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                >
+                  انصراف
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                >
+                  حذف
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
