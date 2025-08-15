@@ -1,18 +1,32 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Check, Trash2 } from "lucide-react";
+import { Pencil, Check, Trash2, Eye } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos } from "@/lib/api/api";
+import { getChildPhotoUrl, getChildWithParentPhotoUrl, uploadChildPhotos, getChildById } from "@/lib/api/api";
 import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
+import LoadingSpinner from "../common/LoadingSpinner";
 
-const EditableChild = ({ child, onUpdate, onDelete }) => {
+const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
   const [editing, setEditing] = useState(false);
-  const [tempFullName, setTempFullName] = useState(child.full_name);
+  const [fullChild, setFullChild] = useState(null);
+  const [tempFullName, setTempFullName] = useState("");
+  const [tempFirstName, setTempFirstName] = useState(child.first_name);
+  const [tempLastName, setTempLastName] = useState(child.last_name);
   const [tempGender, setTempGender] = useState(child.gender);
   const [tempBirthDate, setTempBirthDate] = useState(child.birth_date || "");
+  const [tempPlaceOfBirth, setTempPlaceOfBirth] = useState(child.place_of_birth || "");
+  const [tempBloodType, setTempBloodType] = useState(child.blood_type || "");
+  const [tempNationalId, setTempNationalId] = useState("");
+  const [tempSiblingsCount, setTempSiblingsCount] = useState("");
+  const [tempBirthOrder, setTempBirthOrder] = useState("");
+  const [tempCourses, setTempCourses] = useState("");
+  const [tempChallenges, setTempChallenges] = useState("");
+  const [tempAllergies, setTempAllergies] = useState("");
+  const [tempIllness, setTempIllness] = useState("");
+  const [tempHospitalization, setTempHospitalization] = useState("");
   const [childPhotoUrl, setChildPhotoUrl] = useState(null);
   const [parentPhotoUrl, setParentPhotoUrl] = useState(null);
   const [uploadingChildPhoto, setUploadingChildPhoto] = useState(false);
@@ -20,12 +34,49 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
   const [error, setError] = useState(null);
   const [showBirthCalendar, setShowBirthCalendar] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(true);
 
   useEffect(() => {
-    setTempFullName(child.full_name);
-    setTempGender(child.gender);
-    setTempBirthDate(child.birth_date || "");
-  }, [child]);
+    const fetchDetails = async () => {
+      setLoadingDetails(true);
+      try {
+        const data = await getChildById(child.id);
+        setFullChild(data);
+      } catch (err) {
+        console.error("Error fetching full child details:", err);
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+    fetchDetails();
+  }, [child.id]);
+
+  useEffect(() => {
+    if (fullChild) {
+      setTempFullName(fullChild.full_name || "");
+      setTempFirstName(fullChild.first_name || "");
+      setTempLastName(fullChild.last_name || "");
+      setTempGender(fullChild.gender || "");
+      setTempBirthDate(fullChild.birth_date || "");
+      setTempPlaceOfBirth(fullChild.place_of_birth || "");
+      setTempBloodType(fullChild.blood_type || "");
+      setTempNationalId(fullChild.national_id || "");
+      setTempSiblingsCount(fullChild.siblings_count || "");
+      setTempBirthOrder(fullChild.birth_order || "");
+      setTempCourses(fullChild.courses_signed_up_outside || "");
+      setTempChallenges(fullChild.medical_info?.challenges || "");
+      setTempAllergies(fullChild.medical_info?.allergies || "");
+      setTempIllness(fullChild.medical_info?.illness_or_medications || "");
+      setTempHospitalization(fullChild.medical_info?.hospitalization_history || "");
+    } else {
+      setTempFirstName(child.first_name || "");
+      setTempLastName(child.last_name || "");
+      setTempGender(child.gender || "");
+      setTempBirthDate(child.birth_date || "");
+      setTempPlaceOfBirth(child.place_of_birth || "");
+      setTempBloodType(child.blood_type || "");
+    }
+  }, [fullChild, child]);
 
   useEffect(() => {
     const fetchPhotos1 = async () => {
@@ -51,28 +102,38 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
   }, [child.id]);
 
   const handleEditToggle = () => {
-    if (!editing) {
-      setTempFullName(child.full_name);
-      setTempGender(child.gender);
-      setTempBirthDate(child.birth_date || "");
-    }
     setEditing(!editing);
   };
 
   const handleSave = () => {
-    if (!tempFullName || !tempBirthDate) {
+    if (!tempFirstName || !tempLastName || !tempBirthDate) {
       const errorMessage = "لطفا تمام فیلدهای ضروری را پر کنید";
       toast.error(errorMessage);
       setError(errorMessage);
       return;
     }
     setError(null);
-    onUpdate({
+    const updatedChild = {
       id: child.id,
       full_name: tempFullName,
-      gender: tempGender,
+      first_name: tempFirstName,
+      last_name: tempLastName,
       birth_date: tempBirthDate,
-    });
+      place_of_birth: tempPlaceOfBirth,
+      gender: tempGender,
+      national_id: tempNationalId,
+      siblings_count: tempSiblingsCount ? parseInt(tempSiblingsCount) : null,
+      birth_order: tempBirthOrder ? parseInt(tempBirthOrder) : null,
+      blood_type: tempBloodType,
+      courses_signed_up_outside: tempCourses,
+      medical_info: {
+        challenges: tempChallenges,
+        allergies: tempAllergies,
+        illness_or_medications: tempIllness,
+        hospitalization_history: tempHospitalization,
+      },
+    };
+    onUpdate(updatedChild);
     setEditing(false);
   };
 
@@ -141,6 +202,8 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
     setShowDeleteModal(false);
   };
 
+  const displayChild = fullChild || child;
+
   return (
     <motion.div
       layout
@@ -148,10 +211,41 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 200 }}
-      className="flex flex-col md:flex-row md:items-start gap-6 pb-8 bg-white rounded-2xl shadow-lg p-6 w-full max-w-4xl mx-auto border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+      className="flex flex-col-reverse md:flex-row-reverse md:items-start gap-28 pb-8 bg-white rounded-2xl shadow-md p-6 w-full max-w-4xl mx-auto border border-gray-200 hover:shadow-lg transition-shadow duration-300"
     >
-      {/* Images in one row always */}
-      <div className="flex flex-row gap-6 justify-center">
+      {/* Buttons stacked vertically on left */}
+      <div className="flex flex-col gap-3 md:order-1">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleEditToggle}
+          className="px-4 py-2 rounded-lg transition-colors duration-200 shadow-sm text-sm font-medium flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          <Pencil size={18} />
+          ویرایش
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onView(child.id)}
+          className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors duration-200 shadow-sm text-sm font-medium flex items-center justify-center gap-2"
+        >
+          <Eye size={18} />
+          مشاهده
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleDelete}
+          className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors duration-200 shadow-sm text-sm font-medium flex items-center justify-center gap-2"
+        >
+          <Trash2 size={18} />
+          حذف
+        </motion.button>
+      </div>
+
+      {/* Images */}
+      <div className="flex flex-row gap-6 justify-center md:order-2 ">
         {/* Child Photo */}
         <motion.div
           className="relative flex flex-col items-center"
@@ -160,12 +254,12 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
         >
           <img
             src={childPhotoUrl || "/user.png"}
-            className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+            className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
             alt="عکس فرزند"
           />
           <label
             htmlFor={`childPhotoInput-${child.id}`}
-            className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer hover:bg-blue-700 transition-colors duration-200 shadow-md"
+            className="absolute -bottom-2 right-0 bg-indigo-600 text-white rounded-full p-2 cursor-pointer hover:bg-indigo-700 transition-colors duration-200 shadow-md"
             title="تغییر عکس کودک"
           >
             {uploadingChildPhoto ? (
@@ -191,7 +285,7 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
             onChange={handleChildPhotoChange}
             disabled={uploadingChildPhoto}
           />
-          <p className="absolute text-lg text-gray-600 bottom-[-30px]">عکس فرزند</p>
+          <p className="mt-2 text-sm text-gray-600">عکس فرزند</p>
         </motion.div>
 
         {/* Parent Photo */}
@@ -202,12 +296,12 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
         >
           <img
             src={parentPhotoUrl || "/user.png"}
-            className="w-30 h-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+            className="w-32 h-32 rounded-full  ml-4 object-cover border-4 border-white shadow-md"
             alt="عکس با والدین"
           />
           <label
             htmlFor={`parentPhotoInput-${child.id}`}
-            className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer hover:bg-blue-700 transition-colors duration-200 shadow-md"
+            className="absolute -bottom-2 right-0 bg-indigo-600 text-white rounded-full p-2 cursor-pointer hover:bg-indigo-700 transition-colors duration-200 shadow-md"
             title="تغییر عکس والدین"
           >
             {uploadingParentPhoto ? (
@@ -233,59 +327,31 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
             onChange={handleParentPhotoChange}
             disabled={uploadingParentPhoto}
           />
-          <p className="absolute text-lg text-gray-600 bottom-[-30px]">عکس با والدین</p>
+          <p className="mt-2 text-sm text-gray-600">عکس با والدین</p>
         </motion.div>
       </div>
 
-      {/* Info block comes below images on small screens, or beside on md+ */}
-      <div className="flex-1 w-full min-w-0 max-md:mt-8">
-        {editing ? (
-          <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              value={tempFullName}
-              onChange={(e) => setTempFullName(e.target.value)}
-              placeholder="نام و نام خانوادگی"
-              className="p-3 border border-gray-200 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 bg-gray-50 text-sm"
-            />
-            <select
-              value={tempGender}
-              onChange={(e) => setTempGender(e.target.value)}
-              className="p-3 border border-gray-200 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 bg-gray-50 text-sm"
-            >
-              <option value="boy">پسر</option>
-              <option value="girl">دختر</option>
-            </select>
-            <div className="relative">
-              <input
-                type="text"
-                readOnly
-                placeholder="تاریخ تولد"
-                value={convertToJalali(tempBirthDate)}
-                onClick={() => setShowBirthCalendar(true)}
-                className="p-3 border border-gray-200 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 bg-gray-50 text-sm cursor-pointer"
-              />
-              {showBirthCalendar && (
-                <div className="absolute z-50 w-80 bg-white bottom-[-100px] shadow-lg rounded-lg">
-                  <JalaliCalendar
-                    onDateSelect={(date) => {
-                      setTempBirthDate(date);
-                      setShowBirthCalendar(false);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Info */}
+      <div className="flex-1 w-full min-w-0 md:order-3 order-2 mt-6 md:mt-0">
+        {loadingDetails ? (
+          <LoadingSpinner />
         ) : (
-          <div className="flex flex-col text-right gap-2">
-            <p className="text-lg font-bold text-gray-800 truncate">{child.full_name}</p>
-            <p className="text-gray-500 text-sm">
-              جنسیت: {child.gender === "boy" ? "پسر" : "دختر"}
+          <div className="flex flex-col text-right gap-3">
+            <p className="text-xl font-bold text-gray-900 truncate">
+              {displayChild.first_name} {displayChild.last_name}
             </p>
-            <p className="text-gray-500 text-sm">
-              تاریخ تولد: {convertToJalali(child.birth_date) || "-"}
-            </p>
+            <div className="flex flex-col gap-2 text-sm">
+              <div>
+                <p className="text-gray-900 text-lg whitespace-nowrap">جنسیت:  {displayChild.gender === "boy" ? "پسر" : "دختر"}</p>
+              </div>
+              <div>
+                <p className="text-gray-900 text-lg whitespace-nowrap">تاریخ تولد: {convertToJalali(displayChild.birth_date) || "-"} </p>
+              </div>
+              <div>
+                <p className="text-gray-900 text-lg whitespace-nowrap">محل تولد: {displayChild.place_of_birth || "-"}</p>
+              </div>
+
+            </div>
           </div>
         )}
         {error && (
@@ -299,29 +365,209 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-2 mt-6 sm:mt-0">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={editing ? handleSave : handleEditToggle}
-          className={`px-4 max-md:w-14 py-2 rounded-lg transition-colors duration-200 shadow-md text-sm ${
-            editing
-              ? "bg-green-500 text-white hover:bg-green-600"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
-        >
-          {editing ? <Check size={20} /> : <Pencil size={20} />}
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleDelete}
-          className="px-4 max-md:w-14 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors duration-200 shadow-md text-sm"
-        >
-          <Trash2 size={20} />
-        </motion.button>
-      </div>
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setEditing(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl max-h-[80vh] overflow-y-auto"
+              dir="rtl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-4 text-right">
+                ویرایش اطلاعات فرزند
+              </h2>
+              <div className="flex flex-col gap-4 pr-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">نام کامل</label>
+                  <input
+                    type="text"
+                    value={tempFullName}
+                    onChange={(e) => setTempFullName(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">نام</label>
+                  <input
+                    type="text"
+                    value={tempFirstName}
+                    onChange={(e) => setTempFirstName(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">نام خانوادگی</label>
+                  <input
+                    type="text"
+                    value={tempLastName}
+                    onChange={(e) => setTempLastName(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">جنسیت</label>
+                  <select
+                    value={tempGender}
+                    onChange={(e) => setTempGender(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  >
+                    <option value="boy">پسر</option>
+                    <option value="girl">دختر</option>
+                  </select>
+                </div>
+                <div className="space-y-2 relative">
+                  <label className="block text-sm font-medium text-gray-700">تاریخ تولد</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={convertToJalali(tempBirthDate)}
+                    onClick={() => setShowBirthCalendar(true)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm cursor-pointer shadow-sm"
+                  />
+                  {showBirthCalendar && (
+                    <div className="absolute z-50 w-80 bg-white bottom-[-100px] shadow-lg rounded-lg">
+                      <JalaliCalendar
+                        onDateSelect={(date) => {
+                          setTempBirthDate(date);
+                          setShowBirthCalendar(false);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">محل تولد</label>
+                  <input
+                    type="text"
+                    value={tempPlaceOfBirth}
+                    onChange={(e) => setTempPlaceOfBirth(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">گروه خونی</label>
+                  <input
+                    type="text"
+                    value={tempBloodType}
+                    onChange={(e) => setTempBloodType(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">کد ملی</label>
+                  <input
+                    type="text"
+                    value={tempNationalId}
+                    onChange={(e) => setTempNationalId(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">تعداد خواهر و برادر</label>
+                  <input
+                    type="number"
+                    value={tempSiblingsCount}
+                    onChange={(e) => setTempSiblingsCount(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">ترتیب تولد</label>
+                  <input
+                    type="number"
+                    value={tempBirthOrder}
+                    onChange={(e) => setTempBirthOrder(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">دوره های ثبت نامی خارج</label>
+                  <input
+                    type="text"
+                    value={tempCourses}
+                    onChange={(e) => setTempCourses(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="text-gray-900 font-bold mt-4">اطلاعات پزشکی</div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">چالش ها</label>
+                  <input
+                    type="text"
+                    value={tempChallenges}
+                    onChange={(e) => setTempChallenges(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">آلرژی ها</label>
+                  <input
+                    type="text"
+                    value={tempAllergies}
+                    onChange={(e) => setTempAllergies(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">بیماری یا داروها</label>
+                  <input
+                    type="text"
+                    value={tempIllness}
+                    onChange={(e) => setTempIllness(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">تاریخچه بستری</label>
+                  <input
+                    type="text"
+                    value={tempHospitalization}
+                    onChange={(e) => setTempHospitalization(e.target.value)}
+                    className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
+                  />
+                </div>
+              </div>
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-red-600 text-center text-sm mt-4"
+                >
+                  {error}
+                </motion.p>
+              )}
+              <div className="flex justify-end gap-4 mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setEditing(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium"
+                >
+                  انصراف
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
+                >
+                  ذخیره
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
@@ -338,18 +584,18 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
               exit={{ scale: 0.8, opacity: 0 }}
               className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl"
             >
-              <h2 className="text-lg font-bold text-gray-800 mb-4 text-right">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 text-right">
                 تأیید حذف
               </h2>
-              <p className="text-gray-600 mb-6 text-right">
-                آیا مطمئن هستید که می‌خواهید اطلاعات فرزند {child.full_name} را حذف کنید؟
+              <p className="text-gray-700 mb-6 text-right">
+                آیا مطمئن هستید که می‌خواهید اطلاعات فرزند {child.first_name} {child.last_name} را حذف کنید؟
               </p>
               <div className="flex justify-end gap-4">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={cancelDelete}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium"
                 >
                   انصراف
                 </motion.button>
@@ -357,7 +603,7 @@ const EditableChild = ({ child, onUpdate, onDelete }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
                 >
                   حذف
                 </motion.button>

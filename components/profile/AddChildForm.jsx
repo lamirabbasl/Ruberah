@@ -1,75 +1,268 @@
 "use client";
+import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
-const AddChildForm = ({ onAdd }) => {
+const AddChildForm = ({ onAdd, onClose }) => {
   const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("boy");
+  const [placeOfBirth, setPlaceOfBirth] = useState("");
+  const [bloodType, setBloodType] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [siblingsCount, setSiblingsCount] = useState("");
+  const [birthOrder, setBirthOrder] = useState("");
+  const [courses, setCourses] = useState("");
+  const [challenges, setChallenges] = useState("");
+  const [allergies, setAllergies] = useState("");
+  const [illness, setIllness] = useState("");
+  const [hospitalization, setHospitalization] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
+  const [error, setError] = useState(null);
+
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   const handleAdd = () => {
-    if (!fullName || !birthDate) {
+    if (!firstName || !lastName || !birthDate) {
       const errorMessage = "لطفا تمام فیلدهای ضروری را پر کنید";
       toast.error(errorMessage);
+      setError(errorMessage);
       return;
     }
-    onAdd({ full_name: fullName, birth_date: birthDate, gender });
-    setFullName("");
-    setBirthDate("");
-    setGender("boy");
+    setError(null);
+    const newChild = {
+      full_name: fullName,
+      first_name: firstName,
+      last_name: lastName,
+      birth_date: birthDate,
+      place_of_birth: placeOfBirth,
+      gender: gender,
+      national_id: nationalId,
+      siblings_count: siblingsCount ? parseInt(siblingsCount) : null,
+      birth_order: birthOrder ? parseInt(birthOrder) : null,
+      blood_type: bloodType,
+      courses_signed_up_outside: courses,
+      medical_info: {
+        challenges: challenges,
+        allergies: allergies,
+        illness_or_medications: illness,
+        hospitalization_history: hospitalization,
+      },
+    };
+    onAdd(newChild);
+    onClose();
   };
 
   return (
-    <div
-      className="mt-4 relative bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-3"
-      dir="rtl"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
     >
-      <input
-        type="text"
-        placeholder="نام و نام خانوادگی"
-        value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
-        className="w-full p-2 text-sm border border-gray-300 rounded-md text-right"
-      />
-      <div className="">
-        <input
-          type="text"
-          readOnly
-          placeholder="تاریخ تولد"
-          value={convertToJalali(birthDate)}
-          onClick={() => setShowCalendar(true)}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md text-right cursor-pointer bg-white"
-        />
-        {showCalendar && (
-          <div className="absolute z-99 bg-white bottom-0 shadow-lg rounded-lg">
-            <JalaliCalendar
-              onDateSelect={(date) => {
-                setBirthDate(date);
-                setShowCalendar(false);
-              }}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl max-h-[80vh] overflow-y-auto"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold text-gray-900 mb-4 text-right">
+          افزودن فرزند جدید
+        </h2>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">نام کامل</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
             />
           </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">نام</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">نام خانوادگی</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2 relative">
+            <label className="block text-sm font-medium text-gray-700">تاریخ تولد</label>
+            <input
+              type="text"
+              readOnly
+              value={convertToJalali(birthDate)}
+              onClick={() => setShowCalendar(true)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+            />
+            {showCalendar && (
+              <div className="absolute z-99 bg-white bottom-0 shadow-lg rounded-lg">
+                <JalaliCalendar
+                  onDateSelect={(date) => {
+                    setBirthDate(date);
+                    setShowCalendar(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">جنسیت</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            >
+              <option value="boy">پسر</option>
+              <option value="girl">دختر</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">محل تولد</label>
+            <input
+              type="text"
+              value={placeOfBirth}
+              onChange={(e) => setPlaceOfBirth(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">گروه خونی</label>
+            <select
+              value={bloodType}
+              onChange={(e) => setBloodType(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            >
+              <option value="">انتخاب کنید</option>
+              {bloodTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">کد ملی</label>
+            <input
+              type="text"
+              value={nationalId}
+              onChange={(e) => setNationalId(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">تعداد خواهر و برادر</label>
+            <input
+              type="number"
+              value={siblingsCount}
+              onChange={(e) => setSiblingsCount(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">ترتیب تولد</label>
+            <input
+              type="number"
+              value={birthOrder}
+              onChange={(e) => setBirthOrder(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">دوره های ثبت نامی خارج</label>
+            <input
+              type="text"
+              value={courses}
+              onChange={(e) => setCourses(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="text-gray-900 font-bold mt-4">اطلاعات پزشکی</div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">چالش ها</label>
+            <input
+              type="text"
+              value={challenges}
+              onChange={(e) => setChallenges(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">آلرژی ها</label>
+            <input
+              type="text"
+              value={allergies}
+              onChange={(e) => setAllergies(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">بیماری یا داروها</label>
+            <input
+              type="text"
+              value={illness}
+              onChange={(e) => setIllness(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">تاریخچه بستری</label>
+            <input
+              type="text"
+              value={hospitalization}
+              onChange={(e) => setHospitalization(e.target.value)}
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            />
+          </div>
+        </div>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-red-600 text-center text-sm mt-4"
+          >
+            {error}
+          </motion.p>
         )}
-      </div>
-      <select
-        value={gender}
-        onChange={(e) => setGender(e.target.value)}
-        className="w-full p-2 text-sm border border-gray-300 rounded-md text-right"
-      >
-        <option value="boy">پسر</option>
-        <option value="girl">دختر</option>
-      </select>
-      <button
-        onClick={handleAdd}
-        className="bg-green-500 text-white px-4 py-1 rounded-md hover:bg-green-600"
-      >
-        افزودن فرزند
-      </button>
-    </div>
+        <div className="flex justify-end gap-4 mt-6">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium"
+          >
+            انصراف
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleAdd}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
+          >
+            افزودن
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
