@@ -1,82 +1,139 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UploadCloud, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { getBatchBankAccountById } from "@/lib/api/api";
+import { toast } from "react-toastify";
 
-function ReceiptUploadForm({ registrationId, installmentId, setUploading, handleImageUpload }) {
+function ReceiptUploadForm({ registrationId, installmentId, setUploading, handleImageUpload, batchId, isOpen, closeModal }) {
   const [previewImage, setPreviewImage] = useState(null);
+  const [paymentAccounts, setPaymentAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState("");
+
+  useEffect(() => {
+    async function fetchPaymentAccounts() {
+      try {
+        const accounts = await getBatchBankAccountById(batchId);
+        setPaymentAccounts(accounts);
+        if (accounts.length > 0) {
+          setSelectedAccount(accounts[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching payment accounts:", error);
+        const errorMessage = error.response?.data?.message || "خطا در دریافت حساب‌های بانکی";
+        toast.error(errorMessage);
+      }
+    }
+    if (batchId && isOpen) {
+      fetchPaymentAccounts();
+    }
+  }, [batchId, isOpen]);
 
   const handleCancel = () => {
     setPreviewImage(null);
     if (setUploading) setUploading(null);
+    closeModal();
   };
 
   return (
-    <motion.form
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      onSubmit={(e) => {
-        handleImageUpload(e, registrationId, installmentId);
-        handleCancel();
-      }}
-      className="w-full bg-gray-50 border border-blue-200 rounded-xl p-3 mt-2 shadow-sm space-y-2"
-    >
-      <div className="flex items-center justify-between">
-        <label
-          htmlFor={`receipt_image_${installmentId || registrationId}`}
-          className="cursor-pointer flex items-center gap-2 flex mx-auto text-sm w-20 bg-blue-100 hover:bg-blue-200 text-blue-700 px-0 py-2 rounded-lg shadow transition-all duration-200"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         >
-          <UploadCloud size={18} />
-          <span className="wrap">انتخاب فایل</span>
-        </label>
-
-        { (
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="text-red-500 flex text-sm items-center gap-1 hover:text-red-600"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative"
+            dir="rtl"
           >
-            <X size={16} />
-            لغو
-          </button>
-        )}
-      </div>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="absolute top-3 left-3 text-red-500 hover:text-red-600"
+            >
+              <X size={24} />
+            </button>
+            <h3 className="text-lg font-bold text-blue-700 mb-4 text-center">بارگذاری رسید پرداخت</h3>
+            <motion.form
+              onSubmit={(e) => {
+                handleImageUpload(e, registrationId, installmentId, selectedAccount);
+                handleCancel();
+              }}
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-center">
+                <label
+                  htmlFor={`receipt_image_${installmentId || registrationId}`}
+                  className="cursor-pointer flex items-center gap-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg shadow transition-all duration-200"
+                >
+                  <UploadCloud size={18} />
+                  <spam>انتخاب فایل</spam>
+                </label>
+              </div>
 
-      <input
-        id={`receipt_image_${installmentId || registrationId}`}
-        type="file"
-        name="receipt_image"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const previewUrl = URL.createObjectURL(file);
-            setPreviewImage(previewUrl);
-          } else {
-            setPreviewImage(null);
-          }
-        }}
-      />
+              <select
+                value={selectedAccount}
+                onChange={(e) => setSelectedAccount(e.target.value)}
+                className="w-full p-2 border text-black rounded-lg text-sm"
+              >
+                {paymentAccounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.display_name} ({account.bank_name})
+                  </option>
+                ))}
+                {paymentAccounts.length === 0 && (
+                  <option value="" disabled>
+                    هیچ حساب بانکی یافت نشد
+                  </option>
+                )}
+              </select>
 
-      {previewImage && (
-        <motion.img
-          src={previewImage}
-          alt="پیش‌نمایش رسید"
-          className="w-full max-w-xs mx-auto rounded-lg shadow border object-contain"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-        />
+              <input
+                id={`receipt_image_${installmentId || registrationId}`}
+                type="file"
+                name="receipt_image"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const previewUrl = URL.createObjectURL(file);
+                    setPreviewImage(previewUrl);
+                  } else {
+                    setPreviewImage(null);
+                  }
+                }}
+              />
+
+              {previewImage && (
+                <motion.img
+                  src={previewImage}
+                  alt="پیش‌نمایش رسید"
+                  className="w-full max-w-xs mx-auto rounded-lg shadow border object-contain"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+
+              <motion.button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg font-semibold shadow transition-all"
+                whileTap={{ scale: 0.98 }}
+                disabled={!selectedAccount}
+              >
+                بارگذاری رسید
+              </motion.button>
+            </motion.form>
+          </motion.div>
+        </motion.div>
       )}
-
-      <motion.button
-        type="submit"
-        className="w-24 mx-auto flex  bg-blue-600 hover:bg-blue-700 text-sm text-white py-2 px-5 rounded-lg font-semibold shadow transition-all"
-        whileTap={{ scale: 0.98 }}
-      >
-        بارگذاری رسید
-      </motion.button>
-    </motion.form>
+    </AnimatePresence>
   );
 }
 

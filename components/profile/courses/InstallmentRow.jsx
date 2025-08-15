@@ -5,7 +5,6 @@ import ReceiptUploadForm from "./ReceiptUploadForm";
 function InstallmentRow({ installment, index, registrationId, handleImageUpload }) {
   const [uploadingInstallmentId, setUploadingInstallmentId] = useState(null);
   const isPaid = installment.status === "paid";
-
   const isImg = installment.receiptUrl !== null;
 
   return (
@@ -26,22 +25,23 @@ function InstallmentRow({ installment, index, registrationId, handleImageUpload 
             className="h-20 rounded-md mx-auto mb-1"
           />
         )}
-        {uploadingInstallmentId !== installment.id && (
+        {!isPaid && (
           <button
             onClick={() => setUploadingInstallmentId(installment.id)}
             className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
           >
-            {isImg ? "تغییر رسید" : "بارگذاری رسید"}
+            {isImg ? "تغییر رسید" : "پرداخت"}
           </button>
         )}
-        {uploadingInstallmentId === installment.id && (
-          <ReceiptUploadForm
-            registrationId={registrationId}
-            installmentId={installment.id}
-            setUploading={setUploadingInstallmentId}
-            handleImageUpload={handleImageUpload}
-          />
-        )}
+        <ReceiptUploadForm
+          registrationId={registrationId}
+          installmentId={installment.id}
+          setUploading={setUploadingInstallmentId}
+          handleImageUpload={handleImageUpload}
+          batchId={installment.batchId}
+          isOpen={uploadingInstallmentId === installment.id}
+          closeModal={() => setUploadingInstallmentId(null)}
+        />
       </span>
     </div>
   );

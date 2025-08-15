@@ -10,6 +10,7 @@ import {
   getSeasons,
   getChildren,
   registerChildToBatch,
+  getBatchTermById,
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -22,6 +23,9 @@ function AllCourses() {
   const [openCourseId, setOpenCourseId] = useState(null);
   const [batchesByCourse, setBatchesByCourse] = useState({});
   const [openSignupBatchId, setOpenSignupBatchId] = useState(null);
+  const [openTermsBatchId, setOpenTermsBatchId] = useState(null);
+  const [terms, setTerms] = useState([]);
+  const [loadingTerms, setLoadingTerms] = useState(false);
   const [children, setChildren] = useState([]);
   const [loadingChildren, setLoadingChildren] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState(null);
@@ -69,14 +73,29 @@ function AllCourses() {
     }
   };
 
-  const toggleSignupCard = async (batchId) => {
-    if (openSignupBatchId === batchId) {
-      setOpenSignupBatchId(null);
-      setSelectedChildId(null);
-      setSelectedPaymentMethod(null);
-      setSignupSuccess(null);
+  const toggleTermsModal = async (batchId) => {
+    if (openTermsBatchId === batchId) {
+      setOpenTermsBatchId(null);
+      setTerms([]);
       return;
     }
+    setOpenTermsBatchId(batchId);
+    setLoadingTerms(true);
+    try {
+      const termsData = await getBatchTermById(batchId);
+      setTerms(termsData.required_terms || []);
+    } catch (err) {
+      console.error("Error fetching terms for batch:", err);
+      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری شرایط";
+      toast.error(errorMessage);
+    } finally {
+      setLoadingTerms(false);
+    }
+  };
+
+  const acceptTermsAndOpenSignup = async (batchId) => {
+    setOpenTermsBatchId(null);
+    setTerms([]);
     setOpenSignupBatchId(batchId);
     setSelectedChildId(null);
     setSelectedPaymentMethod(null);
@@ -144,12 +163,9 @@ function AllCourses() {
       });
     }
     if (batch.allow_installment) {
-      const installmentCount = Array.isArray(batch.installment_templates)
-        ? batch.installment_templates.length
-        : 0;
       methods.push({
         key: "installment",
-        label: `اقساط (${installmentCount} قسط)`,
+        label: `اقساط (${batch.installment_count} قسط)`,
         price: batch.price_installment,
       });
     }
@@ -271,7 +287,7 @@ function AllCourses() {
                           </div>
                           <div className="flex sm:block">
                             <button
-                              onClick={() => toggleSignupCard(batch.id)}
+                              onClick={() => toggleTermsModal(batch.id)}
                               className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none"
                             >
                               ثبت نام
@@ -279,6 +295,73 @@ function AllCourses() {
                           </div>
                         </div>
                         <AnimatePresence>
+                          {openTermsBatchId === batch.id && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+                            >
+                              <motion.div
+                                initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.8, y: 50, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative"
+                              >
+                                <button
+                                  onClick={() => setOpenTermsBatchId(null)}
+                                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                                >
+                                  <IoClose className="text-2xl" />
+                                </button>
+                                {loadingTerms ? (
+                                  <div className="flex justify-center py-8">
+                                    <LoadingSpinner />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-6 text-right">
+                                      شرایط و قوانین
+                                    </h3>
+                                    {terms.length === 0 ? (
+                                      <p className="text-gray-600 text-right">
+                                        شرایطی برای این دوره یافت نشد.
+                                      </p>
+                                    ) : (
+                                      <motion.ul
+                                        className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50 mb-6"
+                                        initial={{ height: 0 }}
+                                        animate={{ height: "auto" }}
+                                        transition={{ duration: 0.3 }}
+                                      >
+                                        {terms.map((term) => (
+                                          <motion.li
+                                            key={term.id}
+                                            className="p-3 rounded-lg mb-2 bg-gray-100"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                          >
+                                            <h4 className="font-semibold">{term.title}</h4>
+                                            <p className="text-gray-600">{term.body}</p>
+                                          </motion.li>
+                                        ))}
+                                      </motion.ul>
+                                    )}
+                                    <motion.button
+                                      onClick={() => acceptTermsAndOpenSignup(batch.id)}
+                                      className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
+                                      پذیرش شرایط و ادامه
+                                    </motion.button>
+                                  </>
+                                )}
+                              </motion.div>
+                            </motion.div>
+                          )}
                           {openSignupBatchId === batch.id && (
                             <motion.div
                               initial={{ opacity: 0 }}
@@ -316,7 +399,7 @@ function AllCourses() {
                                         <p className="text-gray-600 text-right">فرزندی یافت نشد.</p>
                                       ) : (
                                         <motion.ul
-                                          className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50"
+                                          className="max-h-40 overflow-y-auto  border border-gray-200 rounded-lg p-3 bg-gray-50"
                                           initial={{ height: 0 }}
                                           animate={{ height: "auto" }}
                                           transition={{ duration: 0.3 }}
@@ -324,7 +407,7 @@ function AllCourses() {
                                           {children.map((child) => (
                                             <motion.li
                                               key={child.id}
-                                              className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
+                                              className={`p-3 rounded-lg mb-2 text-black cursor-pointer transition-colors ${
                                                 selectedChildId === child.id
                                                   ? "bg-green-100 border-green-500"
                                                   : "hover:bg-gray-100"
@@ -333,7 +416,7 @@ function AllCourses() {
                                               whileHover={{ scale: 1.02 }}
                                               whileTap={{ scale: 0.98 }}
                                             >
-                                              {child.full_name}
+                                              {child.first_name}
                                             </motion.li>
                                           ))}
                                         </motion.ul>

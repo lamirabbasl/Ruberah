@@ -18,19 +18,10 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ChildCard from "@/components/profile/courses/ChildCard";
 
 function CoursesPage() {
-  const [openCourseIdx, setOpenCourseIdx] = useState({});
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fetchedImages, setFetchedImages] = useState({});
-
-  const toggleCourse = (childIndex, courseIndex) => {
-    const key = `${childIndex}-${courseIndex}`;
-    setOpenCourseIdx((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
 
   // Initial data fetching
   useEffect(() => {
@@ -76,6 +67,7 @@ function CoursesPage() {
             installments = installments.map((inst) => ({
               ...inst,
               receiptUrl: null,
+              batchId: reg.batch, // Add batchId to installments
             }));
           } catch (e) {
             console.error("Error fetching installments for registration", reg.id, e);
@@ -102,17 +94,18 @@ function CoursesPage() {
             start: seasonInfo ? seasonInfo.start_date : "نامشخص",
             end: seasonInfo ? seasonInfo.end_date : "نامشخص",
             paid: paymentStatus === "paid",
-            image: "/testimages/n1.jpg",
-            receiptUrl: null,
+            receiptUrl: reg.secure_url || null,
             paymentInfo: {
               time: reg.registered_at,
               amount: reg.final_price,
               location: batchInfo ? batchInfo.location : "نامشخص",
-              paymentMethod: paymentStatus === "paid" ? "پرداخت کامل" : "اقساط",
+              paymentMethod: paymentStatus === "paid" ? "پرداخت کامل" : reg.payment_method === "installment" ? "اقساط" : "رسید",
               paymentmetoo: reg.payment_method,
+              selected_payment_account: reg.selected_payment_account,
               installments: installments,
             },
             installments: installments,
+            batchId: reg.batch,
           });
         }
 
@@ -162,51 +155,48 @@ function CoursesPage() {
   useEffect(() => {
     async function fetchReceiptImages() {
       const updatedChildren = await Promise.all(
-        children.map(async (child, childIndex) => ({
+        children.map(async (child) => ({
           ...child,
           courses: await Promise.all(
-            child.courses.map(async (course, courseIndex) => {
-              const key = `${childIndex}-${courseIndex}`;
-              if (openCourseIdx[key]) {
-                let updatedCourse = { ...course };
-                if (!course.paid && course.receiptUrl === null && !fetchedImages[`registration-${course.id}`]) {
-                  try {
-                    const receiptUrl = await getReceiptImage(course.id);
-                    setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
-                    updatedCourse = { ...course, receiptUrl };
-                  } catch (err) {
-                    setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
-                    updatedCourse = { ...course, receiptUrl: null };
-                  }
+            child.courses.map(async (course) => {
+              let updatedCourse = { ...course };
+              if (!course.paid && course.receiptUrl === null && !fetchedImages[`registration-${course.id}`]) {
+                try {
+                  const receiptUrl = await getReceiptImage(course.id);
+                  setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
+                  updatedCourse = { ...course, receiptUrl };
+                } catch (err) {
+                  setFetchedImages((prev) => ({ ...prev, [`registration-${course.id}`]: true }));
+                  updatedCourse = { ...course, receiptUrl: null };
                 }
-
-                if (course.installments?.length > 0) {
-                  const updatedInstallments = await Promise.all(
-                    course.installments.map(async (inst) => {
-                      if (inst.secure_url !== null && !fetchedImages[`installment-${inst.id}`]) {
-                        try {
-                          const receiptUrl = await getInstallmentReceiptImage(inst.id);
-                          setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
-                          return { ...inst, receiptUrl };
-                        } catch (err) {
-                          setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
-                          if (err.status !== 404) {
-                          }
-                          return { ...inst, receiptUrl: null };
-                        }
-                      }
-                      return inst;
-                    })
-                  );
-                  return {
-                    ...updatedCourse,
-                    installments: updatedInstallments,
-                    paymentInfo: { ...updatedCourse.paymentInfo, installments: updatedInstallments },
-                  };
-                }
-                return updatedCourse;
               }
-              return course;
+
+              if (course.installments?.length > 0) {
+                const updatedInstallments = await Promise.all(
+                  course.installments.map(async (inst) => {
+                    if (inst.secure_url !== null && !fetchedImages[`installment-${inst.id}`]) {
+                      try {
+                        const receiptUrl = await getInstallmentReceiptImage(inst.id);
+                        setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                        return { ...inst, receiptUrl };
+                      } catch (err) {
+                        setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
+                        if (err.status !== 404) {
+                          // Handle non-404 errors if needed
+                        }
+                        return { ...inst, receiptUrl: null };
+                      }
+                    }
+                    return inst;
+                  })
+                );
+                return {
+                  ...updatedCourse,
+                  installments: updatedInstallments,
+                  paymentInfo: { ...updatedCourse.paymentInfo, installments: updatedInstallments },
+                };
+              }
+              return updatedCourse;
             })
           ),
         }))
@@ -214,13 +204,12 @@ function CoursesPage() {
       setChildren(updatedChildren);
     }
 
-    const hasOpenCourses = Object.values(openCourseIdx).some((isOpen) => isOpen);
-    if (hasOpenCourses && children.length > 0) {
+    if (children.length > 0) {
       fetchReceiptImages();
     }
-  }, [openCourseIdx, children.length]);
+  }, [children.length]);
 
-  const handleImageUpload = async (e, registrationId, installmentId = null) => {
+  const handleImageUpload = async (e, registrationId, installmentId = null, paymentAccount = null) => {
     e.preventDefault();
     const fileInput = e.target.elements.receipt_image;
     if (fileInput.files.length === 0) {
@@ -231,7 +220,7 @@ function CoursesPage() {
 
     try {
       if (installmentId) {
-        const response = await uploadInstallmentPayment(installmentId, fileInput.files[0]);
+        const response = await uploadInstallmentPayment(installmentId, fileInput.files[0], paymentAccount);
         const successMessage = response.data?.message || "رسید با موفقیت بارگذاری شد.";
         toast.success(successMessage);
         const updatedInstallments = await getRegistrationInstallments(registrationId);
@@ -241,15 +230,16 @@ function CoursesPage() {
               try {
                 const receiptUrl = await getInstallmentReceiptImage(inst.id);
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
-                return { ...inst, receiptUrl };
+                return { ...inst, receiptUrl, batchId: inst.batchId };
               } catch (err) {
                 setFetchedImages((prev) => ({ ...prev, [`installment-${inst.id}`]: true }));
                 if (err.status !== 404) {
+                  // Handle non-404 errors if needed
                 }
-                return { ...inst, receiptUrl: null };
+                return { ...inst, receiptUrl: null, batchId: inst.batchId };
               }
             }
-            return inst;
+            return { ...inst, batchId: inst.batchId };
           })
         );
 
@@ -271,7 +261,7 @@ function CoursesPage() {
           }))
         );
       } else {
-        const response = await UploadReceiptPicture(registrationId, fileInput.files[0]);
+        const response = await UploadReceiptPicture(registrationId, fileInput.files[0], paymentAccount);
         const successMessage = response.data?.message || "رسید با موفقیت بارگذاری شد.";
         toast.success(successMessage);
         const receiptUrl = await getReceiptImage(registrationId);
@@ -290,6 +280,8 @@ function CoursesPage() {
       }
     } catch (error) {
       console.error("Error uploading receipt:", error);
+      const errorMessage = error.response?.data?.message || error.message || "خطا در بارگذاری رسید";
+      toast.error(errorMessage);
     }
   };
 
@@ -325,8 +317,6 @@ function CoursesPage() {
             key={childIndex}
             child={child}
             childIndex={childIndex}
-            openCourseIdx={openCourseIdx}
-            toggleCourse={toggleCourse}
             handleImageUpload={handleImageUpload}
           />
         ))

@@ -2,14 +2,13 @@ import React from "react";
 import { convertToJalali } from "@/lib/utils/convertDate";
 import CourseDetails from "./CourseDetails";
 
-function CourseRow({ course, childIndex, courseIndex, isOpen, toggleCourse, handleImageUpload }) {
+function CourseRow({ course, childIndex, courseIndex, handleImageUpload }) {
   return (
     <div>
       <div
-        className="flex relative flex-col sm:flex-row sm:justify-between sm:items-center pr-4 sm:pr-6 bg-white rounded-lg shadow p-3 border hover:shadow-md transition cursor-pointer"
-        onClick={() => toggleCourse(childIndex, courseIndex)}
+        className="flex relative flex-col sm:flex-row sm:justify-between sm:items-center pr-4 sm:pr-6 bg-white rounded-lg shadow p-3 border hover:shadow-md transition"
       >
-        <div className="flex flex-col sm:grid sm:grid-cols-5 gap-y-2 gap-x-4 text-sm sm:text-lg text-gray-800 text-right w-full">
+        <div className="flex flex-col sm:grid sm:grid-cols-5 gap-y-2 gap-x-0 text-sm sm:text-lg text-gray-800 text-right w-full">
           <div className="flex sm:block">
             <span className="block sm:hidden w-20">دوره: </span>
             <span className="font-bold">{course.name}</span>
@@ -32,7 +31,7 @@ function CourseRow({ course, childIndex, courseIndex, isOpen, toggleCourse, hand
               {course.paid ? (
                 <span className="text-green-600">پرداخت کامل</span>
               ) : (
-                <span className="text-red-500">اقساط</span>
+                <span className="text-red-500">{course.paymentInfo?.paymentMethod}</span>
               )}
             </span>
           </div>
@@ -41,23 +40,13 @@ function CourseRow({ course, childIndex, courseIndex, isOpen, toggleCourse, hand
           <span className="font-semibold block sm:hidden w-20">روش پرداخت: </span>
           <span className="font-semibold">{course.paymentInfo?.paymentMethod}</span>
         </div>
-        <div className="max-md:absolute left-4 top-6 flex justify-center">
-          <img
-            src={course.image || "/path/to/fallback-image.jpg"}
-            alt={course.name}
-            width={60}
-            height={60}
-            className="rounded-md max-md:w-[100px] max-md:h-[100px] object-cover border border-gray-300"
-          />
-        </div>
+
       </div>
 
-      {isOpen && (
-        <CourseDetails
-          course={course}
-          handleImageUpload={handleImageUpload}
-        />
-      )}
+      <CourseDetails
+        course={course}
+        handleImageUpload={handleImageUpload}
+      />
     </div>
   );
 }
