@@ -1,11 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { IoClose, IoPencil } from "react-icons/io5";
 import { cardVariants } from "./BatchAnimations";
+import ViewAccountsModal from "./ViewAccountsModal";
+import ViewTermsModal from "./ViewTermsModal";
 
-const BatchCard = ({ batch, courses, seasons, onEdit, onDelete }) => {
+const BatchCard = ({ batch, courses, seasons, bankAccounts, terms, onEdit, onDelete }) => {
+  const [showAccountsModal, setShowAccountsModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
   const courseName = courses.find((c) => c.id === batch.course)?.name || "-";
   const seasonName = seasons.find((s) => s.id === batch.season)?.name || "-";
 
@@ -37,6 +42,8 @@ const BatchCard = ({ batch, courses, seasons, onEdit, onDelete }) => {
       >
         <IoPencil size={20} />
       </motion.button>
+
+
 
       <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">{batch.title}</h3>
       
@@ -96,12 +103,45 @@ const BatchCard = ({ batch, courses, seasons, onEdit, onDelete }) => {
           <span>{batch.price_installment || "-"}</span>
         </p>
         <p className="flex items-center">
-          <span className="inline-block w-24 font-medium">فال بودن دوره</span>
+          <span className="inline-block w-24 font-medium">فعال بودن دوره:</span>
           <span className={`px-2 py-1 rounded-full text-xs ${batch.booking_open ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
             {batch.booking_open ? "بله" : "خیر"}
           </span>
         </p>
       </div>
+
+      <div className=" mt-8 right-4 flex space-x-2">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowAccountsModal(true)}
+          className="px-3 py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 text-sm font-medium"
+          aria-label={`نمایش حساب‌های بانکی برای ${batch.title}`}
+        >
+          حساب‌ها
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowTermsModal(true)}
+          className="px-3 py-1 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all duration-200 text-sm font-medium"
+          aria-label={`نمایش شرایط برای ${batch.title}`}
+        >
+          شرایط
+        </motion.button>
+      </div>
+
+      <ViewAccountsModal
+        isOpen={showAccountsModal}
+        onClose={() => setShowAccountsModal(false)}
+        bankAccounts={bankAccounts.filter((account) => batch.payment_accounts.includes(account.id))}
+      />
+
+      <ViewTermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        terms={terms.filter((term) => batch.required_terms.includes(term.id))}
+      />
     </motion.div>
   );
 };

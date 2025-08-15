@@ -9,6 +9,8 @@ import {
   deleteBatch,
   getCourses,
   getSeasons,
+  getBankAccounts,
+  getTerms,
   searchBatches,
 } from "@/lib/api/api";
 import BatchCard from "./batches/BatchCard";
@@ -26,6 +28,8 @@ const BatchesTab = () => {
   const [batches, setBatches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [seasons, setSeasons] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [terms, setTerms] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [newBatch, setNewBatch] = useState({
@@ -47,6 +51,8 @@ const BatchesTab = () => {
     colleague_discount_percent: 0,
     loyalty_discount_percent: 0,
     booking_open: false,
+    payment_accounts: [],
+    required_terms: [],
   });
   const [editingBatch, setEditingBatch] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -92,9 +98,31 @@ const BatchesTab = () => {
     }
   };
 
+  const fetchBankAccounts = async () => {
+    try {
+      const data = await getBankAccounts();
+      setBankAccounts(data);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت حساب‌های بانکی";
+      toast.error(errorMessage);
+    }
+  };
+
+  const fetchTerms = async () => {
+    try {
+      const data = await getTerms();
+      setTerms(data);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت شرایط";
+      toast.error(errorMessage);
+    }
+  };
+
   useEffect(() => {
     fetchCourses();
     fetchSeasons();
+    fetchBankAccounts();
+    fetchTerms();
   }, []);
 
   const handleAddBatch = async () => {
@@ -128,11 +156,13 @@ const BatchesTab = () => {
         colleague_discount_percent: 0,
         loyalty_discount_percent: 0,
         booking_open: false,
+        payment_accounts: [],
+        required_terms: [],
       });
       setShowAddForm(false);
       fetchBatches(searchTerm);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message ||"خطا در افزودن دوره";
+      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن دوره";
       toast.error(errorMessage);
     }
   };
@@ -206,6 +236,8 @@ const BatchesTab = () => {
           onCancel={() => setShowAddForm(false)}
           courses={courses}
           seasons={seasons}
+          bankAccounts={bankAccounts}
+          terms={terms}
           errors={formErrors}
           isEdit={false}
         />
@@ -229,6 +261,8 @@ const BatchesTab = () => {
           }}
           courses={courses}
           seasons={seasons}
+          bankAccounts={bankAccounts}
+          terms={terms}
           errors={formErrors}
           isEdit={true}
         />
@@ -256,6 +290,8 @@ const BatchesTab = () => {
           batches={batches}
           courses={courses}
           seasons={seasons}
+          bankAccounts={bankAccounts}
+          terms={terms}
           onEdit={handleEditClick}
           onDelete={confirmDeleteBatch}
           searchTerm={searchTerm}

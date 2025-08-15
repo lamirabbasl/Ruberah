@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { modalVariants } from "./BatchAnimations";
 import { FormField, TextInput, SelectInput, CheckboxInput } from "./BatchFormFields";
+import SelectAccountsModal from "./SelectAccountsModal";
+import SelectTermsModal from "./SelectTermsModal";
 
 const BatchForm = ({ 
   formData, 
@@ -11,10 +13,15 @@ const BatchForm = ({
   onSubmit, 
   onCancel, 
   courses, 
-  seasons, 
+  seasons,
+  bankAccounts,
+  terms,
   errors = {},
   isEdit = false 
 }) => {
+  const [showAccountsModal, setShowAccountsModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
   return (
     <motion.div
       variants={modalVariants}
@@ -192,6 +199,32 @@ const BatchForm = ({
           </FormField>
         </div>
 
+        <FormField label="حساب‌های بانکی" error={errors.payment_accounts}>
+          <div
+            onClick={() => setShowAccountsModal(true)}
+            className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm cursor-pointer"
+          >
+            {formData.payment_accounts.length > 0
+              ? formData.payment_accounts
+                  .map((id) => bankAccounts.find((account) => account.id === id)?.display_name || "Unknown")
+                  .join(", ")
+              : "انتخاب حساب‌های بانکی"}
+          </div>
+        </FormField>
+
+        <FormField label="شرایط مورد نیاز" error={errors.required_terms}>
+          <div
+            onClick={() => setShowTermsModal(true)}
+            className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm cursor-pointer"
+          >
+            {formData.required_terms.length > 0
+              ? formData.required_terms
+                  .map((id) => terms.find((term) => term.id === id)?.title || "Unknown")
+                  .join(", ")
+              : "انتخاب شرایط"}
+          </div>
+        </FormField>
+
         <div className="flex items-center space-x-2">
           <CheckboxInput
             checked={formData.booking_open}
@@ -219,6 +252,28 @@ const BatchForm = ({
           ذخیره
         </motion.button>
       </div>
+
+      <SelectAccountsModal
+        isOpen={showAccountsModal}
+        onClose={() => setShowAccountsModal(false)}
+        bankAccounts={bankAccounts}
+        selectedAccounts={formData.payment_accounts}
+        onSave={(selected) => {
+          onChange({ ...formData, payment_accounts: selected });
+          setShowAccountsModal(false);
+        }}
+      />
+
+      <SelectTermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        terms={terms}
+        selectedTerms={formData.required_terms}
+        onSave={(selected) => {
+          onChange({ ...formData, required_terms: selected });
+          setShowTermsModal(false);
+        }}
+      />
     </motion.div>
   );
 };
