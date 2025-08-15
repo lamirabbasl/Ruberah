@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getAdminChildren, getAdminChildrenImage, getAdminChildrenwithParentImage } from "@/lib/api/api";
+import { getAdminChildren, getAdminChildrenImage, getAdminChildrenwithParentImage, getAdminChildrenById } from "@/lib/api/api";
+import { convertToJalali } from "@/lib/utils/convertDate";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminChildrenList = () => {
   const [children, setChildren] = useState([]);
@@ -13,6 +16,7 @@ const AdminChildrenList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [childImages, setChildImages] = useState({});
   const [parentImages, setParentImages] = useState({});
+  const [selectedChild, setSelectedChild] = useState(null);
 
   const fetchChildren = async (page = 1, search = "") => {
     try {
@@ -47,13 +51,23 @@ const AdminChildrenList = () => {
     }
   };
 
+  const fetchChildDetails = async (id) => {
+    try {
+      const data = await getAdminChildrenById(id);
+      setSelectedChild(data);
+    } catch (err) {
+      console.error("Error fetching child details:", err);
+      toast.error("خطا در دریافت جزئیات");
+    }
+  };
+
   useEffect(() => {
     fetchChildren(currentPage, searchTerm);
   }, [currentPage, searchTerm]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page when search term changes
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage) => {
@@ -63,9 +77,9 @@ const AdminChildrenList = () => {
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.85 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    exit: { opacity: 0, scale: 0.85, transition: { duration: 0.2 } },
+    hidden: { opacity: 0, scale: 0.9, y: 50 },
+    visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } },
+    exit: { opacity: 0, scale: 0.9, y: 50, transition: { duration: 0.2 } },
   };
 
   const cardVariants = {
@@ -78,7 +92,7 @@ const AdminChildrenList = () => {
       <div className="flex justify-between items-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-right w-full tracking-tight">مدیریت کودکان</h2>
       </div>
- 
+
       <div className="mb-6">
         <input
           type="text"
@@ -112,7 +126,8 @@ const AdminChildrenList = () => {
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  className="flex flex-col sm:flex-row items-center py-3 bg-white rounded-lg px-4 shadow-lg relative"
+                  className="flex flex-col sm:flex-row items-center py-3 bg-white rounded-lg px-4 shadow-lg relative cursor-pointer hover:shadow-xl transition-shadow duration-300"
+                  onClick={() => fetchChildDetails(child.id)}
                 >
                   <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
                     <div className="flex justify-end gap-4 sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 sm:space-x-reverse">
@@ -120,7 +135,7 @@ const AdminChildrenList = () => {
                         <img
                           src={childImages[child.id]}
                           alt={`عکس کودک ${child.full_name}`}
-                          className="w-24 h-24 rounded-md object-cover border-2 border-indigo-100 "
+                          className="w-24 h-24 rounded-md object-cover border-2 border-indigo-100"
                         />
                       ) : (
                         <div className="w-24 h-24 rounded-md bg-gray-200 flex items-center justify-center text-gray-500 mx-auto sm:mx-0">
@@ -131,7 +146,7 @@ const AdminChildrenList = () => {
                         <img
                           src={parentImages[child.id]}
                           alt={`عکس کودک ${child.full_name} با والدین`}
-                          className="w-24 h-24 rounded-md object-cover border-2 border-indigo-100 "
+                          className="w-24 h-24 rounded-md object-cover border-2 border-indigo-100"
                         />
                       ) : (
                         <div className="w-24 h-24 rounded-md bg-gray-200 flex items-center justify-center text-gray-500 mx-auto sm:mx-0">
@@ -144,7 +159,7 @@ const AdminChildrenList = () => {
                     <p className="font-semibold text-gray-800 text-sm">{child.full_name}</p>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p className="flex items-center justify-end">
-                        <span>{child.birth_date}</span>
+                        <span>{convertToJalali(child.birth_date)}</span>
                         <span className="inline-block w-24 font-medium ml-2">تاریخ تولد</span>
                       </p>
                       <p className="flex items-center justify-end">
@@ -176,7 +191,6 @@ const AdminChildrenList = () => {
             >
               صفحه بعدی
             </motion.button>
-            
             <span className="px-3 sm:px-4 py-2 text-gray-700 font-medium">صفحه {currentPage}</span>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -194,6 +208,134 @@ const AdminChildrenList = () => {
           </div>
         </>
       )}
+
+      {/* Child Details Modal */}
+      <AnimatePresence>
+        {selectedChild && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-lg flex items-center justify-center z-50"
+            onClick={() => setSelectedChild(null)}
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-100/50 max-h-[80vh] overflow-y-auto"
+              dir="rtl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-right tracking-tight">
+               {selectedChild.first_name} {selectedChild.last_name}
+              </h2>
+              <div className="flex flex-col items-center mb-6">
+                <div className="flex gap-4">
+                  {childImages[selectedChild.id] ? (
+                    <img
+                      src={childImages[selectedChild.id]}
+                      alt={`عکس کودک ${selectedChild.full_name}`}
+                      className="w-32 h-32 rounded-full object-cover border-4 border-indigo-100 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
+                      بدون عکس
+                    </div>
+                  )}
+                  {parentImages[selectedChild.id] ? (
+                    <img
+                      src={parentImages[selectedChild.id]}
+                      alt={`عکس کودک ${selectedChild.full_name} با والدین`}
+                      className="w-32 h-32 rounded-full object-cover border-4 border-indigo-100 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
+                      بدون عکس
+                    </div>
+                  )}
+                </div>
+
+              </div>
+              <div className="space-y-4 text-right text-gray-700 text-sm">
+                <div className="grid grid-cols-1 gap-3">
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">نام کامل:</span> 
+                    <span className="text-gray-600">{selectedChild.full_name || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">تاریخ تولد:</span> 
+                    <span className="text-gray-600">{convertToJalali(selectedChild.birth_date) || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">محل تولد:</span> 
+                    <span className="text-gray-600">{selectedChild.place_of_birth || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">جنسیت:</span> 
+                    <span className="text-gray-600">{selectedChild.gender === "boy" ? "پسر" : "دختر"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">کد ملی:</span> 
+                    <span className="text-gray-600">{selectedChild.national_id || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">تعداد خواهر/برادر:</span> 
+                    <span className="text-gray-600">{selectedChild.siblings_count || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">ترتیب تولد:</span> 
+                    <span className="text-gray-600">{selectedChild.birth_order || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">گروه خونی:</span> 
+                    <span className="text-gray-600">{selectedChild.blood_type || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">دوره‌های ثبت‌نامی خارج:</span> 
+                    <span className="text-gray-600">{selectedChild.courses_signed_up_outside || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">ایجاد شده در:</span> 
+                    <span className="text-gray-600">{new Date(selectedChild.created_at).toLocaleDateString("fa-IR") || "-"}</span>
+                  </p>
+                </div>
+                <h3 className=" text-lg text-gray-900 mt-6 border-b border-gray-200 pb-2">اطلاعات پزشکی</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">چالش‌ها:</span> 
+                    <span className="text-gray-600">{selectedChild.medical_info?.challenges || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">آلرژی‌ها:</span> 
+                    <span className="text-gray-600">{selectedChild.medical_info?.allergies || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">بیماری یا داروها:</span> 
+                    <span className="text-gray-600">{selectedChild.medical_info?.illness_or_medications || "-"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className=" text-gray-900">تاریخچه بستری:</span> 
+                    <span className="text-gray-600">{selectedChild.medical_info?.hospitalization_history || "-"}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedChild(null)}
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium shadow-sm"
+                >
+                  بستن
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
