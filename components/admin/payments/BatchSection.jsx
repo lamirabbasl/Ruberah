@@ -1,8 +1,8 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import RegistrationCard from "./RegistrationCard";
 
-const BatchSection = ({ batchTitle, regs, expandedBatches, toggleBatch, childrenMap, batches, flippedCards, toggleFlipCard, registrationDetailsMap, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage }) => {
+const BatchSection = ({ batchTitle, regs, childrenMap, batches, flippedCards, toggleFlipCard, registrationDetailsMap, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup }) => {
   return (
     <motion.div
       key={batchTitle}
@@ -14,48 +14,44 @@ const BatchSection = ({ batchTitle, regs, expandedBatches, toggleBatch, children
       animate="visible"
       className="border border-gray-200 rounded-2xl max-md:ml-4 shadow-lg overflow-hidden"
     >
-      <button
-        onClick={() => toggleBatch(batchTitle)}
-        className="w-full text-right px-6 py-4 font-semibold text-xl bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 rounded-t-2xl focus:outline-none transition-all duration-300 flex justify-between items-center"
+      <div
+        className="w-full text-right px-6 py-4 font-semibold text-xl bg-gradient-to-r from-indigo-50 to-blue-50 rounded-t-2xl "
       >
-        <motion.span
-          animate={{ rotate: expandedBatches[batchTitle] ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-indigo-600"
-        >
-          ▼
-        </motion.span>
         <span>{batchTitle}</span>
-      </button>
-      <AnimatePresence>
-        {expandedBatches[batchTitle] && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }}
-            exit={{ height: 0, opacity: 0, transition: { duration: 0.3 } }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
-          >
-            {regs.map((reg) => (
-              <RegistrationCard
-                key={reg.id}
-                reg={reg}
-                child={childrenMap[reg.child]}
-                batch={batches.find((b) => b.id === (reg.batch?.id || reg.batch))}
-                isFlipped={flippedCards[reg.id]}
-                toggleFlipCard={toggleFlipCard}
-                regDetails={registrationDetailsMap[reg.id]}
-                receiptImages={receiptImages}
-                confirmingPaymentIds={confirmingPaymentIds}
-                confirmedPaymentIds={confirmedPaymentIds}
-                handleConfirmPayment={handleConfirmPayment}
-                installmentReceiptImages={installmentReceiptImages}
-                handleApproveInstallmentPayment={handleApproveInstallmentPayment}
-                setModalImage={setModalImage}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
+      <motion.div
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6"
+      >
+        {regs.map((reg) => (
+          <RegistrationCard
+            key={reg.id}
+            reg={reg}
+            child={childrenMap[reg.child]}
+            batch={batches.find((b) => b.id === (reg.batch?.id || reg.batch))}
+            isFlipped={flippedCards[reg.id]}
+            toggleFlipCard={toggleFlipCard}
+            regDetails={registrationDetailsMap[reg.id]}
+            receiptImages={receiptImages}
+            confirmingPaymentIds={confirmingPaymentIds}
+            confirmedPaymentIds={confirmedPaymentIds}
+            handleConfirmPayment={handleConfirmPayment}
+            installmentReceiptImages={installmentReceiptImages}
+            handleApproveInstallmentPayment={handleApproveInstallmentPayment}
+            setModalImage={setModalImage}
+            rejectingReceiptIds={rejectingReceiptIds}
+            rejectedReceiptIds={rejectedReceiptIds}
+            rejectingInstallmentIds={rejectingInstallmentIds}
+            rejectedInstallmentIds={rejectedInstallmentIds}
+            rejectingSignupIds={rejectingSignupIds}
+            rejectedSignupIds={rejectedSignupIds}
+            requestRejectReceipt={requestRejectReceipt}
+            requestRejectInstallment={requestRejectInstallment}
+            requestRejectSignup={requestRejectSignup}
+          />
+        ))}
+      </motion.div>
     </motion.div>
   );
 };

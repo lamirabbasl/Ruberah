@@ -12,7 +12,10 @@ import {
   getInstallmentReceiptImageAdmin,
   approveInstallmentPayment,
   getReceiptImageAdmin,
-  confirmPaymentNonInstallment,
+  approveReceiptPayment,
+  rejectInstallment,
+  rejectReceipt,
+  rejectUserSignup,
 } from "@/lib/api/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import BatchSection from "@/components/admin/payments/BatchSection";
@@ -37,6 +40,21 @@ const PaymentsTab = ({ batchId = null }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState("all");
+  const [selectedApprovalStatus, setSelectedApprovalStatus] = useState("all");
+
+  // New states for rejects
+  const [rejectingReceiptIds, setRejectingReceiptIds] = useState(new Set());
+  const [rejectedReceiptIds, setRejectedReceiptIds] = useState(new Set());
+  const [rejectingInstallmentIds, setRejectingInstallmentIds] = useState(new Set());
+  const [rejectedInstallmentIds, setRejectedInstallmentIds] = useState(new Set());
+  const [rejectingSignupIds, setRejectingSignupIds] = useState(new Set());
+  const [rejectedSignupIds, setRejectedSignupIds] = useState(new Set());
+
+  // Confirm modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -52,7 +70,13 @@ const PaymentsTab = ({ batchId = null }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getRegistrationsAdmin(currentPage, search, batchId);
+        const response = await getRegistrationsAdmin(
+          currentPage,
+          search,
+          batchId,
+          selectedPaymentStatus !== "all" ? selectedPaymentStatus : "",
+          selectedApprovalStatus !== "all" ? selectedApprovalStatus : ""
+        );
         console.log("API Response:", response);
 
         let regs = [];
@@ -101,15 +125,15 @@ const PaymentsTab = ({ batchId = null }) => {
 
     return () => {
       Object.values(receiptImages).forEach((url) => {
-        if (url )
+        if (url)
           URL.revokeObjectURL(url);
       });
       Object.values(installmentReceiptImages).forEach((url) => {
-        if (url )
+        if (url)
           URL.revokeObjectURL(url);
       });
     };
-  }, [currentPage, search, batchId]);
+  }, [currentPage, search, batchId, selectedPaymentStatus, selectedApprovalStatus]);
 
   // Fetch receipt images for non-installment payments
   useEffect(() => {
@@ -187,7 +211,7 @@ const PaymentsTab = ({ batchId = null }) => {
                         ...prev,
                         [`installment-${inst.id}`]: true,
                       }));
-                      return { ...inst};
+                      return { ...inst };
                     }
                   }
                   return { ...inst, receiptUrl: installmentReceiptImages[inst.id] || null };
@@ -236,7 +260,10 @@ const PaymentsTab = ({ batchId = null }) => {
     if (confirmingPaymentIds.has(regId)) return;
     setConfirmingPaymentIds((prev) => new Set(prev).add(regId));
     try {
-      await confirmPaymentNonInstallment(regId);
+      await approveReceiptPayment(regId);
+      setRegistrations((prev) =>
+        prev.map((r) => (r.id === regId ? { ...r, payment_status: "paid" } : r))
+      );
       setConfirmedPaymentIds((prev) => new Set(prev).add(regId));
       alert("پرداخت با موفقیت تایید شد");
     } catch (error) {
@@ -274,6 +301,100 @@ const PaymentsTab = ({ batchId = null }) => {
     }
   };
 
+  // New reject handlers
+  const handleRejectReceipt = async (regId) => {
+    if (rejectingReceiptIds.has(regId)) return;
+    setRejectingReceiptIds((prev) => new Set(prev).add(regId));
+    try {
+      await rejectReceipt(regId);
+      setRegistrations((prev) =>
+        prev.map((r) => (r.id === regId ? { ...r, payment_status: "rejected" } : r))
+      );
+      setRejectedReceiptIds((prev) => new Set(prev).add(regId));
+      alert("پرداخت رد شد");
+    } catch (error) {
+      console.error("Error rejecting receipt:", error);
+      alert("خطا در رد پرداخت");
+    } finally {
+      setRejectingReceiptIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(regId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleRejectInstallment = async (instId, regId) => {
+    if (rejectingInstallmentIds.has(instId)) return;
+    setRejectingInstallmentIds((prev) => new Set(prev).add(instId));
+    try {
+      await rejectInstallment(instId);
+      setRegistrationDetailsMap((prev) => {
+        const updated = { ...prev };
+        const regDetails = updated[regId];
+        if (regDetails) {
+          const instIndex = regDetails.installments.findIndex(
+            (i) => i.id === instId
+          );
+          if (instIndex !== -1) {
+            regDetails.installments[instIndex].status = "rejected";
+          }
+        }
+        return updated;
+      });
+      setRejectedInstallmentIds((prev) => new Set(prev).add(instId));
+      alert("قسط رد شد");
+    } catch (error) {
+      console.error("Error rejecting installment:", error);
+      alert("خطا در رد قسط");
+    } finally {
+      setRejectingInstallmentIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(instId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleRejectSignup = async (regId) => {
+    if (rejectingSignupIds.has(regId)) return;
+    setRejectingSignupIds((prev) => new Set(prev).add(regId));
+    try {
+      await rejectUserSignup(regId);
+      setRegistrations((prev) => prev.filter((r) => r.id !== regId));
+      setRejectedSignupIds((prev) => new Set(prev).add(regId));
+      alert("ثبت نام رد شد");
+    } catch (error) {
+      console.error("Error rejecting signup:", error);
+      alert("خطا در رد ثبت نام");
+    } finally {
+      setRejectingSignupIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(regId);
+        return newSet;
+      });
+    }
+  };
+
+  // Request confirm functions
+  const requestRejectReceipt = (regId) => {
+    setConfirmTitle("رد پرداخت");
+    setConfirmAction(() => () => handleRejectReceipt(regId));
+    setShowConfirmModal(true);
+  };
+
+  const requestRejectInstallment = (instId, regId) => {
+    setConfirmTitle("رد قسط");
+    setConfirmAction(() => () => handleRejectInstallment(instId, regId));
+    setShowConfirmModal(true);
+  };
+
+  const requestRejectSignup = (regId) => {
+    setConfirmTitle("رد ثبت نام");
+    setConfirmAction(() => () => handleRejectSignup(regId));
+    setShowConfirmModal(true);
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage > 0 && !(newPage > currentPage && isLastPage)) {
       setCurrentPage(newPage);
@@ -297,7 +418,7 @@ const PaymentsTab = ({ batchId = null }) => {
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         مدیریت پرداخت‌ها
       </h2>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-row-reverse gap-4">
         <input
           type="text"
           value={search}
@@ -305,6 +426,26 @@ const PaymentsTab = ({ batchId = null }) => {
           placeholder="جستجوی نام..."
           className="w-full max-w-md p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-right text-lg"
         />
+        <select
+          value={selectedPaymentStatus}
+          onChange={(e) => setSelectedPaymentStatus(e.target.value)}
+          className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-right text-lg"
+        >
+          <option value="all">همه وضعیت پرداخت</option>
+          <option value="unpaid">پرداخت نشده</option>
+          <option value="partial">پرداخت جزئی</option>
+          <option value="paid">پرداخت شده</option>
+        </select>
+        <select
+          value={selectedApprovalStatus}
+          onChange={(e) => setSelectedApprovalStatus(e.target.value)}
+          className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-right text-lg"
+        >
+          <option value="all">همه وضعیت تایید</option>
+          <option value="pending">در انتظار</option>
+          <option value="approved">تایید شده</option>
+          <option value="rejected">رد شده</option>
+        </select>
       </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -343,6 +484,16 @@ const PaymentsTab = ({ batchId = null }) => {
               installmentReceiptImages={installmentReceiptImages}
               handleApproveInstallmentPayment={handleApproveInstallmentPayment}
               setModalImage={setModalImage}
+              // New props for rejects
+              rejectingReceiptIds={rejectingReceiptIds}
+              rejectedReceiptIds={rejectedReceiptIds}
+              rejectingInstallmentIds={rejectingInstallmentIds}
+              rejectedInstallmentIds={rejectedInstallmentIds}
+              rejectingSignupIds={rejectingSignupIds}
+              rejectedSignupIds={rejectedSignupIds}
+              requestRejectReceipt={requestRejectReceipt}
+              requestRejectInstallment={requestRejectInstallment}
+              requestRejectSignup={requestRejectSignup}
             />
           ))}
           <PaginationControls
@@ -353,6 +504,31 @@ const PaymentsTab = ({ batchId = null }) => {
         </div>
       )}
       <ImageModal modalImage={modalImage} setModalImage={setModalImage} />
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 dir-rtl">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h2 className="text-xl font-bold mb-4 text-gray-900">{confirmTitle}</h2>
+            <p className="mb-6 text-gray-700">آیا مطمئن هستید که می‌خواهید این عملیات را انجام دهید؟</p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+              >
+                لغو
+              </button>
+              <button
+                onClick={async () => {
+                  if (confirmAction) await confirmAction();
+                  setShowConfirmModal(false);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                تایید
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

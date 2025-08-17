@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import InstallmentItem from "./InstallmentItem";
 
-const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage }) => {
+const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, requestRejectReceipt, requestRejectInstallment }) => {
   return (
     <div
       className="absolute w-full h-full p-5 bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl overflow-y-auto"
@@ -19,46 +19,69 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                 رسید پرداخت
               </h3>
               <div className="flex flex-row-reverse gap-4">
-                {reg.payment_status !== "paid" && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    disabled={
-                      confirmedPaymentIds.has(reg.id) ||
-                      confirmingPaymentIds.has(reg.id)
-                    }
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      await handleConfirmPayment(reg.id);
-                    }}
-                    className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
-                      confirmedPaymentIds.has(reg.id)
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {confirmingPaymentIds.has(reg.id)
-                      ? "در حال تایید..."
-                      : confirmedPaymentIds.has(reg.id)
-                      ? "تایید شده"
-                      : "تایید پرداخت"}
-                  </motion.button>
-                )}
                 {receiptImages[reg.id] ? (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setModalImage(receiptImages[reg.id]);
-                    }}
-                    className="px-3 py-2 rounded-xl text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
-                  >
-                    مشاهده رسید
-                  </motion.button>
+                  <>
+                    {reg.payment_status !== "paid" && !rejectedReceiptIds.has(reg.id) && (
+                      <>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          disabled={
+                            confirmedPaymentIds.has(reg.id) ||
+                            confirmingPaymentIds.has(reg.id)
+                          }
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await handleConfirmPayment(reg.id);
+                          }}
+                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
+                            confirmedPaymentIds.has(reg.id)
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700"
+                          }`}
+                        >
+                          {confirmingPaymentIds.has(reg.id)
+                            ? "در حال تایید..."
+                            : confirmedPaymentIds.has(reg.id)
+                            ? "تایید شده"
+                            : "تایید پرداخت"}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          disabled={rejectingReceiptIds.has(reg.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            requestRejectReceipt(reg.id);
+                          }}
+                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
+                            rejectingReceiptIds.has(reg.id)
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-red-600 hover:bg-red-700"
+                          }`}
+                        >
+                          {rejectingReceiptIds.has(reg.id) ? "در حال رد..." : "رد پرداخت"}
+                        </motion.button>
+                      </>
+                    )}
+                    {rejectedReceiptIds.has(reg.id) && (
+                      <p className="text-red-600 font-medium">پرداخت رد شده</p>
+                    )}
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setModalImage(receiptImages[reg.id]);
+                      }}
+                      className="px-3 py-2 rounded-xl text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
+                    >
+                      مشاهده رسید
+                    </motion.button>
+                  </>
                 ) : (
                   <p className="text-gray-500 text-sm">
-                    رسید موجود نیست
+                    هیچ تصویری موجود نیست
                   </p>
                 )}
               </div>
@@ -77,6 +100,9 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                     installmentReceiptImages={installmentReceiptImages}
                     handleApproveInstallmentPayment={handleApproveInstallmentPayment}
                     setModalImage={setModalImage}
+                    rejectingInstallmentIds={rejectingInstallmentIds}
+                    rejectedInstallmentIds={rejectedInstallmentIds}
+                    requestRejectInstallment={requestRejectInstallment}
                   />
                 ))}
               </ul>

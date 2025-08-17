@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import FrontCard from "./FrontCard";
 import BackCard from "./BackCard";
 
-const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage }) => {
+const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup }) => {
   return (
     <motion.div
       variants={{
@@ -12,13 +12,9 @@ const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDet
       }}
       initial="hidden"
       animate="visible"
-      className="relative border border-gray-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-white cursor-pointer"
+      className="relative border border-gray-200 rounded-xl shadow-md transition-all duration-300 bg-white cursor-pointer"
       style={{ height: "320px", perspective: "1200px" }}
       onClick={() => toggleFlipCard(reg.id)}
-      whileHover={{
-        scale: 1.02,
-        boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-      }}
     >
       <div
         className="relative w-full h-full"
@@ -29,7 +25,14 @@ const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDet
           height: "100%",
         }}
       >
-        <FrontCard reg={reg} child={child} batch={batch} />
+        <FrontCard 
+          reg={reg} 
+          child={child} 
+          batch={batch} 
+          rejectingSignupIds={rejectingSignupIds}
+          rejectedSignupIds={rejectedSignupIds}
+          requestRejectSignup={requestRejectSignup}
+        />
         <BackCard
           reg={reg}
           regDetails={regDetails}
@@ -40,6 +43,12 @@ const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDet
           installmentReceiptImages={installmentReceiptImages}
           handleApproveInstallmentPayment={handleApproveInstallmentPayment}
           setModalImage={setModalImage}
+          rejectingReceiptIds={rejectingReceiptIds}
+          rejectedReceiptIds={rejectedReceiptIds}
+          rejectingInstallmentIds={rejectingInstallmentIds}
+          rejectedInstallmentIds={rejectedInstallmentIds}
+          requestRejectReceipt={requestRejectReceipt}
+          requestRejectInstallment={requestRejectInstallment}
         />
       </div>
     </motion.div>
