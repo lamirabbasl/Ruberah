@@ -13,7 +13,7 @@ const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDet
       initial="hidden"
       animate="visible"
       className="relative border border-gray-200 rounded-xl shadow-md transition-all duration-300 bg-white cursor-pointer"
-      style={{ height: "320px", perspective: "1200px" }}
+      style={{ height: "330px", perspective: "1200px" }}
       onClick={() => toggleFlipCard(reg.id)}
     >
       <div

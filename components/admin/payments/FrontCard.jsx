@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const FrontCard = ({ reg, child, batch, rejectingSignupIds, rejectedSignupIds, requestRejectSignup }) => {
   return (
     <div
-      className="absolute w-full h-full p-5 overflow-y-auto bg-white rounded-xl"
+      className="absolute w-full h-full p-5 overflow-y-hidden bg-white rounded-xl"
       style={{ backfaceVisibility: "hidden" }}
     >
       <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
@@ -12,10 +12,10 @@ const FrontCard = ({ reg, child, batch, rejectingSignupIds, rejectedSignupIds, r
       </h3>
       <div className="space-y-1 text-lg text-right text-gray-700">
         <p className="">
-          {reg.parent_name || "نامشخص"} :نام والد
+          {reg.parent_name } :نام والد
         </p>
         <p className="">
-          {reg.parent_username || "نامشخص"} :نام کاربری والد
+          {reg.parent_username } :نام کاربری والد
         </p>
       </div>
       {batch ? (
@@ -24,7 +24,7 @@ const FrontCard = ({ reg, child, batch, rejectingSignupIds, rejectedSignupIds, r
             {batch.capacity} :ظرفیت
           </p>
           <p className="">
-            وضعیت پرداخت:
+            وضعیت پرداخت : 
             <span
               className={`px-2 py-1 rounded-full text-xs ${
                 reg.payment_status === "paid"
@@ -38,7 +38,7 @@ const FrontCard = ({ reg, child, batch, rejectingSignupIds, rejectedSignupIds, r
             </span>
           </p>
           <p className="">
-            وضعیت تایید:
+            وضعیت تایید :
             <span
               className={`px-2 py-1 rounded-full text-xs ${
                 reg.approval_status === "approved"
@@ -60,7 +60,7 @@ const FrontCard = ({ reg, child, batch, rejectingSignupIds, rejectedSignupIds, r
         </div>
       ) : (
         <p className="text-gray-600 text-sm">
-          بچ نامشخص
+          دوره نامشخص
         </p>
       )}
       {!rejectedSignupIds.has(reg.id) ? (
