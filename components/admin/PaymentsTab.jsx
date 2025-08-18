@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BatchSection from "@/components/admin/payments/BatchSection";
 import PaginationControls from "@/components/admin/payments/PaginationControls";
 import ImageModal from "@/components/admin/payments/ImageModal";
+import NotifyModal from "@/components/admin/payments/NotifyModal";
 
 const PaymentsTab = ({ batchId = null }) => {
   const [registrations, setRegistrations] = useState([]);
@@ -55,6 +56,9 @@ const PaymentsTab = ({ batchId = null }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmTitle, setConfirmTitle] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
+
+  // New state for notify modal
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -418,6 +422,14 @@ const PaymentsTab = ({ batchId = null }) => {
       <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
         مدیریت پرداخت‌ها
       </h2>
+      {batchId && (
+        <button
+          onClick={() => setShowNotifyModal(true)}
+          className="mb-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        >
+          اطلاع‌رسانی رسیدهای گم‌شده
+        </button>
+      )}
       <div className="mb-6 flex flex-row-reverse gap-4">
         <input
           type="text"
@@ -529,6 +541,11 @@ const PaymentsTab = ({ batchId = null }) => {
           </div>
         </div>
       )}
+      <NotifyModal
+        isOpen={showNotifyModal}
+        onClose={() => setShowNotifyModal(false)}
+        batchId={batchId}
+      />
     </div>
   );
 };
