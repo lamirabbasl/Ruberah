@@ -41,45 +41,45 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative"
+            className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl relative"
             dir="rtl"
           >
             <button
               type="button"
               onClick={handleCancel}
-              className="absolute top-3 left-3 text-red-500 hover:text-red-600"
+              className="absolute top-4 left-4 text-red-500 hover:text-red-600"
             >
               <X size={24} />
             </button>
-            <h3 className="text-lg font-bold text-blue-700 mb-4 text-center">بارگذاری رسید پرداخت</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">بارگذاری رسید پرداخت</h3>
             <motion.form
               onSubmit={(e) => {
                 handleImageUpload(e, registrationId, installmentId, selectedAccount);
                 handleCancel();
               }}
-              className="space-y-4"
+              className="space-y-6"
             >
               <div className="flex items-center justify-center">
                 <label
                   htmlFor={`receipt_image_${installmentId || registrationId}`}
-                  className="cursor-pointer flex items-center gap-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg shadow transition-all duration-200"
+                  className="cursor-pointer flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-3 rounded-xl shadow-md transition-all duration-200 font-medium"
                 >
-                  <UploadCloud size={18} />
-                  <spam>انتخاب فایل</spam>
+                  <UploadCloud size={20} />
+                  <span>انتخاب فایل</span>
                 </label>
               </div>
 
               <select
                 value={selectedAccount}
                 onChange={(e) => setSelectedAccount(e.target.value)}
-                className="w-full p-2 border text-black rounded-lg text-sm"
+                className="w-full p-3 border border-gray-200 rounded-xl text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 {paymentAccounts.map((account) => (
                   <option key={account.id} value={account.id}>
@@ -114,7 +114,7 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
                 <motion.img
                   src={previewImage}
                   alt="پیش‌نمایش رسید"
-                  className="w-full max-w-xs mx-auto rounded-lg shadow border object-contain"
+                  className="w-full max-w-xs mx-auto rounded-xl shadow-md border border-gray-200 object-contain"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.2 }}
@@ -123,7 +123,7 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
 
               <motion.button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg font-semibold shadow transition-all"
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 px-6 rounded-xl font-semibold shadow-md transition-all duration-200"
                 whileTap={{ scale: 0.98 }}
                 disabled={!selectedAccount}
               >

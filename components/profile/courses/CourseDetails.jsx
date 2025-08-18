@@ -5,10 +5,9 @@ import ReceiptUploadForm from "@/components/profile/courses/ReceiptUploadForm";
 import { getBatchBankAccountById } from "@/lib/api/api";
 import { toast } from "react-toastify";
 
-function CourseDetails({ course, handleImageUpload }) {
+function CourseDetails({ course, handleImageUpload, isBankModalOpen, setIsBankModalOpen }) {
   const isInstallment = course.paymentInfo.paymentmetoo === "installment";
   const [bankAccounts, setBankAccounts] = useState([]);
-  const [showBankAccounts, setShowBankAccounts] = useState(false);
   const [uploadingRegistrationId, setUploadingRegistrationId] = useState(null);
 
   useEffect(() => {
@@ -18,49 +17,95 @@ function CourseDetails({ course, handleImageUpload }) {
         setBankAccounts(accounts);
       } catch (error) {
         console.error("Error fetching bank accounts:", error);
-        const errorMessage = error.response?.data?.message || error.message || "خطا در دریافت حساب‌های بانکی";
+        const errorMessage = error.response?.data?.message || "خطا در دریافت حساب‌های بانکی";
         toast.error(errorMessage);
       }
     }
     fetchBankAccounts();
   }, [course.batchId]);
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("شماره کپی شد!");
+    }).catch(() => {
+      toast.error("خطا در کپی کردن شماره");
+    });
+  };
+
   return (
-    <div className="bg-gray-50 mt-2 max-md:relative max-md:grid max-md:grid-cols-2 max-md:gap-4 rounded-lg border border-blue-100 p-4 text-right space-y-3 animate-fade-in">
-      <button
-        onClick={() => setShowBankAccounts(!showBankAccounts)}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-      >
-        {showBankAccounts ? "مخفی کردن حساب‌های بانکی" : "نمایش حساب‌های بانکی"}
-      </button>
-      {showBankAccounts && (
-        <div className="bg-white p-3 rounded-md text-black shadow text-md flex flex-col gap-4">
-          {bankAccounts.length > 0 ? (
-            bankAccounts.map((account) => (
-              <div key={account.id} className="border-b pb-2">
-                <p><strong>نام حساب:</strong> {account.display_name}</p>
-                <p><strong>بانک:</strong> {account.bank_name}</p>
-                <p><strong>شماره شبا:</strong> {account.iban}</p>
-                <p><strong>شماره حساب:</strong> {account.account_number}</p>
-                <p><strong>شماره کارت:</strong> {account.card_number}</p>
-              </div>
-            ))
-          ) : (
-            <p>حساب بانکی یافت نشد.</p>
-          )}
+    <div className="bg-white mt-4 text-black rounded-2xl border border-gray-100 p-6 shadow-md text-right space-y-6">
+      {isBankModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full text-right relative">
+            <button
+              onClick={() => setIsBankModalOpen(false)}
+              className="absolute top-4 left-4 text-red-500 hover:text-red-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">حساب‌های بانکی</h3>
+            {bankAccounts.length > 0 ? (
+              bankAccounts.map((account) => (
+                <div key={account.id} className="border-b border-gray-200 pb-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">نام حساب: {account.display_name}</p>
+                    <button onClick={() => copyToClipboard(account.display_name)} className="text-gray-600 hover:text-gray-800">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">بانک: {account.bank_name}</p>
+                    <button onClick={() => copyToClipboard(account.bank_name)} className="text-gray-600 hover:text-gray-800">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">شماره شبا: {account.iban}</p>
+                    <button onClick={() => copyToClipboard(account.iban)} className="text-gray-600 hover:text-gray-800">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">شماره حساب: {account.account_number}</p>
+                    <button onClick={() => copyToClipboard(account.account_number)} className="text-gray-600 hover:text-gray-800">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold text-gray-800">شماره کارت: {account.card_number}</p>
+                    <button onClick={() => copyToClipboard(account.card_number)} className="text-gray-600 hover:text-gray-800">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">حساب بانکی یافت نشد.</p>
+            )}
+          </div>
         </div>
       )}
       {isInstallment ? (
         <>
-          <h3 className="text-lg max-md:hidden font-bold text-blue-700 mb-2">
-            اطلاعات اقساط
-          </h3>
-          <div className="flex max-md:hidden flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-lg gap-2 sm:gap-0 text-gray-700">
-            <span className="w-20">قسط</span>
-            <span className="w-20">مبلغ</span>
-            <span className="w-24">وضعیت پرداخت</span>
-            <span className="w-24">مهلت پرداخت</span>
-            <span className="w-40"></span>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4 sm:block hidden">اطلاعات اقساط</h3>
+          <div className="hidden sm:grid grid-cols-5 gap-4 bg-gray-50 p-4 rounded-xl font-semibold text-gray-900">
+            <span>قسط</span>
+            <span>مبلغ</span>
+            <span>وضعیت پرداخت</span>
+            <span>مهلت پرداخت</span>
+            <span>رسید</span>
           </div>
           {course.installments.map((inst, idx) => (
             <InstallmentRow
@@ -74,35 +119,42 @@ function CourseDetails({ course, handleImageUpload }) {
         </>
       ) : (
         <>
-          <h3 className="text-lg max-md:hidden font-bold text-blue-700 mb-2">
-            اطلاعات پرداخت
-          </h3>
-          <div className="flex max-md:hidden flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-200 rounded-md p-3 shadow text-lg gap-2 sm:gap-0 text-gray-700">
-            <span className="w-20">مبلغ کل</span>
-            <span className="w-24">زمان پرداخت</span>
-            <span className="w-24">وضعیت پرداخت</span>
-            <span className="w-40"></span>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4 sm:block hidden">اطلاعات پرداخت</h3>
+          <div className="hidden sm:grid grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl font-semibold text-gray-900">
+            <span>مبلغ کل</span>
+            <span>زمان پرداخت</span>
+            <span>وضعیت پرداخت</span>
+            <span>رسید</span>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white rounded-md p-3 shadow text-md gap-2 sm:gap-0 text-black">
-            <span className="w-20">{course.paymentInfo?.amount}</span>
-            <span className="w-24">
-              {course.paymentInfo?.time ? convertToJalali(course.paymentInfo.time.slice(0, 10)) : "نامشخص"}
-            </span>
-            <span className={`w-24 ${course.paid ? "text-green-600" : "text-red-500"}`}>
-              {course.paid ? "پرداخت شده" : "در انتظار پرداخت"}
-            </span>
-            <span className="w-40 flex flex-col items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white p-4 rounded-xl shadow">
+            <div className="flex items-center">
+              <span className="block sm:hidden font-semibold w-24">مبلغ کل: </span>
+              <span>{course.paymentInfo?.amount}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="block sm:hidden font-semibold w-24">زمان پرداخت: </span>
+              <span>
+                {course.paymentInfo?.time ? convertToJalali(course.paymentInfo.time.slice(0, 10)) : "نامشخص"}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <span className="block sm:hidden font-semibold w-24">وضعیت پرداخت: </span>
+              <span className={`font-semibold ${course.paid ? "text-green-600" : "text-red-500"}`}>
+                {course.paid ? "پرداخت شده" : "در انتظار پرداخت"}
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
               {course.receiptUrl && (
                 <img
                   src={course.receiptUrl}
                   alt="رسید پرداخت"
-                  className="h-20 rounded-md mx-auto mb-2"
+                  className="h-32 sm:h-24 rounded-lg shadow-md mb-2"
                 />
               )}
               {!course.paid && (
                 <button
                   onClick={() => setUploadingRegistrationId(course.id)}
-                  className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition duration-200 text-sm font-medium"
                 >
                   {course.receiptUrl ? "تغییر رسید" : "پرداخت"}
                 </button>
@@ -114,7 +166,7 @@ function CourseDetails({ course, handleImageUpload }) {
                 isOpen={uploadingRegistrationId === course.id}
                 closeModal={() => setUploadingRegistrationId(null)}
               />
-            </span>
+            </div>
           </div>
         </>
       )}

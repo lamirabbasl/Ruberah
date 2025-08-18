@@ -67,12 +67,10 @@ function CoursesPage() {
             installments = installments.map((inst) => ({
               ...inst,
               receiptUrl: null,
-              batchId: reg.batch, // Add batchId to installments
+              batchId: reg.batch,
             }));
           } catch (e) {
             console.error("Error fetching installments for registration", reg.id, e);
-            const errorMessage = e.response?.data?.message || e.message || "خطا در دریافت اقساط";
-            toast.error(errorMessage);
           }
 
           let paymentStatus = "unpaid";
@@ -135,9 +133,7 @@ function CoursesPage() {
               return { ...child, image: photoUrl };
             } catch (err) {
               setFetchedImages((prev) => ({ ...prev, [`child-${child.id}`]: true }));
-              const errorMessage = err.response?.data?.message || err.message || "خطا در عکس فرزندان";
-              toast.error(errorMessage);
-              return { ...child, image: "/path/to/fallback-image.jpg" };
+              return { ...child };
             }
           }
           return child;
@@ -296,7 +292,7 @@ function CoursesPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen font-mitra p-6 flex flex-col items-center"
+      className="min-h-screen font-mitra p-8 bg-white flex flex-col items-center"
     >
       <ToastContainer
         position="bottom-right"
@@ -308,9 +304,9 @@ function CoursesPage() {
         theme="light"
         rtl={true}
       />
-      <h1 className="text-4xl font-bold text-gray-700 mb-6">دوره‌های فرزندان</h1>
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">دوره‌های فرزندان</h1>
       {children.length === 0 ? (
-        <p className="text-center text-gray-600 mt-10">هیچ دوره‌ای ثبت نشده است.</p>
+        <p className="text-center text-gray-500 text-xl mt-12">هیچ دوره‌ای ثبت نشده است.</p>
       ) : (
         children.map((child, childIndex) => (
           <ChildCard

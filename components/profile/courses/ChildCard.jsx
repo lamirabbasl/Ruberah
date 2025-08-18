@@ -12,10 +12,7 @@ function ChildCard({ child, childIndex, handleImageUpload }) {
         const photoUrl = await getChildPhotoUrl(child.id);
         setChildImage(photoUrl);
       } catch (err) {
-        console.error("Error fetching child photo:", err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت عکس فرزند";
-        toast.error(errorMessage);
-        setChildImage("/path/to/fallback-image.jpg");
+        console.error("Error fetching child photo:", err);    
       }
     }
 
@@ -25,31 +22,28 @@ function ChildCard({ child, childIndex, handleImageUpload }) {
   }, [child.id]);
 
   return (
-    <div
-      className="w-screen max-w-3xl bg-gray-100 rounded-xl shadow-lg mb-8 p-5"
-    >
-      <div className="flex items-center mb-4 gap-4">
+    <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl mb-10 p-6 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+      <div className="flex items-center mb-6 gap-4">
         <img
           src={childImage}
           alt={child.name}
-          width={70}
-          height={70}
-          className="w-22 h-22 rounded-full object-cover border-2 border-blue-500 shadow"
+          width={80}
+          height={80}
+          className="w-24 h-24 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-gray-200 shadow-md"
         />
-        <h2 className="text-2xl font-bold text-gray-800">{child.name}</h2>
+        <h2 className="text-3xl font-bold text-gray-900">{child.name}</h2>
       </div>
 
-      <div className="hidden sm:flex justify-between items-center pr-6 bg-gray-100 border-b-2 border-gray-200 p-3 rounded-t-lg text-lg text-gray-600 text-right">
-        <div className="flex flex-wrap gap-x-9 mr-8 gap-y-1">
-          <span className="w-20">دوره</span>
-          <span className="w-24">شروع</span>
-          <span className="w-20">پایان</span>
-          <span className="w-20">مکان</span>
-          <span className="w-24">وضعیت پرداخت</span>
-        </div>
+      <div className="hidden sm:grid grid-cols-6 gap-4 bg-gray-50 border-b border-gray-200 p-4 rounded-t-xl text-lg font-semibold text-gray-900 text-right">
+        <span>دوره</span>
+        <span>شروع</span>
+        <span>پایان</span>
+        <span>مکان</span>
+        <span>وضعیت پرداخت</span>
+        <span>حساب‌های بانکی</span>
       </div>
 
-      <div className="space-y-3 mt-2">
+      <div className="space-y-4 mt-4">
         {child.courses.map((course, courseIndex) => (
           <CourseRow
             key={courseIndex}

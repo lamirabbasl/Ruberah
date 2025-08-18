@@ -427,7 +427,7 @@ const PaymentsTab = ({ batchId = null }) => {
           onClick={() => setShowNotifyModal(true)}
           className="mb-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
         >
-          اطلاع‌رسانی رسیدهای گم‌شده
+          اطلاع‌رسانی رسیدهای تایید نشده
         </button>
       )}
       <div className="mb-6 flex flex-row-reverse gap-4">

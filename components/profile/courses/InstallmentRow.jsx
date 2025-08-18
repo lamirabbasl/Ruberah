@@ -8,27 +8,37 @@ function InstallmentRow({ installment, index, registrationId, handleImageUpload 
   const isImg = installment.receiptUrl !== null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white rounded-md p-3 shadow sm:text-lg gap-2 sm:gap-0">
-      <span className="text-gray-700 font-semibold w-20">قسط {index + 1}</span>
-      <span className="text-gray-700 w-20">{installment.amount}</span>
-      <span className={`w-24 ${isPaid ? "text-green-600" : "text-red-500"}`}>
-        {isPaid ? "پرداخت شده" : "در انتظار پرداخت"}
-      </span>
-      <span className="text-gray-600 w-24">
-        مهلت: {convertToJalali(installment.due_date)}
-      </span>
-      <span className="w-40 flex flex-col items-center">
+    <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white p-4 rounded-xl shadow text-gray-800">
+      <div className="flex items-center">
+        <span className="block sm:hidden font-semibold w-20">قسط: </span>
+        <span className="font-semibold">قسط {index + 1}</span>
+      </div>
+      <div className="flex items-center">
+        <span className="block sm:hidden font-semibold w-20">مبلغ: </span>
+        <span>{installment.amount}</span>
+      </div>
+      <div className="flex items-center">
+        <span className="block sm:hidden font-semibold w-24">وضعیت پرداخت: </span>
+        <span className={`font-semibold ${isPaid ? "text-green-600" : "text-red-500"}`}>
+          {isPaid ? "پرداخت شده" : "در انتظار پرداخت"}
+        </span>
+      </div>
+      <div className="flex items-center">
+        <span className="block sm:hidden font-semibold w-24">مهلت پرداخت: </span>
+        <span>مهلت: {convertToJalali(installment.due_date)}</span>
+      </div>
+      <div className="flex flex-col items-center">
         {isImg && (
           <img
             src={installment.receiptUrl}
             alt={`رسید قسط ${index + 1}`}
-            className="h-20 rounded-md mx-auto mb-1"
+            className="h-32 sm:h-24 rounded-lg shadow-md mb-2"
           />
         )}
         {!isPaid && (
           <button
             onClick={() => setUploadingInstallmentId(installment.id)}
-            className="px-4 py-1 rounded text-sm bg-blue-500 text-white hover:bg-blue-600 mt-1"
+            className="px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition duration-200 text-sm font-medium"
           >
             {isImg ? "تغییر رسید" : "پرداخت"}
           </button>
@@ -42,7 +52,7 @@ function InstallmentRow({ installment, index, registrationId, handleImageUpload 
           isOpen={uploadingInstallmentId === installment.id}
           closeModal={() => setUploadingInstallmentId(null)}
         />
-      </span>
+      </div>
     </div>
   );
 }
