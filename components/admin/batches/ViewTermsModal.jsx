@@ -28,7 +28,7 @@ const ViewTermsModal = ({ isOpen, onClose, terms }) => {
             className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">شرایط</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">آداب</h3>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {terms.length === 0 ? (
                 <p className="text-sm text-gray-600">هیچ شرطی انتخاب نشده است.</p>

@@ -44,7 +44,7 @@ const InstallmentItem = ({ inst, regId, installmentReceiptImages, handleApproveI
                 installmentReceiptImages[inst.id]
               );
             }}
-            className="px-3 whitespace-nowrap py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg"
+            className="px-3 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg"
           >
             مشاهده رسید
           </motion.button>
@@ -58,7 +58,7 @@ const InstallmentItem = ({ inst, regId, installmentReceiptImages, handleApproveI
                   e.stopPropagation();
                   await handleApproveInstallmentPayment(inst.id, regId);
                 }}
-                className={`px-4 py-2 whitespace-nowrap rounded-lg text-white text-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
                   inst.status === "paid"
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
@@ -74,7 +74,7 @@ const InstallmentItem = ({ inst, regId, installmentReceiptImages, handleApproveI
                   e.stopPropagation();
                   requestRejectInstallment(inst.id, regId);
                 }}
-                className={`px-4 py-2 whitespace-nowrap rounded-lg text-white text-lg font-medium transition-all duration-200 ${
+                className={`px-4 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
                   rejectingInstallmentIds.has(inst.id)
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700"

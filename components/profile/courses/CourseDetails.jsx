@@ -32,6 +32,9 @@ function CourseDetails({ course, handleImageUpload, isBankModalOpen, setIsBankMo
     });
   };
 
+  // Sort installments by id in ascending order
+  const sortedInstallments = [...course.installments].sort((a, b) => a.id - b.id);
+
   return (
     <div className="bg-white mt-4 text-black rounded-2xl border border-gray-100 p-6 shadow-md text-right space-y-6">
       {isBankModalOpen && (
@@ -107,9 +110,9 @@ function CourseDetails({ course, handleImageUpload, isBankModalOpen, setIsBankMo
             <span>مهلت پرداخت</span>
             <span>رسید</span>
           </div>
-          {course.installments.map((inst, idx) => (
+          {sortedInstallments.map((inst, idx) => (
             <InstallmentRow
-              key={idx}
+              key={inst.id}
               installment={inst}
               index={idx}
               registrationId={course.id}

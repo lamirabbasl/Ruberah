@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import InstallmentItem from "./InstallmentItem";
 
 const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, requestRejectReceipt, requestRejectInstallment }) => {
+  // Sort installments by id in ascending order
+  const sortedInstallments = regDetails ? [...regDetails.installments].sort((a, b) => a.id - b.id) : [];
+
   return (
     <div
       className="absolute w-full h-full p-5 bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl overflow-y-auto"
@@ -92,7 +95,7 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                 جزئیات قسط
               </h3>
               <ul className="space-y-4">
-                {regDetails.installments.map((inst) => (
+                {sortedInstallments.map((inst, idx) => (
                   <InstallmentItem
                     key={inst.id}
                     inst={inst}
@@ -103,6 +106,7 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                     rejectingInstallmentIds={rejectingInstallmentIds}
                     rejectedInstallmentIds={rejectedInstallmentIds}
                     requestRejectInstallment={requestRejectInstallment}
+                    index={idx}
                   />
                 ))}
               </ul>

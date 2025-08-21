@@ -127,7 +127,7 @@ const BatchCard = ({ batch, courses, seasons, bankAccounts, terms, onEdit, onDel
           className="px-3 py-1 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all duration-200 text-sm font-medium"
           aria-label={`نمایش شرایط برای ${batch.title}`}
         >
-          شرایط
+          آداب
         </motion.button>
       </div>
 

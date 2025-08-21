@@ -123,7 +123,7 @@ const TermsTab = () => {
     <div className="p-6 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen font-mitra">
       <ToastContainer position="bottom-right" autoClose={3000} />
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت شرایط</h2>
+        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت آداب</h2>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

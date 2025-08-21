@@ -10,7 +10,7 @@ import InstallmentsTab from "@/components/admin/InstallmentsTab";
 import BankAccounts from "@/components/admin/BankAccounts";
 import TermsTab from "@/components/admin/TermsTab";
 
-const tabLabels = ["آموزش ها", "فصل‌ها", "دوره ها", "اقساط", "حساب های بانکی", "قوانین"];
+const tabLabels = ["آموزش ها", "فصل‌ها", "دوره ها", "اقساط", "حساب های بانکی", "آداب"];
 
 const AdminCoursesPage = () => {
   const [activeTab, setActiveTab] = useState(0);
