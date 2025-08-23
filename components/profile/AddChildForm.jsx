@@ -17,11 +17,11 @@ const AddChildForm = ({ onAdd, onClose }) => {
   const [nationalId, setNationalId] = useState("");
   const [siblingsCount, setSiblingsCount] = useState("");
   const [birthOrder, setBirthOrder] = useState("");
-  const [courses, setCourses] = useState("");
-  const [challenges, setChallenges] = useState("");
-  const [allergies, setAllergies] = useState("");
-  const [illness, setIllness] = useState("");
-  const [hospitalization, setHospitalization] = useState("");
+  const [courses, setCourses] = useState("خیر");
+  const [challenges, setChallenges] = useState("خیر");
+  const [allergies, setAllergies] = useState("خیر");
+  const [illness, setIllness] = useState("خیر");
+  const [hospitalization, setHospitalization] = useState("خیر");
   const [showCalendar, setShowCalendar] = useState(false);
   const [error, setError] = useState(null);
 
@@ -79,7 +79,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
         </h2>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">نام کامل</label>
+            <label className="block text-lg font-medium text-gray-700">نام کامل</label>
             <input
               type="text"
               value={fullName}
@@ -88,7 +88,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">نام</label>
+            <label className="block text-lg font-medium text-gray-700">نام</label>
             <input
               type="text"
               value={firstName}
@@ -97,7 +97,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">نام خانوادگی</label>
+            <label className="block text-lg font-medium text-gray-700">نام خانوادگی</label>
             <input
               type="text"
               value={lastName}
@@ -106,7 +106,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2 relative">
-            <label className="block text-sm font-medium text-gray-700">تاریخ تولد</label>
+            <label className="block text-lg font-medium text-gray-700">تاریخ تولد</label>
             <input
               type="text"
               readOnly
@@ -126,7 +126,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             )}
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">جنسیت</label>
+            <label className="block text-lg font-medium text-gray-700">جنسیت</label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -137,7 +137,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">محل تولد</label>
+            <label className="block text-lg font-medium text-gray-700">محل تولد</label>
             <input
               type="text"
               value={placeOfBirth}
@@ -146,7 +146,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">گروه خونی</label>
+            <label className="block text-lg font-medium text-gray-700">گروه خونی</label>
             <select
               value={bloodType}
               onChange={(e) => setBloodType(e.target.value)}
@@ -161,7 +161,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">کد ملی</label>
+            <label className="block text-lg font-medium text-gray-700">کد ملی</label>
             <input
               type="text"
               value={nationalId}
@@ -170,7 +170,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">تعداد خواهر و برادر</label>
+            <label className="block text-lg font-medium text-gray-700">تعداد فرزندان خانواده </label>
             <input
               type="number"
               value={siblingsCount}
@@ -179,7 +179,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">ترتیب تولد</label>
+            <label className="block text-lg font-medium text-gray-700">کودک شما فرزند چندم خانواده است؟</label>
             <input
               type="number"
               value={birthOrder}
@@ -188,7 +188,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">دوره های ثبت نامی خارج</label>
+            <label className="block text-lg font-medium text-gray-700">اگر پیش از این و با همزمان با این دوره, کودک شما در دوره های دیگری شرکت کرده است جزئیات آن را وارد کنید</label>
             <input
               type="text"
               value={courses}
@@ -196,9 +196,9 @@ const AddChildForm = ({ onAdd, onClose }) => {
               className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
             />
           </div>
-          <div className="text-gray-900 font-bold mt-4">اطلاعات پزشکی</div>
+          <div className="text-gray-900 border-t-2 border-gray-200 pt-4 text-xl font-bold mt-4">اطلاعات پزشکی</div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">چالش ها</label>
+            <label className="block text-lg font-medium text-gray-700">آیا در ارتباط با کودک خود چالشی دارید و یا موردی که لازم است ما نسبت به آن آگاه باشیم؟</label>
             <input
               type="text"
               value={challenges}
@@ -207,7 +207,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">آلرژی ها</label>
+            <label className="block text-lg font-medium text-gray-700">کودک شما به مواد غذایی و یا داروی خاصی  حساسیت دارد؟ (اگر بله موارد را با جزئیات بنویسید)</label>
             <input
               type="text"
               value={allergies}
@@ -216,7 +216,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">بیماری یا داروها</label>
+            <label className="block text-lg font-medium text-gray-700">آیا کودک شما بیماری خاص و یا داروی خاصی استفاده می کند؟ (اگر بله موارد را با جزئیات بنویسید)</label>
             <input
               type="text"
               value={illness}
@@ -225,7 +225,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">تاریخچه بستری</label>
+            <label className="block text-lg font-medium text-gray-700">آیا کودک شما بستری در بیمارستان و یا تحت عمل جراحی قرار گرفته؟ (اگر بله موارد را با جزئیات بنویسید)</label>
             <input
               type="text"
               value={hospitalization}

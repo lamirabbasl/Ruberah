@@ -91,20 +91,14 @@ const ChildrenPage = () => {
       toast.success(successMessage);
       setChildren(children.filter((child) => child.id !== id));
     } catch (err) {
-      console.error("Error deleting child:", err);
-      const errorMessage = err.response?.data?.message;
+      const errorMessage = err.response?.data?.message  || "خطا در حذف فرزند";
       toast.error(errorMessage);
       setError(errorMessage);
-      window.location.reload();
     }
   };
 
   if (loadingChildren) {
     return <div className="w-screen"><LoadingSpinner /></div>;
-  }
-
-  if (error) {
-    return <p className="text-center mt-10 text-red-600">{error}</p>;
   }
 
   return (
@@ -190,16 +184,8 @@ const ChildrenPage = () => {
             className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
           >
             <AddChildForm
-              onAdd={handleAddChild}
+              onAdd={handleAddChild} onClose={()=>setShowAddChildForm(false)}
             />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowAddChildForm(false)}
-              className="mt-4 text-red-600 hover:text-red-700 transition-colors duration-200"
-            >
-              انصراف
-            </motion.button>
           </motion.div>
         )}
       </motion.div>
@@ -230,62 +216,58 @@ const ChildrenPage = () => {
               <div className="space-y-4 text-right text-gray-700 text-sm">
                 <div className="grid grid-cols-1 gap-3">
                   <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">نام کامل:</span> 
-                    <span className="text-gray-600">{selectedChild.full_name || "-"}</span>
+                    <span className="font-semibold text-gray-900 text-lg">نام کامل</span> 
+                    <span className="text-gray-600 text-lg">{selectedChild.full_name || "-"}</span>
                   </p>
                   <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">تاریخ تولد:</span> 
-                    <span className="text-gray-600">{convertToJalali(selectedChild.birth_date) || "-"}</span>
+                    <span className="font-semibold text-gray-900 text-lg">تاریخ تولد</span> 
+                    <span className="text-gray-600 text-lg">{convertToJalali(selectedChild.birth_date) || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">محل تولد:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900 ">محل تولد</span> 
                     <span className="text-gray-600">{selectedChild.place_of_birth || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">جنسیت:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">جنسیت</span> 
                     <span className="text-gray-600">{selectedChild.gender === "boy" ? "پسر" : "دختر"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">کد ملی:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">کد ملی</span> 
                     <span className="text-gray-600">{selectedChild.national_id || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">تعداد خواهر/برادر:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">تعداد فرزندان</span> 
                     <span className="text-gray-600">{selectedChild.siblings_count || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">ترتیب تولد:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">فرزند چندم خانواده</span> 
                     <span className="text-gray-600">{selectedChild.birth_order || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">گروه خونی:</span> 
+                  <p className="flex items-center gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">گروه خونی</span> 
                     <span className="text-gray-600">{selectedChild.blood_type || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">دوره‌های ثبت‌نامی خارج:</span> 
+                  <p className="flex flex-col items-start gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">دوره‌های ثبت‌ نامی خارج از موسسه</span> 
                     <span className="text-gray-600">{selectedChild.courses_signed_up_outside || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">ایجاد شده در:</span> 
-                    <span className="text-gray-600">{selectedChild.created_at || "-"}</span>
-                  </p>
                 </div>
-                <h3 className="font-bold text-lg text-gray-900 mt-6 border-b border-gray-200 pb-2">اطلاعات پزشکی</h3>
+                <h3 className="font-bold text-xl text-gray-900 mt-6 border-b border-gray-200 pb-2">اطلاعات پزشکی</h3>
                 <div className="grid grid-cols-1 gap-3">
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">چالش‌ها:</span> 
+                  <p className="flex flex-col items-start gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">چالش های والد با کودک</span> 
                     <span className="text-gray-600">{selectedChild.medical_info?.challenges || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">آلرژی‌ها:</span> 
+                  <p className="flex flex-col items-start gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">حساسیت به مواد غذایی یا دارو</span> 
                     <span className="text-gray-600">{selectedChild.medical_info?.allergies || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">بیماری یا داروها:</span> 
+                  <p className="flex flex-col items-start gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">ییماری یا داورهای خاص</span> 
                     <span className="text-gray-600">{selectedChild.medical_info?.illness_or_medications || "-"}</span>
                   </p>
-                  <p className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">تاریخچه بستری:</span> 
+                  <p className="flex flex-col items-start gap-2 text-lg">
+                    <span className="font-semibold text-gray-900">تاریخچه بستری در بیمارستان یا عمل جراحی</span> 
                     <span className="text-gray-600">{selectedChild.medical_info?.hospitalization_history || "-"}</span>
                   </p>
                 </div>

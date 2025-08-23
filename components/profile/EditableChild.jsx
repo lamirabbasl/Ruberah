@@ -388,7 +388,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
               </h2>
               <div className="flex flex-col gap-4 pr-2">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">نام کامل</label>
+                  <label className="block text-lg font-medium text-gray-700">نام کامل</label>
                   <input
                     type="text"
                     value={tempFullName}
@@ -397,7 +397,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">نام</label>
+                  <label className="block text-lg font-medium text-gray-700">نام</label>
                   <input
                     type="text"
                     value={tempFirstName}
@@ -406,7 +406,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">نام خانوادگی</label>
+                  <label className="block text-lg font-medium text-gray-700">نام خانوادگی</label>
                   <input
                     type="text"
                     value={tempLastName}
@@ -415,7 +415,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">جنسیت</label>
+                  <label className="block text-lg font-medium text-gray-700">جنسیت</label>
                   <select
                     value={tempGender}
                     onChange={(e) => setTempGender(e.target.value)}
@@ -426,7 +426,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   </select>
                 </div>
                 <div className="space-y-2 relative">
-                  <label className="block text-sm font-medium text-gray-700">تاریخ تولد</label>
+                  <label className="block text-lg font-medium text-gray-700">تاریخ تولد</label>
                   <input
                     type="text"
                     readOnly
@@ -446,7 +446,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">محل تولد</label>
+                  <label className="block text-lg font-medium text-gray-700">محل تولد</label>
                   <input
                     type="text"
                     value={tempPlaceOfBirth}
@@ -455,7 +455,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">گروه خونی</label>
+                  <label className="block text-lg font-medium text-gray-700">گروه خونی</label>
                   <input
                     type="text"
                     value={tempBloodType}
@@ -464,7 +464,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">کد ملی</label>
+                  <label className="block text-lg font-medium text-gray-700">کد ملی</label>
                   <input
                     type="text"
                     value={tempNationalId}
@@ -473,7 +473,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">تعداد خواهر و برادر</label>
+                  <label className="block text-lg font-medium text-gray-700">تعداد فرزندان خانواده </label>
                   <input
                     type="number"
                     value={tempSiblingsCount}
@@ -482,7 +482,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">ترتیب تولد</label>
+                  <label className="block text-lg font-medium text-gray-700">کودک شما فرزند چندم خانواده است؟</label>
                   <input
                     type="number"
                     value={tempBirthOrder}
@@ -491,7 +491,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">دوره های ثبت نامی خارج</label>
+                  <label className="block text-lg font-medium text-gray-700">اگر پیش از این و با همزمان با این دوره, کودک شما در دوره های دیگری شرکت کرده است جزئیات آن را وارد کنید</label>
                   <input
                     type="text"
                     value={tempCourses}
@@ -499,9 +499,9 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                     className="p-3 border border-gray-300 rounded-lg text-right w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 bg-white text-sm shadow-sm"
                   />
                 </div>
-                <div className="text-gray-900 font-bold mt-4">اطلاعات پزشکی</div>
+                <div className="text-gray-900 text-xl border-t-2 border-gray-200 pt-4 font-bold mt-4">اطلاعات پزشکی</div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">چالش ها</label>
+                  <label className="block text-lg font-medium text-gray-700">آیا در ارتباط با کودک خود چالشی دارید و یا موردی که لازم است ما نسبت به آن آگاه باشیم؟</label>
                   <input
                     type="text"
                     value={tempChallenges}
@@ -510,7 +510,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">آلرژی ها</label>
+                  <label className="block text-lg font-medium text-gray-700">کودک شما به مواد غذایی و یا داروی خاصی  حساسیت دارد؟ (اگر بله موارد را با جزئیات بنویسید)</label>
                   <input
                     type="text"
                     value={tempAllergies}
@@ -519,7 +519,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">بیماری یا داروها</label>
+                  <label className="block text-lg font-medium text-gray-700">آیا کودک شما بیماری خاص و یا داروی خاصی استفاده می کند؟ (اگر بله موارد را با جزئیات بنویسید)</label>
                   <input
                     type="text"
                     value={tempIllness}
@@ -528,7 +528,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">تاریخچه بستری</label>
+                  <label className="block text-lg font-medium text-gray-700">آیا کودک شما بستری در بیمارستان و یا تحت عمل جراحی قرار گرفته؟ (اگر بله موارد را با جزئیات بنویسید)</label>
                   <input
                     type="text"
                     value={tempHospitalization}
