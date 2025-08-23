@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import FrontCard from "./FrontCard";
 import BackCard from "./BackCard";
 
-const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup }) => {
+const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDetails, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup, approvingSignupIds, handleApproveSignup }) => {
   return (
     <motion.div
       variants={{
@@ -32,6 +32,8 @@ const RegistrationCard = ({ reg, child, batch, isFlipped, toggleFlipCard, regDet
           rejectingSignupIds={rejectingSignupIds}
           rejectedSignupIds={rejectedSignupIds}
           requestRejectSignup={requestRejectSignup}
+          approvingSignupIds={approvingSignupIds}
+          handleApproveSignup={handleApproveSignup}
         />
         <BackCard
           reg={reg}

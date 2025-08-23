@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import RegistrationCard from "./RegistrationCard";
 
-const BatchSection = ({ batchTitle, regs, childrenMap, batches, flippedCards, toggleFlipCard, registrationDetailsMap, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup }) => {
+const BatchSection = ({ batchTitle, regs, childrenMap, batches, flippedCards, toggleFlipCard, registrationDetailsMap, receiptImages, confirmingPaymentIds, confirmedPaymentIds, handleConfirmPayment, installmentReceiptImages, handleApproveInstallmentPayment, setModalImage, rejectingReceiptIds, rejectedReceiptIds, rejectingInstallmentIds, rejectedInstallmentIds, rejectingSignupIds, rejectedSignupIds, requestRejectReceipt, requestRejectInstallment, requestRejectSignup, approvingSignupIds, handleApproveSignup }) => {
   return (
     <motion.div
       key={batchTitle}
@@ -49,6 +49,8 @@ const BatchSection = ({ batchTitle, regs, childrenMap, batches, flippedCards, to
             requestRejectReceipt={requestRejectReceipt}
             requestRejectInstallment={requestRejectInstallment}
             requestRejectSignup={requestRejectSignup}
+            approvingSignupIds={approvingSignupIds}
+            handleApproveSignup={handleApproveSignup}
           />
         ))}
       </motion.div>
