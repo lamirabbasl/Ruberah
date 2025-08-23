@@ -18,7 +18,7 @@ const modalVariants = {
   exit: { opacity: 0, scale: 0.9, y: 50, transition: { duration: 0.2 } },
 };
 
-function UsersTable({ users }) {
+function UsersTable({ users, openConfirmDelete, onToggleColleague, loadingUsers }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [otherParent, setOtherParent] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -134,7 +134,21 @@ function UsersTable({ users }) {
                     {user.national_id || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
-                    {user.is_colleague ? "بله" : "خیر"}
+                    {loadingUsers.has(user.id) ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-5 h-5 border-2  border-t-indigo-600 border-gray-200 rounded-full"
+                      ></motion.div>
+                    ) : (
+                      <input
+                        type="checkbox"
+                        checked={user.is_colleague}
+                        onChange={() => onToggleColleague(user.id, user.is_colleague)}
+                        className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                        aria-label={`تغییر وضعیت همکار برای ${user.username}`}
+                      />
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <motion.button

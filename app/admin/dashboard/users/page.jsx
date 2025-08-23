@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import AddUserForm from "@/components/admin/AddUserForm";
-import { getUsers, addUser, deleteUser, getUsersExport } from "@/lib/api/api";
+import { getUsers, addUser, deleteUser, getUsersExport, patchUser } from "@/lib/api/api";
 import SearchBar from "@/components/admin/users/SearchBar";
 import ActionButtons from "@/components/admin/users/ActionButtons";
 import ConfirmDeleteModal from "@/components/admin/users/ConfirmDeleteModal";
@@ -15,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(new Set()); // Track loading per user ID
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -86,7 +87,7 @@ const UsersPage = () => {
       setCurrentPage(1);
       await fetchUsers();
     } catch (err) {
-      const errorMessage = err.response?.data?.message ||  "خطا در افزودن کاربر";
+      const errorMessage = err.response?.data?.message || "خطا در افزودن کاربر";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -128,6 +129,31 @@ const UsersPage = () => {
     }
   };
 
+  const handleToggleColleague = async (id, currentStatus) => {
+    setLoadingUsers((prev) => new Set(prev).add(id));
+    setError(null);
+    try {
+      const formData = { is_colleague: !currentStatus };
+      await patchUser(id, formData);
+      toast.success("وضعیت همکار با موفقیت به‌روزرسانی شد.");
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === id ? { ...user, is_colleague: !currentStatus } : user
+        )
+      );
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "خطا در به‌روزرسانی وضعیت همکار";
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoadingUsers((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="p-6 bg-gradient-to-b text-black from-gray-50 w-5/6 max-md:w-screen to-gray-100 min-h-screen font-mitra text-right" dir="rtl">
       <ToastContainer
@@ -162,16 +188,18 @@ const UsersPage = () => {
           ></motion.div>
         </div>
       )}
-      {error && !loading && (
-        <p className="text-center text-red-600 font-medium bg-red-50 p-4 rounded-lg mb-6">{error}</p>
-      )}
       {users.length === 0 && !loading && searchTerm === "" ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری وجود ندارد</p>
       ) : users.length === 0 && !loading && searchTerm !== "" ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری با این مشخصات یافت نشد.</p>
       ) : (
         <>
-          <UsersTable users={users} openConfirmDelete={openConfirmDelete} />
+          <UsersTable
+            users={users}
+            openConfirmDelete={openConfirmDelete}
+            onToggleColleague={handleToggleColleague}
+            loadingUsers={loadingUsers}
+          />
           <Pagination
             currentPage={currentPage}
             isLastPage={isLastPage}
