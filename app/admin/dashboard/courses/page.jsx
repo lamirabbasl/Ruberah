@@ -10,7 +10,7 @@ import InstallmentsTab from "@/components/admin/InstallmentsTab";
 import BankAccounts from "@/components/admin/BankAccounts";
 import TermsTab from "@/components/admin/TermsTab";
 
-const tabLabels = ["آموزش ها", "فصل‌ها", "دوره ها", "اقساط", "حساب های بانکی", "آداب"];
+const tabLabels = ["آموزش ها", "فصل‌ها", "حساب های بانکی", "آداب" , "دوره ها", "اقساط"];
 
 const AdminCoursesPage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -27,13 +27,13 @@ const AdminCoursesPage = () => {
       case 1:
         return <SeasonsTab />;
       case 2:
-        return <BatchesTab />;
-      case 3:
-        return <InstallmentsTab />;
-      case 4:
         return <BankAccounts />;
-      case 5:
+      case 3:
         return <TermsTab />;
+      case 4:
+        return <BatchesTab />;
+      case 5:
+        return <InstallmentsTab />;
       default:
         return null;
     }
