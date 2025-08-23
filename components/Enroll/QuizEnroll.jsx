@@ -84,19 +84,6 @@ export default function QuizEnroll() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center font-sans pt-48 bg-gradient-to-b from-gray-900 to-gray-800">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-red-950 text-red-400 p-6 rounded-2xl shadow-lg max-w-md w-full text-center"
-        >
-          <p className="text-lg font-medium">{error}</p>
-        </motion.div>
-      </div>
-    );
-  }
 
   if (validating) {
     return (

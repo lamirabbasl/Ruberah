@@ -176,17 +176,6 @@ function AllCourses() {
     return <LoadingSpinner />;
   }
 
-  if (error) {
-    return (
-      <div
-        dir="rtl"
-        className="min-h-screen flex items-center justify-center font-mitra text-red-600 text-lg"
-      >
-        {error}
-      </div>
-    );
-  }
-
   return (
     <div
       dir="rtl"

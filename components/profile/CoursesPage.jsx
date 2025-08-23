@@ -284,11 +284,7 @@ function CoursesPage() {
   if (loading) {
     return <LoadingSpinner />;
   }
-
-  if (error) {
-    return <p className="text-center mt-10 text-red-600">{error}</p>;
-  }
-
+  
   return (
     <div
       dir="rtl"

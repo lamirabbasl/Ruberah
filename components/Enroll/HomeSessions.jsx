@@ -85,19 +85,6 @@ export default function SessionsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div dir="rtl" className="min-h-screen flex items-center justify-center font-sans bg-gradient-to-b from-gray-900 to-gray-800 pt-48">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-red-950 text-red-400 p-6 rounded-2xl shadow-lg max-w-md w-full text-center"
-        >
-          <p className="text-lg font-medium">{error}</p>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-30 ">
