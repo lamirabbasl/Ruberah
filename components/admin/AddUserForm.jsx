@@ -8,8 +8,6 @@ const AddUserForm = ({ onSave, onCancel }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [address, setAddress] = useState("");
-  const [nationalId, setNationalId] = useState("");
   const [isColleague, setIsColleague] = useState(false);
 
   const handleSubmit = (e) => {
@@ -87,8 +85,8 @@ const AddUserForm = ({ onSave, onCancel }) => {
               required
             >
               <option value="">انتخاب نقش</option>
-              <option value="admin">ادمین</option>
-              <option value="user">کاربر</option>
+              <option value="manager">ادمین</option>
+              <option value="parent">کاربر</option>
             </select>
           </div>
           <div className="mb-4 flex items-center justify-between">
