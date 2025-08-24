@@ -28,7 +28,7 @@ const BatchForm = ({
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="bg-white p-8 rounded-2xl min-h-screen max-md:mt-20 mt-[540px] shadow-2xl w-full max-w-lg relative my-8"
+      className="bg-white p-8 rounded-2xl min-h-screen max-md:mt-20 mt-[740px] shadow-2xl w-full max-w-lg relative my-8"
     >
       <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">
         {isEdit ? "ویرایش دوره" : "افزودن دوره جدید"}
