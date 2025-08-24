@@ -109,7 +109,6 @@ export default function CoursesInformation() {
                       transition={{ duration: 0.3 }}
                       className="text-gray-500 text-2xl"
                     >
-                
                     </motion.div>
                     <h2 className="text-3xl font-semibold mt-4 text-gray-800">
                       {course.name}
@@ -148,7 +147,7 @@ export default function CoursesInformation() {
                         className="w-8 h-8 border-2 border-t-blue-500 border-gray-200 rounded-full"
                       />
                     </div>
-                  ) : batchesByCourse[course.id]?.length > 0 ? (
+                  ) : batchesByCourse[course.id]?.filter((batch) => batch.booking_open === true).length > 0 ? (
                     <div>
                       <div className="hidden md:flex flex-wrap items-center gap-x-4 gap-y-1 border-b p-3 bg-gray-100 text-base font-semibold text-gray-800">
                         <span className="min-w-[100px]">عنوان</span>
@@ -158,47 +157,49 @@ export default function CoursesInformation() {
                         <span className="min-w-[80px]">ظرفیت</span>
                       </div>
                       <ul className="space-y-2 mt-2">
-                        {batchesByCourse[course.id].map((batch) => {
-                          const season = getSeasonById(batch.season);
-                          return (
-                            <motion.li
-                              key={batch.id}
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="flex flex-wrap items-center gap-x-4 gap-y-1 border rounded-lg p-3 bg-white shadow-sm text-base text-gray-600"
-                            >
-                              <span className="min-w-[100px] md:min-w-[100px]">
-                                <span className="md:hidden font-semibold">عنوان: </span>
-                                {batch.title}
-                              </span>
-                              <span className="min-w-[200px] md:min-w-[200px]">
-                                <span className="md:hidden font-semibold">فصل: </span>
-                                {season ? (
-                                  `${season.name} (${season.start_date} - ${season.end_date})`
-                                ) : (
-                                  "-"
-                                )}
-                              </span>
-                              <span className="min-w-[120px] md:min-w-[120px]">
-                                <span className="md:hidden font-semibold">محدوده سنی: </span>
-                                {batch.min_age} تا {batch.max_age} سال
-                              </span>
-                              <span className="min-w-[150px] md:min-w-[150px]">
-                                <span className="md:hidden font-semibold">برنامه: </span>
-                                {batch.schedule}
-                              </span>
-                              <span className="min-w-[80px] md:min-w-[80px]">
-                                <span className="md-hidden font-semibold">ظرفیت: </span>
-                                {batch.capacity}
-                              </span>
-                            </motion.li>
-                          );
-                        })}
+                        {batchesByCourse[course.id]
+                          .filter((batch) => batch.booking_open === true)
+                          .map((batch) => {
+                            const season = getSeasonById(batch.season);
+                            return (
+                              <motion.li
+                                key={batch.id}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex flex-wrap items-center gap-x-4 gap-y-1 border rounded-lg p-3 bg-white shadow-sm text-base text-gray-600"
+                              >
+                                <span className="min-w-[100px] md:min-w-[100px]">
+                                  <span className="md:hidden font-semibold">عنوان: </span>
+                                  {batch.title}
+                                </span>
+                                <span className="min-w-[200px] md:min-w-[200px]">
+                                  <span className="md:hidden font-semibold">فصل: </span>
+                                  {season ? (
+                                    `${season.name} (${season.start_date} - ${season.end_date})`
+                                  ) : (
+                                    "-"
+                                  )}
+                                </span>
+                                <span className="min-w-[120px] md:min-w-[120px]">
+                                  <span className="md:hidden font-semibold">محدوده سنی: </span>
+                                  {batch.min_age} تا {batch.max_age} سال
+                                </span>
+                                <span className="min-w-[150px] md:min-w-[150px]">
+                                  <span className="md:hidden font-semibold">برنامه: </span>
+                                  {batch.schedule}
+                                </span>
+                                <span className="min-w-[80px] md:min-w-[80px]">
+                                  <span className="md-hidden font-semibold">ظرفیت: </span>
+                                  {batch.capacity}
+                                </span>
+                              </motion.li>
+                            );
+                          })}
                       </ul>
                     </div>
                   ) : (
-                    <p className="text-gray-600 text-center text-base">هیچ دوره‌ای یافت نشد.</p>
+                    <p className="text-gray-600 text-center text-base">هیچ دوره‌ای یافت نشد</p>
                   )}
                 </motion.div>
               )}
