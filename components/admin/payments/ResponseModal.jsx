@@ -165,7 +165,7 @@ const ResponseModal = ({ isOpen, onClose, responseData, errorResponse }) => {
           </p>
           <p className="text-sm text-gray-700 mb-2">
             {responseData.batch}
-            <span className="font-medium"> : شناسه بچ</span>
+            <span className="font-medium"> : شناسه دوره</span>
           </p>
           <p className="text-sm text-gray-700 mb-2">
             {responseData.total_recipients}

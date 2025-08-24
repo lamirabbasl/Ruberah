@@ -21,7 +21,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
         const data = await getBatches();
         setBatches(data);
       } catch (err) {
-        setError("خطا در بارگذاری بچه‌ها");
+        setError("خطا در بارگذاری دوره ها");
       }
     };
     fetchBatches();
@@ -47,7 +47,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
 
   const handleSubmit = async () => {
     if (!selectedBatchName) {
-      setError("لطفا یک بچه انتخاب کنید");
+      setError("لطفا یک دوره انتخاب کنید");
       return;
     }
     for (const t of templates) {
@@ -61,7 +61,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
     try {
       const batch = batches.find((b) => b.title === selectedBatchName || b.name === selectedBatchName);
       if (!batch) {
-        setError("بچه انتخاب شده نامعتبر است");
+        setError("دوره انتخاب شده نامعتبر است");
         setLoading(false);
         return;
       }

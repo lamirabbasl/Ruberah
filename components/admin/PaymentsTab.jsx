@@ -249,7 +249,7 @@ const PaymentsTab = ({ batchId = null }) => {
   const groupedByBatch = {};
   registrations.forEach((reg) => {
     const batch = batches.find((b) => b.id === (reg.batch?.id || reg.batch));
-    const batchTitle = batch ? batch.title : "بچ نامشخص";
+    const batchTitle = batch ? batch.title : "دوره نامشخص";
     if (!groupedByBatch[batchTitle]) {
       groupedByBatch[batchTitle] = [];
     }

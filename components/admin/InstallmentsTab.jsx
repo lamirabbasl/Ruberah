@@ -46,7 +46,7 @@ const InstallmentsTab = () => {
 
   const getBatchName = (batchId) => {
     const batch = batches.find((b) => b.id === batchId);
-    return batch ? batch.title || batch.name : `بچۀ نامشخص (${batchId})`;
+    return batch ? batch.title || batch.name : `دوره نامشخص (${batchId})`;
   };
 
   const confirmDeleteInstallment = (installment) => {
@@ -111,7 +111,7 @@ const InstallmentsTab = () => {
 
       <input
         type="text"
-        placeholder="جستجو بر اساس عنوان بچ"
+        placeholder="جستجو بر اساس عنوان دوره"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full max-w-md border border-gray-200 rounded-lg px-4 py-3 bg-white shadow-sm mb-6"

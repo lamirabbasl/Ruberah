@@ -18,7 +18,7 @@ const BatchesPage = () => {
 
   return (
     <div className="p-6 font-mitra">
-      <h2 className="text-3xl font-bold mb-6">لیست بچ‌ها</h2>
+      <h2 className="text-3xl font-bold mb-6">لیست دوره ها</h2>
       <ul className="space-y-4">
         {batches.map((batch) => (
           <li key={batch.id} className="p-4 bg-white rounded-xl shadow">
