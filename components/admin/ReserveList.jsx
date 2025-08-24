@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -11,6 +12,7 @@ import {
   createReservation,
   deleteReservation,
   getSessions,
+  getReservesExport,
 } from "@/lib/api/api";
 
 import SearchBar from "@/components/admin/reserveList/SearchBar";
@@ -33,6 +35,7 @@ const ReserveList = () => {
     session: "",
   });
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false); // Track export loading state
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
@@ -90,6 +93,31 @@ const ReserveList = () => {
       setSessions(data);
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "خطا در دریافت جلسات");
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const response = await getReservesExport();
+      if (!(response instanceof Blob)) {
+        throw new Error("دریافت پاسخ نامعتبر از سرور");
+      }
+      const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "reservations_export.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success("فایل اکسل با موفقیت دریافت شد.");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت به اکسل";
+      toast.error(errorMessage);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -173,15 +201,26 @@ const ReserveList = () => {
 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">رزروها</h1>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowAddForm(true)}
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 w-full sm:w-auto"
-        >
-          <FaPlus className="w-4 h-4" />
-          افزودن رزرو
-        </motion.button>
+        <div className="flex gap-4 w-full sm:w-auto">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowAddForm(true)}
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2 flex-1 sm:flex-none"
+          >
+            <FaPlus className="w-4 h-4" />
+            افزودن رزرو
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className={`bg-green-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center gap-2 flex-1 sm:flex-none ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {exporting ? "در حال دریافت" : "خروجی اکسل"}
+          </motion.button>
+        </div>
       </div>
 
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
