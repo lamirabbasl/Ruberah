@@ -19,9 +19,9 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
           {reg.payment_method !== "installment" ? (
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-                رسید پرداخت
+                جزئیات رسید
               </h3>
-              <div className="flex flex-row-reverse gap-4">
+              <div className="flex flex-row-reverse gap-2 items-center">
                 {receiptImages[reg.id] ? (
                   <>
                     {reg.payment_status !== "paid" && !rejectedReceiptIds.has(reg.id) && (
@@ -37,8 +37,8 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                             e.stopPropagation();
                             await handleConfirmPayment(reg.id);
                           }}
-                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
-                            confirmedPaymentIds.has(reg.id)
+                          className={`px-4 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
+                            confirmedPaymentIds.has(reg.id) || confirmingPaymentIds.has(reg.id)
                               ? "bg-gray-400 cursor-not-allowed"
                               : "bg-green-600 hover:bg-green-700"
                           }`}
@@ -57,7 +57,7 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                             e.stopPropagation();
                             requestRejectReceipt(reg.id);
                           }}
-                          className={`px-5 py-2 rounded-lg text-white text-xl font-medium transition-all duration-200 ${
+                          className={`px-4 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg text-white text-lg font-medium transition-all duration-200 ${
                             rejectingReceiptIds.has(reg.id)
                               ? "bg-gray-400 cursor-not-allowed"
                               : "bg-red-600 hover:bg-red-700"
@@ -77,7 +77,7 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                         e.stopPropagation();
                         setModalImage(receiptImages[reg.id]);
                       }}
-                      className="px-3 py-2 rounded-xl text-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-sm font-medium"
+                      className="px-3 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
                     >
                       مشاهده رسید
                     </motion.button>

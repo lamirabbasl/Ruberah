@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
@@ -7,6 +6,7 @@ import { getInstallmentTemplates, getBatches, deleteInstallmentTemplate } from "
 import AddInstallmentCard from "./AddInstallmentCard";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const InstallmentsTab = () => {
   const [installments, setInstallments] = useState([]);
@@ -26,7 +26,7 @@ const InstallmentsTab = () => {
       ]);
       setInstallments(installmentData);
       setBatches(batchData);
-    } catch(err) {
+    } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری داده‌ها";
       toast.error(errorMessage);
     } finally {
@@ -63,7 +63,7 @@ const InstallmentsTab = () => {
       setShowDeleteConfirm(false);
       setInstallmentToDelete(null);
       await fetchData();
-    } catch(err) {
+    } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "خطا در حذف قسط";
       toast.error(errorMessage);
     } finally {
@@ -203,7 +203,7 @@ const InstallmentsTab = () => {
                     <div>
                       <p className="font-semibold text-gray-800 text-sm">{inst.title}</p>
                       <p className="text-sm text-gray-600">مبلغ: {inst.amount}</p>
-                      <p className="text-sm text-gray-600">ماه سررسید: {inst.deadline_month}</p>
+                      <p className="text-sm text-gray-600">تاریخ سررسید: {convertToJalali(inst.due_date)}</p>
                     </div>
                     <motion.button
                       whileHover={{ scale: 1.1 }}

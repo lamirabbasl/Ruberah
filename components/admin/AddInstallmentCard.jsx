@@ -2,15 +2,18 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { getBatches, addInstallmentTemplates } from "@/lib/api/api";
+import JalaliCalendar from "@/components/common/JalaliCalendar";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 const AddInstallmentCard = ({ onClose, onAdded }) => {
   const [batches, setBatches] = useState([]);
   const [selectedBatchName, setSelectedBatchName] = useState("");
   const [templates, setTemplates] = useState([
-    { order: 1, title: "", amount: "", deadline_month: 0 },
+    { order: 1, title: "", amount: "", due_date: "" },
   ]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(null); // Tracks which template's calendar is open
 
   useEffect(() => {
     const fetchBatches = async () => {
@@ -33,7 +36,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
   const addTemplate = () => {
     setTemplates([
       ...templates,
-      { order: templates.length + 1, title: "", amount: "", deadline_month: 0 },
+      { order: templates.length + 1, title: "", amount: "", due_date: "" },
     ]);
   };
 
@@ -48,7 +51,7 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
       return;
     }
     for (const t of templates) {
-      if (!t.title.trim() || !t.amount) {
+      if (!t.title.trim() || !t.amount || !t.due_date) {
         setError("لطفا تمام فیلدهای قالب را پر کنید");
         return;
       }
@@ -56,21 +59,19 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
     setError(null);
     setLoading(true);
     try {
-      // Find batch id by name
       const batch = batches.find((b) => b.title === selectedBatchName || b.name === selectedBatchName);
       if (!batch) {
         setError("بچه انتخاب شده نامعتبر است");
         setLoading(false);
         return;
       }
-      // Prepare data
       const data = {
         batch: batch.id,
         templates: templates.map((t) => ({
           order: Number(t.order),
           title: t.title,
           amount: Number(t.amount),
-          deadline_month: Number(t.deadline_month),
+          due_date: t.due_date, // Format: YYYY-MM-DD
         })),
       };
       await addInstallmentTemplates(data);
@@ -86,7 +87,6 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
       <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl relative">
-
         <h2 className="text-xl font-bold mb-4">افزودن اقساط جدید</h2>
 
         <div className="mb-4">
@@ -152,17 +152,26 @@ const AddInstallmentCard = ({ onClose, onAdded }) => {
                   min={0}
                 />
               </div>
-              <div>
-                <label className="block mb-1">ماه سررسید</label>
+              <div className="relative">
+                <label className="block mb-1">تاریخ سررسید</label>
                 <input
-                  type="number"
-                  value={template.deadline_month}
-                  onChange={(e) =>
-                    handleTemplateChange(index, "deadline_month", e.target.value)
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  min={0}
+                  type="text"
+                  readOnly
+                  value={convertToJalali(template.due_date)}
+                  onClick={() => setShowCalendar(index)}
+                  className="w-full border rounded px-3 py-2 cursor-pointer"
+                  placeholder="انتخاب تاریخ سررسید"
                 />
+                {showCalendar === index && (
+                  <div className="absolute z-50 left-[-20px] w-88 bg-white shadow-lg rounded-lg">
+                    <JalaliCalendar
+                      onDateSelect={(date) => {
+                        handleTemplateChange(index, "due_date", date);
+                        setShowCalendar(null);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

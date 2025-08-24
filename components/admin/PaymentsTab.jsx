@@ -23,6 +23,7 @@ import BatchSection from "@/components/admin/payments/BatchSection";
 import PaginationControls from "@/components/admin/payments/PaginationControls";
 import ImageModal from "@/components/admin/payments/ImageModal";
 import NotifyModal from "@/components/admin/payments/NotifyModal";
+import RemoveMissingReceiptModal from "@/components/admin/payments/RemoveMissingReceiptModal";
 import { ToastContainer, toast } from "react-toastify";
 
 const PaymentsTab = ({ batchId = null }) => {
@@ -64,6 +65,8 @@ const PaymentsTab = ({ batchId = null }) => {
 
   // New state for notify modal
   const [showNotifyModal, setShowNotifyModal] = useState(false);
+
+  const [showRemoveMissingReceiptModal, setShowRemoveMissingReceiptModal] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -134,29 +137,27 @@ const PaymentsTab = ({ batchId = null }) => {
 
     return () => {
       Object.values(receiptImages).forEach((url) => {
-        if (url)
-          URL.revokeObjectURL(url);
+        if (url) URL.revokeObjectURL(url);
       });
       Object.values(installmentReceiptImages).forEach((url) => {
-        if (url)
-          URL.revokeObjectURL(url);
+        if (url) URL.revokeObjectURL(url);
       });
     };
   }, [currentPage, search, batchId, selectedPaymentStatus, selectedApprovalStatus]);
 
-  // Fetch receipt images for non-installment payments
+  // Fetch receipt images for non-installment payments when cards are flipped
   useEffect(() => {
     async function fetchReceiptImages() {
-      const hasExpandedBatches = Object.values(expandedBatches).some(
-        (isExpanded) => isExpanded
+      const flippedRegIds = Object.keys(flippedCards).filter(
+        (id) => flippedCards[id]
       );
-      if (!hasExpandedBatches || registrations.length === 0) return;
+      if (flippedRegIds.length === 0 || registrations.length === 0) return;
 
-      const receiptImagePromises = registrations
+      const receiptImagePromises = flippedRegIds
+        .map((regId) => registrations.find((reg) => reg.id === parseInt(regId)))
         .filter(
           (reg) =>
-            reg.payment_method !== "installment" &&
-            !fetchedImages[`reg-${reg.id}`]
+            reg && reg.payment_method !== "installment" && !fetchedImages[`reg-${reg.id}`]
         )
         .map(async (reg) => {
           try {
@@ -164,6 +165,7 @@ const PaymentsTab = ({ batchId = null }) => {
             setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
             return { id: reg.id, url: receiptUrl };
           } catch (err) {
+            console.error(`Error fetching receipt image for reg ${reg.id}:`, err);
             setFetchedImages((prev) => ({ ...prev, [`reg-${reg.id}`]: true }));
             return { id: reg.id };
           }
@@ -180,7 +182,7 @@ const PaymentsTab = ({ batchId = null }) => {
     }
 
     fetchReceiptImages();
-  }, [expandedBatches, registrations]);
+  }, [flippedCards, registrations, fetchedImages]);
 
   // Fetch installment receipt images
   useEffect(() => {
@@ -395,12 +397,11 @@ const PaymentsTab = ({ batchId = null }) => {
         prev.map((r) => (r.id === regId ? { ...r, approval_status: "rejected" } : r))
       );
       setRejectedSignupIds((prev) => new Set(prev).add(regId));
-      const successMessage = response?.data?.message || "ثبت نام رد شد";
-      toast.success(successMessage);
+      toast.success("ثبت نام رد شد");
     } catch (error) {
-      setShowConfirmModal(false)
+      setShowConfirmModal(false);
       const errorMessage = error.response?.data?.message || "خطا در رد ثبت نام";
-      toast.error(errorMessage);  
+      toast.error(errorMessage);
     } finally {
       setRejectingSignupIds((prev) => {
         const newSet = new Set(prev);
@@ -464,12 +465,20 @@ const PaymentsTab = ({ batchId = null }) => {
           مدیریت پرداخت‌ها
         </h2>
         {batchId && (
-          <button
-            onClick={() => setShowNotifyModal(true)}
-            className="mb-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-          >
-            اطلاع‌رسانی رسیدهای تایید نشده
-          </button>
+          <div className="mb-6 flex gap-4">
+            <button
+              onClick={() => setShowNotifyModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              اطلاع‌رسانی رسیدهای تایید نشده
+            </button>
+            <button
+              onClick={() => setShowRemoveMissingReceiptModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              حذف ثبت‌نام‌های بدون رسید
+            </button>
+          </div>
         )}
         <div className="mb-6 flex flex-row-reverse gap-4">
           <input
@@ -537,7 +546,6 @@ const PaymentsTab = ({ batchId = null }) => {
                 installmentReceiptImages={installmentReceiptImages}
                 handleApproveInstallmentPayment={handleApproveInstallmentPayment}
                 setModalImage={setModalImage}
-                // New props for rejects
                 rejectingReceiptIds={rejectingReceiptIds}
                 rejectedReceiptIds={rejectedReceiptIds}
                 rejectingInstallmentIds={rejectingInstallmentIds}
@@ -587,6 +595,13 @@ const PaymentsTab = ({ batchId = null }) => {
         <NotifyModal
           isOpen={showNotifyModal}
           onClose={() => setShowNotifyModal(false)}
+          batchId={batchId}
+        />
+        <RemoveMissingReceiptModal
+          isOpen={showRemoveMissingReceiptModal}
+          onClose={() => {
+            setShowRemoveMissingReceiptModal(false);
+          }}
           batchId={batchId}
         />
       </div>
