@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getCourses, getCourseBatches, getSeasons } from "../../lib/api/api";
 import { motion, AnimatePresence } from "framer-motion";
+import { convertToJalali } from "@/lib/utils/convertDate";
 
 export default function CoursesInformation() {
   const [courses, setCourses] = useState([]);
@@ -24,7 +25,7 @@ export default function CoursesInformation() {
         setCourses(coursesData);
         setSeasons(seasonsData);
       } catch (err) {
-        setError("Failed to load courses or seasons.");
+        setError("خطا در بارگذاری دوره‌ها یا فصل‌ها.");
         console.error(err);
       } finally {
         setLoadingCourses(false);
@@ -46,7 +47,7 @@ export default function CoursesInformation() {
         const batches = await getCourseBatches(courseId);
         setBatchesByCourse((prev) => ({ ...prev, [courseId]: batches }));
       } catch (err) {
-        setError("Failed to load batches for the course.");
+        setError("خطا در بارگذاری دسته‌های دوره.");
         console.error(err);
       } finally {
         setLoadingBatches((prev) => ({ ...prev, [courseId]: false }));
@@ -60,31 +61,23 @@ export default function CoursesInformation() {
 
   if (loadingCourses) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1 }}
-          className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full"
+          className="w-16 h-16 border-4 border-t-blue-600 border-gray-300 rounded-full"
         />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-4 text-center text-red-600 bg-red-100 rounded-lg m-4 text-base">
-        {error}
-      </div>
-    );
-  }
-
   return (
-    <div dir="rtl" className="max-w-5xl mx-auto font-mitra p-6 min-h-screen">
+    <div dir="rtl" className="max-w-6xl mx-auto p-8 min-h-screen font-mitra">
       <motion.h1
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl font-bold mb-10 text-center text-gray-800"
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="text-5xl md:text-6xl font-extrabold mb-12 text-center text-gray-900 bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent"
       >
         اطلاعات دوره‌ها
       </motion.h1>
@@ -94,40 +87,55 @@ export default function CoursesInformation() {
             key={course.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100"
           >
             <div
-              className="cursor-pointer p-4 relative"
+              className="cursor-pointer p-6 hover:bg-gray-50 transition-colors duration-200"
               onClick={() => handleCourseClick(course.id)}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-center gap-6">
+                {course.image && (
+                  <motion.img
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
+                    alt={course.name}
+                    className="w-24 h-24 object-cover rounded-xl shadow-sm"
+                  />
+                )}
                 <div className="flex-1">
-                  <div className="flex flex-row-reverse justify-between">
+                  <div className="flex flex-row-reverse justify-between items-center">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                      {course.name}
+                    </h2>
                     <motion.div
                       animate={{ rotate: expandedCourseId === course.id ? 180 : 0 }}
                       transition={{ duration: 0.3 }}
                       className="text-gray-500 text-2xl"
                     >
+                      <svg
+                        className="w-7 h-7"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
                     </motion.div>
-                    <h2 className="text-3xl font-semibold mt-4 text-gray-800">
-                      {course.name}
-                    </h2>
                   </div>
                   {course.description && (
-                    <p className="text-gray-600 mt-2 text-right text-base">{course.description}</p>
+                    <p className="text-gray-600 mt-3 text-right text-base md:text-lg leading-relaxed">
+                      {course.description}
+                    </p>
                   )}
                 </div>
-                {course.image && (
-                  <motion.img
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
-                    alt={course.name}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                )}
               </div>
             </div>
             <AnimatePresence>
@@ -136,27 +144,27 @@ export default function CoursesInformation() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="p-6 bg-gray-50 border-t"
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="p-6 bg-gray-50 border-t border-gray-100"
                 >
                   {loadingBatches[course.id] ? (
-                    <div className="flex justify-center">
+                    <div className="flex justify-center py-4">
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ repeat: Infinity, duration: 1 }}
-                        className="w-8 h-8 border-2 border-t-blue-500 border-gray-200 rounded-full"
+                        className="w-10 h-10 border-3 border-t-blue-600 border-gray-300 rounded-full"
                       />
                     </div>
                   ) : batchesByCourse[course.id]?.filter((batch) => batch.booking_open === true).length > 0 ? (
                     <div>
-                      <div className="hidden md:flex flex-wrap items-center gap-x-4 gap-y-1 border-b p-3 bg-gray-100 text-base font-semibold text-gray-800">
-                        <span className="min-w-[100px]">عنوان</span>
-                        <span className="min-w-[200px]">فصل</span>
-                        <span className="min-w-[120px]">محدوده سنی</span>
-                        <span className="min-w-[150px]">برنامه</span>
-                        <span className="min-w-[80px]">ظرفیت</span>
+                      <div className="hidden md:grid grid-cols-5 gap-4 p-4 bg-gray-100 rounded-lg text-base font-semibold text-gray-800 text-center">
+                        <span>عنوان</span>
+                        <span>فصل</span>
+                        <span>محدوده سنی</span>
+                        <span>برنامه</span>
+                        <span>ظرفیت</span>
                       </div>
-                      <ul className="space-y-2 mt-2">
+                      <ul className="space-y-3 mt-3">
                         {batchesByCourse[course.id]
                           .filter((batch) => batch.booking_open === true)
                           .map((batch) => {
@@ -167,30 +175,34 @@ export default function CoursesInformation() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="flex flex-wrap items-center gap-x-4 gap-y-1 border rounded-lg p-3 bg-white shadow-sm text-base text-gray-600"
+                                className="grid grid-cols-1 md:grid-cols-5  gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-base text-gray-700"
                               >
-                                <span className="min-w-[100px] md:min-w-[100px]">
+                                <span className="md:text-center">
                                   <span className="md:hidden font-semibold">عنوان: </span>
                                   {batch.title}
                                 </span>
-                                <span className="min-w-[200px] md:min-w-[200px]">
-                                  <span className="md:hidden font-semibold">فصل: </span>
+                                <span className="md:text-center">
+                                  <span className="md:hidden font-semibold ">فصل: </span>
                                   {season ? (
-                                    `${season.name} (${season.start_date} - ${season.end_date})`
+                                    <div>
+                                        <p>{season.name} </p>
+                                        <p>({convertToJalali(season.start_date)} - {convertToJalali(season.end_date)})</p>
+
+                                    </div>
                                   ) : (
                                     "-"
                                   )}
                                 </span>
-                                <span className="min-w-[120px] md:min-w-[120px]">
+                                <span className="md:text-center">
                                   <span className="md:hidden font-semibold">محدوده سنی: </span>
                                   {batch.min_age} تا {batch.max_age} سال
                                 </span>
-                                <span className="min-w-[150px] md:min-w-[150px]">
+                                <span className="md:text-center">
                                   <span className="md:hidden font-semibold">برنامه: </span>
                                   {batch.schedule}
                                 </span>
-                                <span className="min-w-[80px] md:min-w-[80px]">
-                                  <span className="md-hidden font-semibold">ظرفیت: </span>
+                                <span className="md:text-center">
+                                  <span className="md:hidden font-semibold">ظرفیت: </span>
                                   {batch.capacity}
                                 </span>
                               </motion.li>
@@ -199,7 +211,9 @@ export default function CoursesInformation() {
                       </ul>
                     </div>
                   ) : (
-                    <p className="text-gray-600 text-center text-base">هیچ دوره‌ای یافت نشد</p>
+                    <p className="text-gray-600 text-center text-base py-4">
+                      هیچ دوره‌ای یافت نشد
+                    </p>
                   )}
                 </motion.div>
               )}

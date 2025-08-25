@@ -56,7 +56,7 @@ const RemoveMissingReceiptModal = ({ isOpen, onClose, batchId }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 dir-rtl font-sans"
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 dir-rtl font-mitra"
         >
           <motion.div
             initial={{ scale: 0.9, y: 20 }}
@@ -110,67 +110,97 @@ const RemoveMissingReceiptModal = ({ isOpen, onClose, batchId }) => {
                 transition={{ duration: 0.3 }}
                 className="mt-6 p-4 bg-gray-50 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">نتیجه:</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">نتیجه</h3>
                 {responseData.message && (
                   <p className="text-gray-700 mb-2">{responseData.message}</p>
                 )}
-                {responseData.count && (
-                  <p className="text-gray-700 mb-2">
-                    تعداد ثبت‌نام‌های قابل حذف: {responseData.count}
-                  </p>
-                )}
-                {responseData.deletable_count && (
-                  <p className="text-gray-700 mb-2">
-                    تعداد ثبت‌نام‌های قابل حذف: {responseData.deletable_count}
-                  </p>
-                )}
-                {(responseData.preview || responseData.deletable_preview) && (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-gray-800 mb-3">پیش‌نمایش:</h4>
-                    <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                      {(responseData.preview || responseData.deletable_preview || []).map(
-                        (item) => (
-                          <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="bg-white p-3 rounded-lg shadow-sm border border-gray-200"
-                          >
-                            <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-                              <div>
-                                {item.parent__username}
-                                <span className="font-medium"> : کاربر</span>
-                              </div>
-                              <div>
-                                {item.parent__phone_number}
-                                <span className="font-medium"> : شماره</span>
-                              </div>
-                              <div>
-                                {item.child__full_name}
-                                <span className="font-medium"> : نام کودک</span>
-                              </div>
-                              <div>
-                              <span className="font-medium"> روش پرداخت : </span>
-                                {item.payment_method === "installment" ? "اقساط" : item.payment_method === "receipt" ? "رسید" : item.payment_method}
-                              </div>
-                              <div>
-                              <span className="font-medium">وضعیت تایید : </span>
-                                {item.approval_status === "pending"
-                                  ? "در انتظار"
-                                  : item.approval_status === "approved"
-                                  ? "تایید شده"
-                                  : item.approval_status === "rejected"
-                                  ? "رد شده"
-                                  : item.approval_status}
-                              </div>
-                            </div>
-                          </motion.div>
-                        )
-                      )}
-                    </div>
+{responseData && (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="mt-6 p-4 bg-gray-50 rounded-lg"
+  >
+    {responseData.message && (
+      <p className="text-gray-700 mb-2">{responseData.message}</p>
+    )}
+    {responseData.count && (
+      <p className="text-gray-700 mb-2">
+        تعداد ثبت‌نام‌های قابل حذف: {responseData.count}
+      </p>
+    )}
+    {responseData.deletable_count && (
+      <p className="text-gray-700 mb-2">
+        تعداد ثبت‌نام‌های قابل حذف: {responseData.deletable_count}
+      </p>
+    )}
+    {responseData.deleted_count && (
+      <p className="text-gray-700 mb-2">
+        تعداد ثبت‌نام‌های حذف شده: {responseData.deleted_count}
+      </p>
+    )}
+    {responseData.deleted_installments && (
+      <p className="text-gray-700 mb-2">
+        تعداد اقساط حذف شده: {responseData.deleted_installments}
+      </p>
+    )}
+    {(responseData.preview || responseData.deletable_preview || responseData.deleted_items) && (
+      <div className="mt-4">
+        <h4 className="font-medium text-gray-800 mb-3">
+          {responseData.deleted_items ? "موارد حذف شده" : "پیش‌نمایش:"}
+        </h4>
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+          {(responseData.preview || responseData.deletable_preview || responseData.deleted_items || []).map(
+            (item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white p-3 rounded-lg shadow-sm border border-gray-200"
+              >
+                <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
+                  <div>
+                    {item.parent_username || item.parent__username}
+                    <span className="font-medium"> : کاربر</span>
                   </div>
-                )}
+                  <div>
+                    {item.parent_phone || item.parent__phone_number}
+                    <span className="font-medium"> : شماره</span>
+                  </div>
+                  <div>
+                    {item.child_full_name || item.child__full_name}
+                    <span className="font-medium"> : نام کودک</span>
+                  </div>
+                  <div>
+                    <span className="font-medium"> روش پرداخت : </span>
+                    {item.payment_method === "installment"
+                      ? "اقساط"
+                      : item.payment_method === "receipt"
+                      ? "رسید"
+                      : item.payment_method}
+                  </div>
+                  <div>
+                    <span className="font-medium">وضعیت تایید : </span>
+                    {item.approval_status === "pending"
+                      ? "در انتظار"
+                      : item.approval_status === "approved"
+                      ? "تایید شده"
+                      : item.approval_status === "rejected"
+                      ? "رد شده"
+                      : item.approval_status}
+                  </div>
+
+                </div>
+              </motion.div>
+            )
+          )}
+        </div>
+      </div>
+    )}
+  </motion.div>
+)}
+
               </motion.div>
             )}
           </motion.div>

@@ -86,9 +86,6 @@ const InstallmentItem = ({ inst, regId, installmentReceiptImages, handleApproveI
           )}
         </div>
       )}
-      {inst.status === "rejected" && (
-        <p className="mt-4 text-red-600 font-medium">قسط رد شده</p>
-      )}
     </li>
   );
 };

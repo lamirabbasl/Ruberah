@@ -24,8 +24,20 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
               <div className="flex flex-row-reverse gap-2 items-center">
                 {receiptImages[reg.id] ? (
                   <>
+                             <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setModalImage(receiptImages[reg.id]);
+                      }}
+                      className="px-3 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
+                    >
+                      مشاهده رسید
+                    </motion.button>
                     {reg.payment_status !== "paid" && !rejectedReceiptIds.has(reg.id) && (
                       <>
+                 
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -66,21 +78,7 @@ const BackCard = ({ reg, regDetails, receiptImages, confirmingPaymentIds, confir
                           {rejectingReceiptIds.has(reg.id) ? "در حال رد..." : "رد پرداخت"}
                         </motion.button>
                       </>
-                    )}
-                    {rejectedReceiptIds.has(reg.id) && (
-                      <p className="text-red-600 font-medium">پرداخت رد شده</p>
-                    )}
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalImage(receiptImages[reg.id]);
-                      }}
-                      className="px-3 py-2 whitespace-nowrap max-md:text-sm max-md:px-2 max-md:py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-200 text-lg font-medium"
-                    >
-                      مشاهده رسید
-                    </motion.button>
+                    )}              
                   </>
                 ) : (
                   <p className="text-gray-500 text-sm">

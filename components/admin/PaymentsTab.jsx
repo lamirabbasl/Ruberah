@@ -26,6 +26,63 @@ import NotifyModal from "@/components/admin/payments/NotifyModal";
 import RemoveMissingReceiptModal from "@/components/admin/payments/RemoveMissingReceiptModal";
 import { ToastContainer, toast } from "react-toastify";
 
+// New VerificationModal component
+const VerificationModal = ({ isOpen, onClose, onConfirm, title, actionType }) => {
+  const [inputValue, setInputValue] = useState("");
+  const expectedInput = actionType === "reject" ? "reject" : "approve";
+  const isValidInput = inputValue.toLowerCase() === expectedInput;
+
+  const handleConfirm = async () => {
+    if (isValidInput) {
+      await onConfirm();
+      onClose();
+    } else {
+      toast.error(`لطفاً "${expectedInput}" را به درستی وارد کنید`);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 font-mitra flex items-center justify-center bg-black bg-opacity-50 z-50 dir-rtl">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 className="text-xl font-bold mb-4 text-gray-900">{title}</h2>
+        <p className="mb-4 text-gray-700">
+             <span>
+            وارد کنید <strong>{expectedInput}</strong>  برای تایید عملیات لطفا کلمه 
+             </span>
+        </p>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="w-full p-2 mb-4 border border-gray-300 rounded-lg text-right"
+          placeholder={expectedInput}
+        />
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+          >
+            لغو
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!isValidInput}
+            className={`px-4 py-2 rounded-lg transition ${
+              isValidInput
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            تأیید
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PaymentsTab = ({ batchId = null }) => {
   const [registrations, setRegistrations] = useState([]);
   const [childrenMap, setChildrenMap] = useState({});
@@ -58,10 +115,11 @@ const PaymentsTab = ({ batchId = null }) => {
   // New states for approves signup
   const [approvingSignupIds, setApprovingSignupIds] = useState(new Set());
 
-  // Confirm modal states
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [confirmTitle, setConfirmTitle] = useState("");
-  const [confirmAction, setConfirmAction] = useState(null);
+  // Verification modal states
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationTitle, setVerificationTitle] = useState("");
+  const [verificationAction, setVerificationAction] = useState(null);
+  const [verificationType, setVerificationType] = useState("");
 
   // New state for notify modal
   const [showNotifyModal, setShowNotifyModal] = useState(false);
@@ -333,7 +391,6 @@ const PaymentsTab = ({ batchId = null }) => {
     }
   };
 
-  // New reject handlers
   const handleRejectReceipt = async (regId) => {
     if (rejectingReceiptIds.has(regId)) return;
     setRejectingReceiptIds((prev) => new Set(prev).add(regId));
@@ -399,9 +456,8 @@ const PaymentsTab = ({ batchId = null }) => {
       setRejectedSignupIds((prev) => new Set(prev).add(regId));
       toast.success("ثبت نام رد شد");
     } catch (error) {
-      setShowConfirmModal(false);
-      const errorMessage = error.response?.data?.message || "خطا در رد ثبت نام";
-      toast.error(errorMessage);
+      console.error("Error rejecting signup:", error);
+      toast.error(error.response?.data?.message || "خطا در رد ثبت نام");
     } finally {
       setRejectingSignupIds((prev) => {
         const newSet = new Set(prev);
@@ -411,23 +467,32 @@ const PaymentsTab = ({ batchId = null }) => {
     }
   };
 
-  // Request confirm functions
   const requestRejectReceipt = (regId) => {
-    setConfirmTitle("رد پرداخت");
-    setConfirmAction(() => () => handleRejectReceipt(regId));
-    setShowConfirmModal(true);
+    setVerificationTitle("رد پرداخت");
+    setVerificationAction(() => () => handleRejectReceipt(regId));
+    setVerificationType("reject");
+    setShowVerificationModal(true);
   };
 
   const requestRejectInstallment = (instId, regId) => {
-    setConfirmTitle("رد قسط");
-    setConfirmAction(() => () => handleRejectInstallment(instId, regId));
-    setShowConfirmModal(true);
+    setVerificationTitle("رد قسط");
+    setVerificationAction(() => () => handleRejectInstallment(instId, regId));
+    setVerificationType("reject");
+    setShowVerificationModal(true);
   };
 
   const requestRejectSignup = (regId) => {
-    setConfirmTitle("رد ثبت نام");
-    setConfirmAction(() => () => handleRejectSignup(regId));
-    setShowConfirmModal(true);
+    setVerificationTitle("رد ثبت نام");
+    setVerificationAction(() => () => handleRejectSignup(regId));
+    setVerificationType("reject");
+    setShowVerificationModal(true);
+  };
+
+  const requestApproveSignup = (regId) => {
+    setVerificationTitle("تأیید ثبت نام");
+    setVerificationAction(() => () => handleApproveSignup(regId));
+    setVerificationType("approve");
+    setShowVerificationModal(true);
   };
 
   const handlePageChange = (newPage) => {
@@ -456,7 +521,7 @@ const PaymentsTab = ({ batchId = null }) => {
       <div className="p-6 bg-gradient-to-b w-5/6 max-md:w-screen text-black max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra dir-rtl text-right">
         <button
           onClick={() => router.push("/admin/dashboard/payments")}
-          className="left-6 flex justify-center items-center absolute px-4 py-2 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition rounded-lg text-lg font-medium"
+          className="left-6 flex justify-center items-center  px-4 py-2 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition rounded-lg text-lg font-medium"
         >
           <IoChevronBackOutline />
           <span> بازگشت</span>
@@ -556,7 +621,7 @@ const PaymentsTab = ({ batchId = null }) => {
                 requestRejectInstallment={requestRejectInstallment}
                 requestRejectSignup={requestRejectSignup}
                 approvingSignupIds={approvingSignupIds}
-                handleApproveSignup={handleApproveSignup}
+                handleApproveSignup={requestApproveSignup} // Updated to use requestApproveSignup
               />
             ))}
             <PaginationControls
@@ -567,31 +632,13 @@ const PaymentsTab = ({ batchId = null }) => {
           </div>
         )}
         <ImageModal modalImage={modalImage} setModalImage={setModalImage} />
-        {showConfirmModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 dir-rtl">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-              <h2 className="text-xl font-bold mb-4 text-gray-900">{confirmTitle}</h2>
-              <p className="mb-6 text-gray-700">آیا مطمئن هستید که می‌خواهید این عملیات را انجام دهید؟</p>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowConfirmModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
-                >
-                  لغو
-                </button>
-                <button
-                  onClick={async () => {
-                    if (confirmAction) await confirmAction();
-                    setShowConfirmModal(false);
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                >
-                  تایید
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <VerificationModal
+          isOpen={showVerificationModal}
+          onClose={() => setShowVerificationModal(false)}
+          onConfirm={verificationAction}
+          title={verificationTitle}
+          actionType={verificationType}
+        />
         <NotifyModal
           isOpen={showNotifyModal}
           onClose={() => setShowNotifyModal(false)}

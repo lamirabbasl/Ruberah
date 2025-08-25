@@ -43,10 +43,10 @@ const ResponseModal = ({ isOpen, onClose, responseData, errorResponse }) => {
                           {item.parent__phone_number || "نامشخص"}
                           <span className="font-medium"> : تلفن</span>
                         </div>
-                        <div>
-                          {item.child__full_name}
-                          <span className="font-medium"> : نام کودک</span>
-                        </div>
+                        <div className="flex items-end justify-end">
+                      <span>{item.child__full_name}</span>
+                        <span className="font-medium">  : نام کودک </span>
+                      </div>
                         <div>
                         <span className="font-medium">روش پرداخت : </span>
                           {item.payment_method === "installment" ? "اقساط" : item.payment_method === "receipt" ? "رسید" : item.payment_method}
@@ -118,9 +118,9 @@ const ResponseModal = ({ isOpen, onClose, responseData, errorResponse }) => {
                         {reg.parent__phone_number || "نامشخص"}
                         <span className="font-medium"> : تلفن</span>
                       </div>
-                      <div>
-                        {reg.child__full_name}
-                        <span className="font-medium"> : نام کودک</span>
+                      <div className="flex items-end justify-end">
+                      <span>{reg.child__full_name}</span>
+                        <span className="font-medium">  : نام کودک </span>
                       </div>
                       <div>
                       <span className="font-medium">روش پرداخت : </span>
