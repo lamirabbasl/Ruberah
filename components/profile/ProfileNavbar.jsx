@@ -101,7 +101,7 @@ function ProfileNavbar() {
       {/* Navigation Links */}
       <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
         <NavItem
-          label="پروفایل"
+          label="اطلاعات والد"
           icon={<FaUser className="text-xl ml-2" />}
           onClick={() => handleTabClick("information")}
           isActive={activeTab === "information"} // Fixed typo: "informatin"

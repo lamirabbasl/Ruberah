@@ -164,7 +164,7 @@ function ProfileMenu() {
               {/* Navigation Links */}
               <nav className="flex flex-col gap-4 font-semibold mt-4 items-end pr-2 w-full">
   <NavItem
-    label="پروفایل"
+    label="اطلاعات والد"
     icon={<FaUser className="text-xl ml-2" />}
     onClick={() => handleTabClick("information")}
     isActive={activeTab === "information"}

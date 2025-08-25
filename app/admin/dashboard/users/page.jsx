@@ -15,7 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(new Set()); // Track loading per user ID
+  const [loadingUsers, setLoadingUsers] = useState(new Set());
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -57,7 +57,7 @@ const UsersPage = () => {
       if (!(response instanceof Blob)) {
         throw new Error("دریافت پاسخ نامعتبر از سرور");
       }
-      const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -87,9 +87,27 @@ const UsersPage = () => {
       setCurrentPage(1);
       await fetchUsers();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "خطا در افزودن کاربر";
-      toast.error(errorMessage);
-      setError(errorMessage);
+      // Handle error response with multiple messages
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        // Iterate through each field in the error response
+        Object.keys(errorData).forEach((field) => {
+          // Handle array of error messages for each field
+          if (Array.isArray(errorData[field])) {
+            errorData[field].forEach((message) => {
+              toast.error(message);
+            });
+          } else {
+            // Handle single error message
+            toast.error(errorData[field]);
+          }
+        });
+      } else {
+        // Fallback for generic error
+        const errorMessage = err.response?.data?.message || "خطا در افزودن کاربر";
+        toast.error(errorMessage);
+      }
+      setError("خطا در افزودن کاربر");
     } finally {
       setLoading(false);
     }
