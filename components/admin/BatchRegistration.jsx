@@ -18,7 +18,7 @@ const BatchRegistration = ({ batch, courses, seasons, summary }) => {
       initial="hidden"
       animate="visible"
       exit="hidden"
-      className="relative cursor-pointer text-right bg-white border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+      className="relative cursor-pointer text-right bg-white border border-gray-400 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
       whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
     >
       <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">
@@ -26,12 +26,13 @@ const BatchRegistration = ({ batch, courses, seasons, summary }) => {
       </h3>
 
       <div className="space-y-2 text-lg text-gray-700">
-        <p>دوره: {courseName}</p>
-        <p>فصل: {seasonName}</p>
-        <p>سن: {batch.min_age} - {batch.max_age}</p>
-        <p>برنامه: {batch.schedule || "-"}</p>
-        <p>مکان: {batch.location}</p>
-        <p>ظرفیت: {batch.capacity}</p>
+        <p>دوره : {courseName}</p>
+        <p>فصل : {seasonName}</p>
+        <p>سن : {batch.min_age} - {batch.max_age}</p>
+        <p>برنامه : {batch.schedule || "-"}</p>
+        <p>مکان : {batch.location}</p>
+        <p>ظرفیت استفاده شده : {batch.seats_taken}</p>
+        <p>ظرفیت باقی مونده : {batch.seats_remaining}</p>
       </div>
 
       {summary && (

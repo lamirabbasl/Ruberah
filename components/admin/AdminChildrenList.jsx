@@ -156,7 +156,7 @@ const AdminChildrenList = () => {
                     </div>
                   </div>
                   <div className="space-y-1 w-full text-right">
-                    <p className="font-semibold text-gray-800 text-sm">{child.full_name}</p>
+                    <p className="font-semibold text-gray-800 text-md">{child.first_name} {child.last_name}</p>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p className="flex items-center justify-end">
                         <span>{convertToJalali(child.birth_date)}</span>
