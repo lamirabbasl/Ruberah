@@ -211,7 +211,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 200 }}
-      className="flex flex-col-reverse md:flex-row-reverse md:items-start gap-28 pb-8 bg-white rounded-2xl shadow-md p-6 w-full max-w-4xl mx-auto border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+      className="flex flex-col-reverse  md:flex-row-reverse md:items-start gap-28 pb-8 bg-white rounded-2xl shadow-md p-6 w-full max-w-4xl mx-auto border border-gray-200 hover:shadow-lg transition-shadow duration-300"
     >
       {/* Buttons stacked vertically on left */}
       <div className="flex flex-col gap-3 md:order-1">
@@ -350,7 +350,6 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
               <div>
                 <p className="text-gray-900 text-lg whitespace-nowrap">محل تولد: {displayChild.place_of_birth || "-"}</p>
               </div>
-
             </div>
           </div>
         )}
@@ -372,7 +371,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 backdrop-blur-3xl flex items-center justify-center z-50"
             onClick={() => setEditing(false)}
           >
             <motion.div
@@ -576,7 +575,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 backdrop-blur-3xl flex items-center justify-center z-50"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}

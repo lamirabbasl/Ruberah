@@ -61,7 +61,7 @@ const InformationPage = () => {
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
-        const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری اطلاعات";
+        const errorMessage = err.response?.data?.message || "خطا در بارگذاری اطلاعات";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -88,7 +88,7 @@ const InformationPage = () => {
       setProfilePhotoUrl(updatedPhotoUrl);
     } catch (err) {
       console.error("Error uploading profile photo:", err);
-      toast.error(err.response?.data?.message ||  "خطا در آپلود عکس پروفایل");
+      toast.error(err.response?.data?.message || "خطا در آپلود عکس پروفایل");
     } finally {
       setUploading(false);
     }
@@ -260,7 +260,7 @@ const InformationPage = () => {
   const userData = user ? {
     ...user.profile,
     username: user.username,
-    phone_number: user.phone_number, // Use top-level phone_number
+    phone_number: user.phone_number,
     full_address: user.address,
     how_did_you_know_about_us: user.how_did_you_know_about_us,
   } : {};
@@ -286,7 +286,16 @@ const InformationPage = () => {
       setEditingOtherParent(false);
     } catch (err) {
       console.error("Error updating other parent info:", err);
-      if (err.response?.data && typeof err.response.data === 'object') {
+      if (err.response?.data?.message && typeof err.response.data.message === 'object') {
+        Object.keys(err.response.data.message).forEach((key) => {
+          const messages = err.response.data.message[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message) => toast.error(`${getLabel(key)}: ${message}`));
+          } else {
+            toast.error(`${getLabel(key)}: ${messages}`);
+          }
+        });
+      } else if (err.response?.data && typeof err.response.data === 'object') {
         Object.keys(err.response.data).forEach((key) => {
           const messages = err.response.data[key];
           if (Array.isArray(messages)) {
@@ -296,7 +305,7 @@ const InformationPage = () => {
           }
         });
       } else {
-        toast.error(err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات والد دیگر");
+        toast.error(err.response?.data?.message || "خطا در بروزرسانی اطلاعات والد دیگر");
       }
     } finally {
       setSavingOtherParent(false);
@@ -343,7 +352,6 @@ const InformationPage = () => {
         gender: tempUser.gender,
       };
       const updatedUser = {
-
         address: tempUser.full_address,
         is_colleague: user.is_colleague,
         full_name: `${tempUser.first_name} ${tempUser.last_name}`,
@@ -358,7 +366,16 @@ const InformationPage = () => {
       setEditingUser(false);
     } catch (err) {
       console.error("Error updating user info:", err);
-      if (err.response?.data && typeof err.response.data === 'object') {
+      if (err.response?.data?.message && typeof err.response.data.message === 'object') {
+        Object.keys(err.response.data.message).forEach((key) => {
+          const messages = err.response.data.message[key];
+          if (Array.isArray(messages)) {
+            messages.forEach((message) => toast.error(`${getLabel(key)}: ${message}`));
+          } else {
+            toast.error(`${getLabel(key)}: ${messages}`);
+          }
+        });
+      } else if (err.response?.data && typeof err.response.data === 'object') {
         Object.keys(err.response.data).forEach((key) => {
           if (key === 'profile') {
             const profileErrors = err.response.data[key];
@@ -382,7 +399,7 @@ const InformationPage = () => {
           }
         });
       } else {
-        toast.error(err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات");
+        toast.error(err.response?.data?.message || "خطا در بروزرسانی اطلاعات");
       }
     } finally {
       setSavingUser(false);
