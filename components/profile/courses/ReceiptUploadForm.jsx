@@ -23,10 +23,10 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
         toast.error(errorMessage);
       }
     }
-    if (batchId && isOpen) {
+    if (isOpen) {
       fetchPaymentAccounts();
     }
-  }, [batchId, isOpen]);
+  }, [isOpen]);
 
   const handleCancel = () => {
     setPreviewImage(null);
@@ -41,7 +41,7 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+          className="fixed inset-0 backdrop-blur-md  flex items-center justify-center z-50"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -114,7 +114,7 @@ function ReceiptUploadForm({ registrationId, installmentId, setUploading, handle
                 <motion.img
                   src={previewImage}
                   alt="پیش‌نمایش رسید"
-                  className="w-full max-w-xs mx-auto rounded-xl shadow-md border border-gray-200 object-contain"
+                  className="w-full w-full max-h-100 mx-auto rounded-xl shadow-md border border-gray-200 object-contain"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.2 }}

@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { convertToJalali } from "@/lib/utils/convertDate";
 import ReceiptUploadForm from "./ReceiptUploadForm";
 
-function InstallmentRow({ installment, index, registrationId, handleImageUpload }) {
+function InstallmentRow({ installment, index, registrationId, handleImageUpload , course }) {
   const [uploadingInstallmentId, setUploadingInstallmentId] = useState(null);
   const isPaid = installment.status === "paid";
-  const isImg = installment.receiptUrl !== null;
+  const isImg = installment.secure_url !== null;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white p-4 rounded-xl shadow text-gray-800">
@@ -48,7 +48,7 @@ function InstallmentRow({ installment, index, registrationId, handleImageUpload 
           installmentId={installment.id}
           setUploading={setUploadingInstallmentId}
           handleImageUpload={handleImageUpload}
-          batchId={installment.batchId}
+          batchId={course.batchId}
           isOpen={uploadingInstallmentId === installment.id}
           closeModal={() => setUploadingInstallmentId(null)}
         />

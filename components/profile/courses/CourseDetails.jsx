@@ -117,6 +117,7 @@ function CourseDetails({ course, handleImageUpload, isBankModalOpen, setIsBankMo
               index={idx}
               registrationId={course.id}
               handleImageUpload={handleImageUpload}
+              course = {course}
             />
           ))}
         </>
