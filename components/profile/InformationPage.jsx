@@ -61,7 +61,7 @@ const InformationPage = () => {
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری اطلاعات";
+        const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری اطلاعات";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -88,7 +88,7 @@ const InformationPage = () => {
       setProfilePhotoUrl(updatedPhotoUrl);
     } catch (err) {
       console.error("Error uploading profile photo:", err);
-      toast.error(err.response?.data?.message || err.message || "خطا در آپلود عکس پروفایل");
+      toast.error(err.response?.data?.message ||  "خطا در آپلود عکس پروفایل");
     } finally {
       setUploading(false);
     }
@@ -296,7 +296,7 @@ const InformationPage = () => {
           }
         });
       } else {
-        toast.error(err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات والد دیگر");
+        toast.error(err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات والد دیگر");
       }
     } finally {
       setSavingOtherParent(false);
@@ -382,7 +382,7 @@ const InformationPage = () => {
           }
         });
       } else {
-        toast.error(err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات");
+        toast.error(err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات");
       }
     } finally {
       setSavingUser(false);

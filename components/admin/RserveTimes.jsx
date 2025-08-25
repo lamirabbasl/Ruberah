@@ -28,7 +28,7 @@ const ReserveTimes = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "خطا در دریافت جلسات";
+      const message = err.response?.data?.message || "خطا در دریافت جلسات";
       setError(message);
       toast.error(message);
     } finally {
@@ -48,7 +48,7 @@ const ReserveTimes = () => {
       setShowAddForm(false);
       await fetchSessions();
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "خطا در افزودن جلسه";
+      const message = err.response?.data?.message || "خطا در افزودن جلسه";
       setError(message);
       toast.error(message);
     } finally {
@@ -77,7 +77,7 @@ const ReserveTimes = () => {
       setSessionToDelete(null);
       await fetchSessions();
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "خطا در حذف جلسه";
+      const message = err.response?.data?.message ||  "خطا در حذف جلسه";
       setError(message);
       toast.error(message);
     } finally {

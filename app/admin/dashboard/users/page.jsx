@@ -33,7 +33,7 @@ const UsersPage = () => {
       setUsers(data.results);
       setIsLastPage(data.is_last_page);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت کاربران";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت کاربران";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -68,7 +68,7 @@ const UsersPage = () => {
       window.URL.revokeObjectURL(url);
       toast.success("فایل اکسل با موفقیت صادر شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در صادرات به اکسل";
+      const errorMessage = err.response?.data?.message || "خطا در صادرات به اکسل";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {

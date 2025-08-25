@@ -23,7 +23,7 @@ function IntroTextManager() {
       const data = await getIntroText();
       setIntroText(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری داده‌ها";
+      const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری داده‌ها";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -70,7 +70,7 @@ function IntroTextManager() {
       setEditId(null);
       await fetchData();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || `خطا در ${editId ? "به‌روزرسانی" : "ایجاد"} متن`;
+      const errorMessage = err.response?.data?.message || `خطا در ${editId ? "به‌روزرسانی" : "ایجاد"} متن`;
       toast.error(errorMessage);
       setFormError(errorMessage);
     } finally {

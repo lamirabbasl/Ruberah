@@ -25,7 +25,7 @@ const ChildrenPage = () => {
         setChildren(data);
       } catch (err) {
         console.error("Error fetching children:", err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت اطلاعات";
+        const errorMessage = err.response?.data?.message ||  "خطا در دریافت اطلاعات";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -43,7 +43,7 @@ const ChildrenPage = () => {
       setSelectedChild(data);
     } catch (err) {
       console.error("Error fetching child details:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت جزئیات";
+      const errorMessage = err.response?.data?.message ||"خطا در دریافت جزئیات";
       toast.error(errorMessage);
     }
   };
@@ -58,7 +58,7 @@ const ChildrenPage = () => {
       setShowAddChildForm(false);
     } catch (err) {
       console.error("Error adding child:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن فرزند";
+      const errorMessage = err.response?.data?.message ||  "خطا در افزودن فرزند";
       toast.error(errorMessage);
       setError(errorMessage);
     }
@@ -77,7 +77,7 @@ const ChildrenPage = () => {
       );
     } catch (err) {
       console.error("Error updating child:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
+      const errorMessage = err.response?.data?.message ||"خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     }

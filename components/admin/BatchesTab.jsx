@@ -67,7 +67,7 @@ const BatchesTab = () => {
       const data = term ? await searchBatches(term) : await getBatches();
       setBatches(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها. لطفا دوباره تلاش کنید.";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت دوره‌ها. لطفا دوباره تلاش کنید.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ const BatchesTab = () => {
       const data = await getCourses();
       setCourses(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت دوره‌ها";
       toast.error(errorMessage);
     }
   };
@@ -93,7 +93,7 @@ const BatchesTab = () => {
       const data = await getSeasons();
       setSeasons(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت فصل‌ها";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت فصل‌ها";
       toast.error(errorMessage);
     }
   };
@@ -103,7 +103,7 @@ const BatchesTab = () => {
       const data = await getBankAccounts();
       setBankAccounts(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت حساب‌های بانکی";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت حساب‌های بانکی";
       toast.error(errorMessage);
     }
   };
@@ -113,7 +113,7 @@ const BatchesTab = () => {
       const data = await getTerms();
       setTerms(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت شرایط";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت شرایط";
       toast.error(errorMessage);
     }
   };
@@ -162,7 +162,7 @@ const BatchesTab = () => {
       setShowAddForm(false);
       fetchBatches(searchTerm);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن دوره";
+      const errorMessage = err.response?.data?.message || "خطا در افزودن دوره";
       toast.error(errorMessage);
     }
   };
@@ -183,7 +183,7 @@ const BatchesTab = () => {
       setEditingBatch(null);
       fetchBatches(searchTerm);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش دوره";
+      const errorMessage = err.response?.data?.message ||  "خطا در ویرایش دوره";
       toast.error(errorMessage);
     }
   };
@@ -207,7 +207,7 @@ const BatchesTab = () => {
       setBatchToDelete(null);
       fetchBatches(searchTerm);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف دوره";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف دوره";
       toast.error(errorMessage);
     }
   };

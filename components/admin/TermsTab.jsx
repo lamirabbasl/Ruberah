@@ -41,7 +41,7 @@ const TermsTab = () => {
       setTerms(data);
     } catch (err) {
       console.error("Error fetching terms:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت شرایط. لطفا دوباره تلاش کنید.";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت شرایط. لطفا دوباره تلاش کنید.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ const TermsTab = () => {
       fetchTerms(searchTerm);
     } catch (err) {
       console.error("Error adding term:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن شرایط";
+      const errorMessage = err.response?.data?.message || "خطا در افزودن شرایط";
       toast.error(errorMessage);
     }
   };
@@ -93,7 +93,7 @@ const TermsTab = () => {
       fetchTerms(searchTerm);
     } catch (err) {
       console.error("Error editing term:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش شرایط";
+      const errorMessage = err.response?.data?.message ||  "خطا در ویرایش شرایط";
       toast.error(errorMessage);
     }
   };
@@ -114,7 +114,7 @@ const TermsTab = () => {
       fetchTerms(searchTerm);
     } catch (err) {
       console.error("Error deleting term:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف شرایط";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف شرایط";
       toast.error(errorMessage);
     }
   };

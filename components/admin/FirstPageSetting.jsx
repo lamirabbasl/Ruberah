@@ -45,7 +45,7 @@ const SettingsPage = () => {
         show_address: data.show_address || false,
       });
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || err.message || "خطا در بارگذاری داده‌ها";
+      const errorMessage = err?.response?.data?.message || "خطا در بارگذاری داده‌ها";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ const SettingsPage = () => {
       setShowEditForm(false);
       await fetchData();
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || err.message || "خطا در به‌روزرسانی تنظیمات";
+      const errorMessage = err?.response?.data?.message ||  "خطا در به‌روزرسانی تنظیمات";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

@@ -81,7 +81,7 @@ const ReserveList = () => {
       setReservations(data);
       setIsLastPage(response.is_last_page);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "خطا در دریافت رزروها");
+      toast.error(err.response?.data?.message ||  "خطا در دریافت رزروها");
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ const ReserveList = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "خطا در دریافت جلسات");
+      toast.error(err.response?.data?.message ||  "خطا در دریافت جلسات");
     }
   };
 
@@ -114,7 +114,7 @@ const ReserveList = () => {
       window.URL.revokeObjectURL(url);
       toast.success("فایل اکسل با موفقیت دریافت شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت به اکسل";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت به اکسل";
       toast.error(errorMessage);
     } finally {
       setExporting(false);
@@ -128,7 +128,7 @@ const ReserveList = () => {
       toast.success("وضعیت رزرو با موفقیت تغییر کرد.");
       await fetchReservations(currentPage);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "خطا در تغییر وضعیت فعال‌سازی");
+      toast.error(err.response?.data?.message || "خطا در تغییر وضعیت فعال‌سازی");
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ const ReserveList = () => {
         setReservations((prev) => prev.filter((item) => item.id !== itemToDelete));
         await fetchReservations(currentPage);
       } catch (err) {
-        toast.error(err.response?.data?.message || err.message || "خطا در حذف رزرو");
+        toast.error(err.response?.data?.message ||  "خطا در حذف رزرو");
       } finally {
         setShowConfirmDelete(false);
         setItemToDelete(null);
@@ -180,7 +180,7 @@ const ReserveList = () => {
       setShowAddForm(false);
       await fetchReservations(currentPage);
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "خطا در افزودن رزرو");
+      toast.error(err.response?.data?.message || "خطا در افزودن رزرو");
     } finally {
       setLoading(false);
     }

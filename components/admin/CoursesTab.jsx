@@ -27,7 +27,7 @@ const CoursesTab = () => {
       const data = searchQuery ? await searchCourses(searchQuery) : await getAdminCourses();
       setCourses(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت دوره‌ها";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت دوره‌ها";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ const CoursesTab = () => {
       fetchCourses(searchTerm);
       toast.success("دوره با موفقیت اضافه شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن دوره";
+      const errorMessage = err.response?.data?.message || "خطا در افزودن دوره";
       toast.error(errorMessage);
     }
   };
@@ -74,7 +74,7 @@ const CoursesTab = () => {
       fetchCourses(searchTerm);
       toast.success("ویرایش با موفقیت انجام شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش دوره";
+      const errorMessage = err.response?.data?.message || "خطا در ویرایش دوره";
       toast.error(errorMessage);
     }
   };

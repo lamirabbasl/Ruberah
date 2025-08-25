@@ -69,7 +69,7 @@ export default function SessionSignup() {
       router.push("/enroll/session-detail");
     } catch (err) {
       console.error("Error creating reservation:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message ||  "خطا در ثبت نام";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

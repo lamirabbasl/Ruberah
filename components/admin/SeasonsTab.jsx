@@ -41,7 +41,7 @@ const SeasonsTab = () => {
       setSeasons(data);
     } catch (err) {
       console.error("Error fetching seasons:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت فصل‌ها. لطفا دوباره تلاش کنید.";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت فصل‌ها. لطفا دوباره تلاش کنید.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ const SeasonsTab = () => {
       fetchSeasons(searchTerm);
     } catch (err) {
       console.error("Error adding season:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن فصل";
+      const errorMessage = err.response?.data?.message ||  "خطا در افزودن فصل";
       toast.error(errorMessage);
     }
   };
@@ -93,7 +93,7 @@ const SeasonsTab = () => {
       fetchSeasons(searchTerm);
     } catch (err) {
       console.error("Error editing season:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش فصل";
+      const errorMessage = err.response?.data?.message || "خطا در ویرایش فصل";
       toast.error(errorMessage);
     }
   };
@@ -114,7 +114,7 @@ const SeasonsTab = () => {
       fetchSeasons(searchTerm);
     } catch (err) {
       console.error("Error deleting season:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف فصل";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف فصل";
       toast.error(errorMessage);
     }
   };

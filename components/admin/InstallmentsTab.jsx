@@ -27,7 +27,7 @@ const InstallmentsTab = () => {
       setInstallments(installmentData);
       setBatches(batchData);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری داده‌ها";
+      const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری داده‌ها";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -64,7 +64,7 @@ const InstallmentsTab = () => {
       setInstallmentToDelete(null);
       await fetchData();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف قسط";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف قسط";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

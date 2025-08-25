@@ -155,7 +155,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
       setChildPhotoUrl(updatedChildPhoto);
     } catch (err) {
       console.error("Error uploading child photo:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
+      const errorMessage = err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -181,7 +181,7 @@ const EditableChild = ({ child, onUpdate, onDelete, onView }) => {
       setParentPhotoUrl(updatedParentPhoto);
     } catch (err) {
       console.error("Error uploading parent photo:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بروزرسانی اطلاعات";
+      const errorMessage = err.response?.data?.message ||  "خطا در بروزرسانی اطلاعات";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {

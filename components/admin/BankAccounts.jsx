@@ -44,7 +44,7 @@ const BankAccountsTab = () => {
       setBankAccounts(data);
     } catch (err) {
       console.error("Error fetching bank accounts:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت حساب‌های بانکی. لطفا دوباره تلاش کنید.";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت حساب‌های بانکی. لطفا دوباره تلاش کنید.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ const BankAccountsTab = () => {
       fetchBankAccounts(searchTerm);
     } catch (err) {
       console.error("Error adding bank account:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن حساب بانکی";
+      const errorMessage = err.response?.data?.message ||  "خطا در افزودن حساب بانکی";
       toast.error(errorMessage);
     }
   };
@@ -114,7 +114,7 @@ const BankAccountsTab = () => {
       fetchBankAccounts(searchTerm);
     } catch (err) {
       console.error("Error editing bank account:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ویرایش حساب بانکی";
+      const errorMessage = err.response?.data?.message ||  "خطا در ویرایش حساب بانکی";
       toast.error(errorMessage);
     }
   };
@@ -135,7 +135,7 @@ const BankAccountsTab = () => {
       fetchBankAccounts(searchTerm);
     } catch (err) {
       console.error("Error deleting bank account:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف حساب بانکی";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف حساب بانکی";
       toast.error(errorMessage);
     }
   };

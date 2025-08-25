@@ -46,7 +46,7 @@ function AllCourses() {
         setSeasons(seasonsData);
       } catch (err) {
         console.error("Error fetching courses or seasons:", err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        const errorMessage = err.response?.data?.message  || "خطا در ثبت نام";
         toast.error(errorMessage);
         setError(errorMessage);
       } finally {
@@ -68,7 +68,7 @@ function AllCourses() {
         setBatchesByCourse((prev) => ({ ...prev, [courseId]: data }));
       } catch (err) {
         console.error("Error fetching batches for course", courseId, err);
-        const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+        const errorMessage = err.response?.data?.message || "خطا در ثبت نام";
         toast.error(errorMessage);
       }
     }
@@ -87,7 +87,7 @@ function AllCourses() {
       setTerms(termsData.required_terms || []);
     } catch (err) {
       console.error("Error fetching terms for batch:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری شرایط";
+      const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری شرایط";
       toast.error(errorMessage);
     } finally {
       setLoadingTerms(false);
@@ -109,7 +109,7 @@ function AllCourses() {
       setChildren(childrenData);
     } catch (err) {
       console.error("Error fetching children:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || "خطا در ثبت نام";
       toast.error(errorMessage);
     } finally {
       setLoadingChildren(false);
@@ -142,7 +142,7 @@ function AllCourses() {
       setSelectedPaymentMethod(null);
     } catch (err) {
       console.error("Error registering child to batch:", err);
-      const errorMessage = err.response?.data?.message || err.message || "خطا در ثبت نام";
+      const errorMessage = err.response?.data?.message || "خطا در ثبت نام";
       toast.error(errorMessage);
     } finally {
       setSignupLoading(false);

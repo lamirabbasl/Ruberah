@@ -31,7 +31,7 @@ const AdminSignupQuiz = () => {
       const data = await getQuizQuestions();
       setQuizzes(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت سوالات";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت سوالات";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -76,7 +76,7 @@ const AdminSignupQuiz = () => {
       setIsAddModalOpen(false);
       fetchQuizzes();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در افزودن سوال";
+      const errorMessage = err.response?.data?.message ||  "خطا در افزودن سوال";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -101,7 +101,7 @@ const AdminSignupQuiz = () => {
       setIsDeleteModalOpen(false);
       setQuizToDelete(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف سوال";
+      const errorMessage = err.response?.data?.message ||  "خطا در حذف سوال";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {

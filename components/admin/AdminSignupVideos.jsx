@@ -34,7 +34,7 @@ const AdminSignupVideos = () => {
       const data = await getIntroVideos();
       setVideos(data);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در دریافت ویدیوها";
+      const errorMessage = err.response?.data?.message ||  "خطا در دریافت ویدیوها";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -83,7 +83,7 @@ const AdminSignupVideos = () => {
       setIsAddModalOpen(false);
       fetchVideos();
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در بارگذاری ویدیو";
+      const errorMessage = err.response?.data?.message ||  "خطا در بارگذاری ویدیو";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -108,7 +108,7 @@ const AdminSignupVideos = () => {
       setIsDeleteModalOpen(false);
       setVideoToDelete(null);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "خطا در حذف ویدیو";
+      const errorMessage = err.response?.data?.message || "خطا در حذف ویدیو";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
