@@ -34,7 +34,7 @@ function ChildCard({ child, childIndex, handleImageUpload }) {
         <h2 className="text-3xl font-bold text-gray-900">{child.name}</h2>
       </div>
 
-      <div className="hidden sm:grid grid-cols-6 gap-4 bg-gray-50 border-b border-gray-200 p-4 rounded-t-xl text-lg font-semibold text-gray-900 text-right">
+      <div className="hidden sm:grid grid-cols-6 gap-4 bg-white border-b border-gray-200 p-4 rounded-t-xl text-lg font-semibold text-gray-900 text-right">
         <span>دوره</span>
         <span>شروع</span>
         <span>پایان</span>

@@ -7,7 +7,7 @@ function CourseRow({ course, childIndex, courseIndex, handleImageUpload }) {
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 bg-white rounded-xl shadow-md p-4 border border-gray-100 hover:shadow-lg transition-shadow duration-300 text-right text-gray-800">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 bg-neutral-200 rounded-xl shadow-md p-4 border border-gray-300 hover:shadow-lg transition-shadow duration-300 text-right text-gray-800">
         <div className="flex items-center sm:block">
           <span className="block sm:hidden font-semibold w-20">دوره: </span>
           <span className="font-bold text-gray-900">{course.name}</span>
