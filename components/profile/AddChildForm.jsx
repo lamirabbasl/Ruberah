@@ -7,7 +7,6 @@ import JalaliCalendar from "../common/JalaliCalendar";
 import { convertToJalali } from "@/lib/utils/convertDate";
 
 const AddChildForm = ({ onAdd, onClose }) => {
-  const [fullName, setFullName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -28,23 +27,40 @@ const AddChildForm = ({ onAdd, onClose }) => {
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   const handleAdd = () => {
-    if (!firstName || !lastName || !birthDate) {
+    if (!firstName || !lastName || !birthDate || !placeOfBirth || !bloodType || !nationalId || !siblingsCount || !birthOrder || !courses) {
       const errorMessage = "لطفا تمام فیلدهای ضروری را پر کنید";
+      toast.error(errorMessage);
+      setError(errorMessage);
+      return;
+    }
+    if (siblingsCount <= 0) {
+      const errorMessage = "تعداد فرزندان باید بیشتر از صفر باشد";
+      toast.error(errorMessage);
+      setError(errorMessage);
+      return;
+    }
+    if (birthOrder <= 0) {
+      const errorMessage = "ترتیب تولد باید بیشتر از صفر باشد";
+      toast.error(errorMessage);
+      setError(errorMessage);
+      return;
+    }
+    if (birthOrder > siblingsCount) {
+      const errorMessage = "ترتیب تولد نمی‌تواند بیشتر از تعداد فرزندان باشد";
       toast.error(errorMessage);
       setError(errorMessage);
       return;
     }
     setError(null);
     const newChild = {
-      full_name: fullName,
       first_name: firstName,
       last_name: lastName,
       birth_date: birthDate,
       place_of_birth: placeOfBirth,
       gender: gender,
       national_id: nationalId,
-      siblings_count: siblingsCount ? parseInt(siblingsCount) : null,
-      birth_order: birthOrder ? parseInt(birthOrder) : null,
+      siblings_count: siblingsCount,
+      birth_order: birthOrder,
       blood_type: bloodType,
       courses_signed_up_outside: courses,
       medical_info: {
@@ -78,15 +94,6 @@ const AddChildForm = ({ onAdd, onClose }) => {
           افزودن فرزند جدید
         </h2>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-lg font-medium text-gray-700">نام کامل</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
-            />
-          </div>
           <div className="space-y-2">
             <label className="block text-lg font-medium text-gray-700">نام</label>
             <input
@@ -234,15 +241,6 @@ const AddChildForm = ({ onAdd, onClose }) => {
             />
           </div>
         </div>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-red-600 text-center text-sm mt-4"
-          >
-            {error}
-          </motion.p>
-        )}
         <div className="flex justify-end gap-4 mt-6">
           <motion.button
             whileHover={{ scale: 1.05 }}

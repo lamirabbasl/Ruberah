@@ -14,6 +14,7 @@ function Footer() {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [telegramLink, setTelegramLink] = useState("");
+  const [installLink, setInstallLink] = useState("");
 
   // Effect to fetch data from the API
   useEffect(() => {
@@ -26,6 +27,7 @@ function Footer() {
         setEmail(data.email || "");
         setPhoneNumber(data.phone_number || "");
         setTelegramLink(data.telegram_link || "");
+        setInstallLink(data.install_link)
       } catch (error) {
         console.error("Error fetching data:", error);
         setPresentationText("");
@@ -79,7 +81,7 @@ function Footer() {
         </div>
         <div className="flex flex-row-reverse gap-3 items-center">
           <FaInstagram className="text-2xl" />
-          <span>@Ruberah</span>
+          <span>{installLink}</span>
         </div>
         <div className="flex flex-row-reverse gap-3 items-center">
           <FaTelegramPlane className="text-2xl" />

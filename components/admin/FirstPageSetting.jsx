@@ -134,7 +134,7 @@ const SettingsPage = () => {
             </p>
             <p className="flex items-center justify-end flex-row-reverse">
               <a href={settings.telegram_link} className="text-indigo-600 hover:underline text-right">{settings.telegram_link}</a>
-              <span className="inline-block w-32 font-medium text-right mr-4">آدرس تلگرام:</span>
+              <span className="inline-block w-32 font-medium text-right mr-4">آیدی تلگرام:</span>
             </p>
             <p className="flex items-center justify-end flex-row-reverse">
               <span className="text-right">{settings.email}</span>
