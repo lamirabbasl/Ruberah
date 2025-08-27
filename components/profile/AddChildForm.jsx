@@ -122,7 +122,7 @@ const AddChildForm = ({ onAdd, onClose }) => {
               className="w-full p-3 text-sm border border-gray-300 rounded-lg text-right cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
             />
             {showCalendar && (
-              <div className="absolute z-99 bg-white bottom-0 shadow-lg rounded-lg">
+              <div className="absolute z-99 bg-white bottom-[-200px] shadow-lg rounded-lg">
                 <JalaliCalendar
                   onDateSelect={(date) => {
                     setBirthDate(date);
