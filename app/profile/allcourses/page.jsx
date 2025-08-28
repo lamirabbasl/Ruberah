@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +12,7 @@ import {
   getChildren,
   registerChildToBatch,
   getBatchTermById,
+  getBatchPricing,
 } from "@/lib/api/api";
 import { convertToJalali } from "@/lib/utils/convertDate";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -34,7 +35,8 @@ function AllCourses() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(null);
-  const router = useRouter(); // Initialize router
+  const [receiptPricingByChild, setReceiptPricingByChild] = useState({});
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCoursesAndSeasons = async () => {
@@ -105,10 +107,29 @@ function AllCourses() {
     setSelectedChildId(null);
     setSelectedPaymentMethod(null);
     setSignupSuccess(null);
+    setReceiptPricingByChild({});
     setLoadingChildren(true);
     try {
       const childrenData = await getChildren();
       setChildren(childrenData);
+      // Fetch receipt pricing for each child if batch allows receipt payment
+      if (batch.allow_receipt && childrenData.length > 0) {
+        const pricingPromises = childrenData.map(async (child) => {
+          try {
+            const pricingData = await getBatchPricing(batchId, child.id, "receipt");
+            return { childId: child.id, pricing: pricingData.pricing };
+          } catch (err) {
+            console.error(`Error fetching pricing for child ${child.id}:`, err);
+            return { childId: child.id, pricing: null };
+          }
+        });
+        const pricingResults = await Promise.all(pricingPromises);
+        const pricingMap = pricingResults.reduce((acc, { childId, pricing }) => {
+          if (pricing) acc[childId] = pricing;
+          return acc;
+        }, {});
+        setReceiptPricingByChild(pricingMap);
+      }
     } catch (err) {
       console.error("Error fetching children:", err);
       const errorMessage = err.response?.data?.message || "خطا در ثبت نام";
@@ -137,12 +158,12 @@ function AllCourses() {
         selectedPaymentMethod
       );
       const successMessage = response.data?.message || "ثبت نام با موفقیت انجام شد.";
-      toast.success(successMessage, { autoClose: 3000 }); // Show toast for 4 seconds
+      toast.success(successMessage, { autoClose: 3000 });
       setSignupSuccess(successMessage);
       setOpenSignupBatchId(null);
       setSelectedChildId(null);
       setSelectedPaymentMethod(null);
-      // Redirect to /profile/courses after 3 seconds
+      setReceiptPricingByChild({});
       setTimeout(() => {
         router.push("/profile/courses");
       }, 4000);
@@ -470,7 +491,54 @@ function AllCourses() {
                                                 whileHover={{ scale: 1.02 }}
                                                 whileTap={{ scale: 0.98 }}
                                               >
-                                                {method.label} - {method.price} تومان
+                                                {method.label}
+                                                {method.key === "receipt" &&
+                                                selectedChildId &&
+                                                receiptPricingByChild[selectedChildId] ? (
+                                                  <div className="mt-2 text-right">
+                                                    <div className="relative inline-block">
+                                                      <span className="line-through text-gray-500 mr-2">
+                                                        {receiptPricingByChild[
+                                                          selectedChildId
+                                                        ].base_price.toLocaleString()} تومان
+                                                      </span>
+                                                      <span className="text-green-600 font-bold">
+                                                        {receiptPricingByChild[
+                                                          selectedChildId
+                                                        ].final_price.toLocaleString()} تومان
+                                                      </span>
+                                                    </div>
+                                                    <div className="text-sm text-gray-600 mt-1 flex flex-col">
+                                                      <span>
+                                                        تخفیف همکار:{" "}
+                                                        {
+                                                          receiptPricingByChild[selectedChildId]
+                                                            .colleague_discount_percent
+                                                        }%
+                                                      </span>
+                                                      <span>
+                                                        تخفیف وفاداری:{" "}
+                                                        {
+                                                          receiptPricingByChild[selectedChildId]
+                                                            .loyalty_discount_percent
+                                                        }%
+                                                      </span>
+                                                      <span>
+                                                        مجموع تخفیف اعمال‌شده:{" "}
+                                                        {
+                                                          receiptPricingByChild[selectedChildId]
+                                                            .applied_total_discount_percent
+                                                        }%
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                ) : method.key === "receipt" ? (
+                                                  <div className="text-sm text-gray-600 mt-1 text-right">
+                                                    لطفاً ابتدا یک فرزند انتخاب کنید
+                                                  </div>
+                                                ) : (
+                                                  <span> - {method.price.toLocaleString()} تومان</span>
+                                                )}
                                               </motion.li>
                                             ))}
                                           </motion.ul>
@@ -504,7 +572,7 @@ function AllCourses() {
                                                     transition={{ duration: 0.3 }}
                                                   >
                                                     <span>{template.title}</span>
-                                                    <span>{template.amount} تومان</span>
+                                                    <span>{template.amount.toLocaleString()} تومان</span>
                                                     <span>
                                                       {convertToJalali(template.due_date)}
                                                     </span>
