@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import { IoClose } from "react-icons/io5";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -35,8 +35,9 @@ function AllCourses() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(null);
-  const [receiptPricingByChild, setReceiptPricingByChild] = useState({});
-  const router = useRouter();
+  const [receiptPricing, setReceiptPricing] = useState(null);
+  const [loadingPricing, setLoadingPricing] = useState(false);
+  const router = useRouter(); // Initialize router
 
   useEffect(() => {
     const fetchCoursesAndSeasons = async () => {
@@ -59,6 +60,37 @@ function AllCourses() {
     };
     fetchCoursesAndSeasons();
   }, []);
+
+  useEffect(() => {
+    if (selectedChildId && selectedBatch) {
+      if (selectedBatch.allow_receipt) {
+        setLoadingPricing(true);
+        const fetchPricing = async () => {
+          try {
+            const data = await getBatchPricing(
+              selectedBatch.id,
+              selectedChildId,
+              "receipt"
+            );
+            setReceiptPricing(data.pricing);
+          } catch (err) {
+            console.error("Error fetching receipt pricing:", err);
+            const errorMessage = err.response?.data?.message || "خطا در بارگذاری قیمت";
+            toast.error(errorMessage);
+          } finally {
+            setLoadingPricing(false);
+          }
+        };
+        fetchPricing();
+      } else {
+        setReceiptPricing(null);
+        setLoadingPricing(false);
+      }
+    } else {
+      setReceiptPricing(null);
+      setLoadingPricing(false);
+    }
+  }, [selectedChildId, selectedBatch]);
 
   const toggleCourse = async (courseId) => {
     if (openCourseId === courseId) {
@@ -107,29 +139,12 @@ function AllCourses() {
     setSelectedChildId(null);
     setSelectedPaymentMethod(null);
     setSignupSuccess(null);
-    setReceiptPricingByChild({});
+    setReceiptPricing(null);
+    setLoadingPricing(false);
     setLoadingChildren(true);
     try {
       const childrenData = await getChildren();
       setChildren(childrenData);
-      // Fetch receipt pricing for each child if batch allows receipt payment
-      if (batch.allow_receipt && childrenData.length > 0) {
-        const pricingPromises = childrenData.map(async (child) => {
-          try {
-            const pricingData = await getBatchPricing(batchId, child.id, "receipt");
-            return { childId: child.id, pricing: pricingData.pricing };
-          } catch (err) {
-            console.error(`Error fetching pricing for child ${child.id}:`, err);
-            return { childId: child.id, pricing: null };
-          }
-        });
-        const pricingResults = await Promise.all(pricingPromises);
-        const pricingMap = pricingResults.reduce((acc, { childId, pricing }) => {
-          if (pricing) acc[childId] = pricing;
-          return acc;
-        }, {});
-        setReceiptPricingByChild(pricingMap);
-      }
     } catch (err) {
       console.error("Error fetching children:", err);
       const errorMessage = err.response?.data?.message || "خطا در ثبت نام";
@@ -158,12 +173,12 @@ function AllCourses() {
         selectedPaymentMethod
       );
       const successMessage = response.data?.message || "ثبت نام با موفقیت انجام شد.";
-      toast.success(successMessage, { autoClose: 3000 });
+      toast.success(successMessage, { autoClose: 3000 }); // Show toast for 4 seconds
       setSignupSuccess(successMessage);
       setOpenSignupBatchId(null);
       setSelectedChildId(null);
       setSelectedPaymentMethod(null);
-      setReceiptPricingByChild({});
+      // Redirect to /profile/courses after 3 seconds
       setTimeout(() => {
         router.push("/profile/courses");
       }, 4000);
@@ -462,88 +477,88 @@ function AllCourses() {
                                           </motion.ul>
                                         )}
                                       </div>
-                                      <div className="mb-6">
-                                        <h4 className="font-semibold text-lg mb-3 text-right">
-                                          انتخاب روش پرداخت
-                                        </h4>
-                                        {paymentMethods.length === 0 ? (
-                                          <p className="text-gray-600 text-right">
-                                            روش پرداختی یافت نشد.
-                                          </p>
-                                        ) : (
-                                          <motion.ul
-                                            className="max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-2"
-                                            initial={{ height: 0 }}
-                                            animate={{ height: "auto" }}
-                                            transition={{ duration: 0.3 }}
-                                          >
-                                            {paymentMethods.map((method) => (
-                                              <motion.li
-                                                key={method.key}
-                                                className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                                                  selectedPaymentMethod === method.key
-                                                    ? "bg-blue-100 border-blue-500 border"
-                                                    : "hover:bg-gray-100"
-                                                }`}
-                                                onClick={() =>
-                                                  setSelectedPaymentMethod(method.key)
-                                                }
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                              >
-                                                {method.label}
-                                                {method.key === "receipt" &&
-                                                selectedChildId &&
-                                                receiptPricingByChild[selectedChildId] ? (
-                                                  <div className="mt-2 text-right">
-                                                    <div className="relative inline-block">
-                                                      <span className="line-through text-gray-500 mr-2">
-                                                        {receiptPricingByChild[
-                                                          selectedChildId
-                                                        ].base_price.toLocaleString()} تومان
+                                      {selectedChildId && (
+                                        <div className="mb-6">
+                                          <h4 className="font-semibold text-lg mb-3 text-right">
+                                            انتخاب روش پرداخت
+                                          </h4>
+                                          {loadingPricing ? (
+                                            <div className="flex justify-center py-4">
+                                              <LoadingSpinner />
+                                            </div>
+                                          ) : paymentMethods.length === 0 ? (
+                                            <p className="text-gray-600 text-right">
+                                              روش پرداختی یافت نشد.
+                                            </p>
+                                          ) : (
+                                            <motion.ul
+                                              className="max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-4 bg-gray-50 space-y-2"
+                                              initial={{ height: 0 }}
+                                              animate={{ height: "auto" }}
+                                              transition={{ duration: 0.3 }}
+                                            >
+                                              {paymentMethods.map((method) => (
+                                                <motion.li
+                                                  key={method.key}
+                                                  className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                                                    selectedPaymentMethod === method.key
+                                                      ? "bg-blue-100 border-blue-500 border"
+                                                      : "hover:bg-gray-100"
+                                                  }`}
+                                                  onClick={() =>
+                                                    setSelectedPaymentMethod(method.key)
+                                                  }
+                                                  whileHover={{ scale: 1.02 }}
+                                                  whileTap={{ scale: 0.98 }}
+                                                >
+                                                  {method.label}
+                                                  {method.key === "receipt" && receiptPricing ? (
+                                                    <div className="mt-2">
+                                                      <span
+                                                        className={`${
+                                                          receiptPricing.base_price === receiptPricing.final_price
+                                                            ? "text-green-600 text-md "
+                                                            : "line-through text-gray-500 mr-2 text-md"
+                                                        }`}
+                                                      >
+                                                        {receiptPricing.base_price} تومان
                                                       </span>
-                                                      <span className="text-green-600 font-bold">
-                                                        {receiptPricingByChild[
-                                                          selectedChildId
-                                                        ].final_price.toLocaleString()} تومان
-                                                      </span>
+                                                      {receiptPricing.base_price !== receiptPricing.final_price && (
+                                                        <span className="text-green-600 text-lg mr-2 font-bold">
+                                                          {receiptPricing.final_price} تومان
+                                                        </span>
+                                                      )}
+                                                      {(receiptPricing.colleague_discount_percent > 0 ||
+                                                        receiptPricing.loyalty_discount_percent > 0 ||
+                                                        receiptPricing.applied_total_discount_percent > 0) && (
+                                                        <div className="text-sm text-gray-600 mt-1 flex flex-col">
+                                                          {receiptPricing.colleague_discount_percent > 0 && (
+                                                            <span>
+                                                              تخفیف همکار: {receiptPricing.colleague_discount_percent}%
+                                                            </span>
+                                                          )}
+                                                          {receiptPricing.loyalty_discount_percent > 0 && (
+                                                            <span>
+                                                              تخفیف وفاداری: {receiptPricing.loyalty_discount_percent}%
+                                                            </span>
+                                                          )}
+                                                          {receiptPricing.applied_total_discount_percent > 0 && (
+                                                            <span>
+                                                              مجموع تخفیف اعمال‌شده: {receiptPricing.applied_total_discount_percent}%
+                                                            </span>
+                                                          )}
+                                                        </div>
+                                                      )}
                                                     </div>
-                                                    <div className="text-sm text-gray-600 mt-1 flex flex-col">
-                                                      <span>
-                                                        تخفیف همکار:{" "}
-                                                        {
-                                                          receiptPricingByChild[selectedChildId]
-                                                            .colleague_discount_percent
-                                                        }%
-                                                      </span>
-                                                      <span>
-                                                        تخفیف وفاداری:{" "}
-                                                        {
-                                                          receiptPricingByChild[selectedChildId]
-                                                            .loyalty_discount_percent
-                                                        }%
-                                                      </span>
-                                                      <span>
-                                                        مجموع تخفیف اعمال‌شده:{" "}
-                                                        {
-                                                          receiptPricingByChild[selectedChildId]
-                                                            .applied_total_discount_percent
-                                                        }%
-                                                      </span>
-                                                    </div>
-                                                  </div>
-                                                ) : method.key === "receipt" ? (
-                                                  <div className="text-sm text-gray-600 mt-1 text-right">
-                                                    لطفاً ابتدا یک فرزند انتخاب کنید
-                                                  </div>
-                                                ) : (
-                                                  <span> - {method.price.toLocaleString()} تومان</span>
-                                                )}
-                                              </motion.li>
-                                            ))}
-                                          </motion.ul>
-                                        )}
-                                      </div>
+                                                  ) : (
+                                                    <> - {method.price} تومان</>
+                                                  )}
+                                                </motion.li>
+                                              ))}
+                                            </motion.ul>
+                                          )}
+                                        </div>
+                                      )}
                                       {selectedPaymentMethod === "installment" &&
                                         selectedBatch?.installment_templates?.length > 0 && (
                                           <div className="mb-6">
@@ -572,7 +587,7 @@ function AllCourses() {
                                                     transition={{ duration: 0.3 }}
                                                   >
                                                     <span>{template.title}</span>
-                                                    <span>{template.amount.toLocaleString()} تومان</span>
+                                                    <span>{template.amount} تومان</span>
                                                     <span>
                                                       {convertToJalali(template.due_date)}
                                                     </span>
@@ -583,7 +598,7 @@ function AllCourses() {
                                         )}
                                       <motion.button
                                         onClick={() => handleSignup(batch.id)}
-                                        disabled={signupLoading}
+                                        disabled={signupLoading || !selectedChildId || !selectedPaymentMethod}
                                         className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}

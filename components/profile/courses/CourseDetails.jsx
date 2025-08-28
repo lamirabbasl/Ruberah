@@ -18,7 +18,6 @@ function CourseDetails({ course, handleImageUpload, isBankModalOpen, setIsBankMo
       } catch (error) {
         console.error("Error fetching bank accounts:", error);
         const errorMessage = error.response?.data?.message || "خطا در دریافت حساب‌های بانکی";
-        toast.error(errorMessage);
       }
     }
     fetchBankAccounts();
