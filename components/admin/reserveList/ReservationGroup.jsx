@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReservationTable from "./ReservationTable";
+import Spinner from "@/components/common/Spinner";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -14,6 +15,7 @@ function ReservationGroup({
   setExpandedDates,
   handleToggleActivation,
   openConfirmDelete,
+  loading, // New prop for group-specific loading state
 }) {
   return (
     <motion.div
@@ -43,11 +45,19 @@ function ReservationGroup({
       </motion.div>
       <AnimatePresence>
         {expanded && (
-          <ReservationTable
-            reservations={reservationsForDate}
-            handleToggleActivation={handleToggleActivation}
-            openConfirmDelete={openConfirmDelete}
-          />
+          <>
+            {loading ? (
+              <div className="py-4">
+                <Spinner />
+              </div>
+            ) : (
+              <ReservationTable
+                reservations={reservationsForDate}
+                handleToggleActivation={handleToggleActivation}
+                openConfirmDelete={openConfirmDelete}
+              />
+            )}
+          </>
         )}
       </AnimatePresence>
     </motion.div>

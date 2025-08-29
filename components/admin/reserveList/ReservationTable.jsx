@@ -36,7 +36,7 @@ function ReservationTable({ reservations, handleToggleActivation, openConfirmDel
               scope="col"
               className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-                   شماره همراه  
+              شماره همراه
             </th>
             <th
               scope="col"
@@ -82,7 +82,7 @@ function ReservationTable({ reservations, handleToggleActivation, openConfirmDel
                 {item.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
-                {new Date(item.reserved_at).toLocaleString("fa-IR")}
+                {item.sessionData ? new Date(item.sessionData.date_time).toLocaleString("fa-IR") : "Unknown"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <motion.button

@@ -12,6 +12,7 @@ import {
   createReservation,
   deleteReservation,
   getSessions,
+  getSessionsById,
   getReservesExport,
 } from "@/lib/api/api";
 
@@ -19,6 +20,7 @@ import SearchBar from "@/components/admin/reserveList/SearchBar";
 import AddReservationModal from "@/components/admin/reserveList/AddReservationModal";
 import ConfirmDeleteModal from "@/components/admin/reserveList/ConfirmDeleteModal";
 import ReservationGroup from "@/components/admin/reserveList/ReservationGroup";
+import Spinner from "@/components/common/Spinner";
 
 const ReserveList = () => {
   const [reservations, setReservations] = useState([]);
@@ -34,29 +36,25 @@ const ReserveList = () => {
     phone: "",
     session: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false); // Track export loading state
+  const [loadingGroups, setLoadingGroups] = useState({}); // Map of date to loading state
+  const [exporting, setExporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState("name");
+  const [sessionDate, setSessionDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
 
   useEffect(() => {
-    fetchReservations(currentPage);
+    fetchReservations(currentPage, searchTerm, searchType, sessionDate);
     fetchSessions();
-  }, [currentPage]);
+  }, [currentPage, searchTerm, searchType, sessionDate]);
 
   useEffect(() => {
-    const filteredReservations = reservations.filter((reservation) => {
-      const term = searchTerm.toLowerCase();
-      return (
-        reservation.registration_code.toLowerCase().includes(term) ||
-        reservation.name.toLowerCase().includes(term) ||
-        reservation.phone.toLowerCase().includes(term)
-      );
-    });
-
-    const grouped = filteredReservations.reduce((acc, reservation) => {
-      const date = new Date(reservation.reserved_at).toLocaleDateString("fa-IR");
+    const grouped = reservations.reduce((acc, reservation) => {
+      const session = sessions.find((s) => s.id === reservation.session);
+      const date = session
+        ? new Date(session.date_time).toLocaleDateString("fa-IR")
+        : "Unknown Date";
       if (!acc[date]) {
         acc[date] = [];
       }
@@ -65,25 +63,62 @@ const ReserveList = () => {
     }, {});
     setGroupedReservations(grouped);
 
-    const initialExpanded = {};
-    Object.keys(grouped).forEach((date) => {
-      initialExpanded[date] = false;
+    setExpandedDates((prev) => {
+      const updatedExpanded = { ...prev };
+      Object.keys(grouped).forEach((date) => {
+        if (!(date in updatedExpanded)) {
+          updatedExpanded[date] = false;
+        }
+      });
+      Object.keys(updatedExpanded).forEach((date) => {
+        if (!(date in grouped)) {
+          delete updatedExpanded[date];
+        }
+      });
+      return updatedExpanded;
     });
-    setExpandedDates(initialExpanded);
-  }, [reservations, searchTerm]);
+  }, [reservations, sessions]);
 
-  const fetchReservations = async (page = 1) => {
-    setLoading(true);
+  const fetchReservations = async (page = 1, searchTerm = "", searchType = "name", sessionDate = "") => {
+    setLoadingGroups((prev) => {
+      const newLoading = {};
+      Object.keys(groupedReservations).forEach((date) => {
+        newLoading[date] = true; // Set all groups to loading during fetch
+      });
+      return newLoading;
+    });
     try {
-      const response = await getReservations(page);
+      const query = new URLSearchParams({ page });
+      if (searchTerm) {
+        query.append(searchType, searchTerm);
+      }
+      if (sessionDate) {
+        query.append("session_date", sessionDate);
+      }
+      const response = await getReservations(page, query.toString());
       const data = response.results || [];
-      data.sort((a, b) => new Date(a.reserved_at) - new Date(b.reserved_at));
-      setReservations(data);
+      const reservationsWithSession = await Promise.all(
+        data.map(async (reservation) => {
+          try {
+            const session = await getSessionsById(reservation.session);
+            return { ...reservation, sessionData: session };
+          } catch (err) {
+            console.error(`Error fetching session ${reservation.session}:`, err);
+            return { ...reservation, sessionData: null };
+          }
+        })
+      );
+      reservationsWithSession.sort((a, b) => {
+        const dateA = a.sessionData ? new Date(a.sessionData.date_time) : new Date(0);
+        const dateB = b.sessionData ? new Date(b.sessionData.date_time) : new Date(0);
+        return dateA - dateB;
+      });
+      setReservations(reservationsWithSession);
       setIsLastPage(response.is_last_page);
     } catch (err) {
-      toast.error(err.response?.data?.message ||  "خطا در دریافت رزروها");
+      toast.error(err.response?.data?.message || "خطا در دریافت رزروها");
     } finally {
-      setLoading(false);
+      setLoadingGroups({});
     }
   };
 
@@ -92,7 +127,7 @@ const ReserveList = () => {
       const data = await getSessions();
       setSessions(data);
     } catch (err) {
-      toast.error(err.response?.data?.message ||  "خطا در دریافت جلسات");
+      toast.error(err.response?.data?.message || "خطا در دریافت جلسات");
     }
   };
 
@@ -114,40 +149,44 @@ const ReserveList = () => {
       window.URL.revokeObjectURL(url);
       toast.success("فایل اکسل با موفقیت دریافت شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message ||  "خطا در دریافت به اکسل";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت به اکسل";
       toast.error(errorMessage);
     } finally {
       setExporting(false);
     }
   };
 
-  const handleToggleActivation = async (id) => {
-    setLoading(true);
+  const handleToggleActivation = async (id, date) => {
+    setLoadingGroups((prev) => ({ ...prev, [date]: true }));
     try {
       await toggleReservationActivation(id);
       toast.success("وضعیت رزرو با موفقیت تغییر کرد.");
-      await fetchReservations(currentPage);
+      await fetchReservations(currentPage, searchTerm, searchType, sessionDate);
     } catch (err) {
       toast.error(err.response?.data?.message || "خطا در تغییر وضعیت فعال‌سازی");
-    } finally {
-      setLoading(false);
+      setLoadingGroups((prev) => ({ ...prev, [date]: false }));
     }
   };
 
   const handleDelete = async () => {
     if (itemToDelete) {
-      setLoading(true);
+      const reservation = reservations.find((r) => r.id === itemToDelete);
+      const session = sessions.find((s) => s.id === reservation.session);
+      const date = session
+        ? new Date(session.date_time).toLocaleDateString("fa-IR")
+        : "Unknown Date";
+      setLoadingGroups((prev) => ({ ...prev, [date]: true }));
       try {
         await deleteReservation(itemToDelete);
         toast.success("رزرو با موفقیت حذف شد.");
         setReservations((prev) => prev.filter((item) => item.id !== itemToDelete));
-        await fetchReservations(currentPage);
+        await fetchReservations(currentPage, searchTerm, searchType, sessionDate);
       } catch (err) {
-        toast.error(err.response?.data?.message ||  "خطا در حذف رزرو");
+        toast.error(err.response?.data?.message || "خطا در حذف رزرو");
+        setLoadingGroups((prev) => ({ ...prev, [date]: false }));
       } finally {
         setShowConfirmDelete(false);
         setItemToDelete(null);
-        setLoading(false);
       }
     }
   };
@@ -168,7 +207,11 @@ const ReserveList = () => {
       return;
     }
 
-    setLoading(true);
+    const session = sessions.find((s) => s.id === newReservation.session);
+    const date = session
+      ? new Date(session.date_time).toLocaleDateString("fa-IR")
+      : "Unknown Date";
+    setLoadingGroups((prev) => ({ ...prev, [date]: true }));
     try {
       await createReservation({
         ...newReservation,
@@ -178,11 +221,10 @@ const ReserveList = () => {
       toast.success("رزرو با موفقیت انجام شد.");
       setNewReservation({ name: "", email: "", phone: "", session: "" });
       setShowAddForm(false);
-      await fetchReservations(currentPage);
+      await fetchReservations(currentPage, searchTerm, searchType, sessionDate);
     } catch (err) {
       toast.error(err.response?.data?.message || "خطا در افزودن رزرو");
-    } finally {
-      setLoading(false);
+      setLoadingGroups((prev) => ({ ...prev, [date]: false }));
     }
   };
 
@@ -223,7 +265,14 @@ const ReserveList = () => {
         </div>
       </div>
 
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <SearchBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        searchType={searchType}
+        setSearchType={setSearchType}
+        sessionDate={sessionDate}
+        setSessionDate={setSessionDate}
+      />
 
       <AddReservationModal
         showAddForm={showAddForm}
@@ -243,9 +292,7 @@ const ReserveList = () => {
         handleDelete={handleDelete}
       />
 
-      {loading && <p className="text-center text-gray-600">در حال بارگذاری...</p>}
-
-      {Object.keys(groupedReservations).length === 0 ? (
+      {Object.keys(groupedReservations).length === 0 && Object.keys(loadingGroups).length === 0 ? (
         <p className="text-center text-gray-600">هیچ رزروی ثبت نشده است</p>
       ) : (
         <div className="space-y-6">
@@ -256,14 +303,14 @@ const ReserveList = () => {
               reservationsForDate={reservationsForDate}
               expanded={expandedDates[date]}
               setExpandedDates={setExpandedDates}
-              handleToggleActivation={handleToggleActivation}
+              handleToggleActivation={(id) => handleToggleActivation(id, date)}
               openConfirmDelete={openConfirmDelete}
+              loading={loadingGroups[date] || false}
             />
           ))}
         </div>
       )}
-
-      {/* Pagination Controls */}
+      
       <div className="flex justify-center items-center gap-4 mt-8">
         <button
           disabled={currentPage === 1}
