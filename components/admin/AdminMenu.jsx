@@ -20,61 +20,79 @@ function AdminMenu() {
   const menuRef = useRef(null);
   const { logout } = useAuth();
 
+  // Default tabs to prevent invalid navigation
+  const validTabs = [
+    "firstPage",
+    "courses",
+    "reserve",
+    "payments",
+    "signup",
+    "children",
+    "users",
+  ];
+
+  // Handle logout
   const handleLogout = () => {
     logout();
     router.push("/");
   };
 
+  // Fetch user data and profile photo
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
       try {
         const data = await getUserMe();
         setUser(data);
-        if (data && data.id) {
+        if (data?.id) {
           try {
             const photoUrl = await getProfilePhotoUrl(data.id);
-            setProfilePhotoUrl(photoUrl);
+            setProfilePhotoUrl(photoUrl || "/user.png"); // Fallback to default image
           } catch (err) {
             setProfilePhotoUrl("/user.png");
           }
         }
       } catch (error) {
         console.error("Error fetching user:", error);
-        setUser(null);
         setError("خطا در دریافت اطلاعات کاربر");
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
 
+    // Cleanup for blob URLs
     return () => {
-      if (profilePhotoUrl) {
+      if (profilePhotoUrl && profilePhotoUrl.startsWith("blob:")) {
         URL.revokeObjectURL(profilePhotoUrl);
       }
     };
   }, []);
 
+  // Set active tab based on pathname
   useEffect(() => {
-    const segments = pathname.split("/").filter((segment) => segment !== "");
-    if (segments[1] === "dashboard") {
-      setActiveTab(segments[2]);
+    const segments = pathname.split("/").filter((segment) => segment);
+    const tab = segments[2]; // Expecting /admin/dashboard/[tab]
+    if (segments[1] === "dashboard" && validTabs.includes(tab)) {
+      setActiveTab(tab);
     } else {
-      setActiveTab(null);
+      setActiveTab(null); // No valid tab found
     }
   }, [pathname]);
 
+  // Handle tab click with validation
   const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    router.push(`/admin/dashboard/${tab}`);
-    setIsMenuOpen(false);
+    if (validTabs.includes(tab)) {
+      setActiveTab(tab);
+      router.push(`/admin/dashboard/${tab}`);
+      setIsMenuOpen(false); // Close mobile menu on tab click
+    } else {
+      console.warn(`Invalid tab: ${tab}`);
+    }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
+  // Handle clicks outside mobile menu
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -94,7 +112,17 @@ function AdminMenu() {
   }
 
   if (error) {
-    return <p className="text-center mt-10 text-red-600">{error}</p>;
+    return (
+      <div className="text-center mt-10">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={() => router.push("/login")} // Redirect to login on error
+          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md"
+        >
+          ورود به سیستم
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -102,7 +130,7 @@ function AdminMenu() {
       {/* Hamburger Menu Icon for Mobile */}
       <div className="md:hidden fixed top-4 right-4 z-20">
         <button
-          onClick={toggleMenu}
+          onClick={() => setIsMenuOpen(true)} // Simplified toggle
           className="bg-gray-900/90 backdrop-blur-md text-white p-2 rounded-md shadow-md hover:bg-gray-800 transition-colors"
           aria-label="Open Menu"
         >
@@ -114,7 +142,7 @@ function AdminMenu() {
       <MobileMenu
         isMenuOpen={isMenuOpen}
         menuRef={menuRef}
-        toggleMenu={toggleMenu}
+        toggleMenu={() => setIsMenuOpen(false)} // Simplified toggle
         user={user}
         profilePhotoUrl={profilePhotoUrl}
         activeTab={activeTab}

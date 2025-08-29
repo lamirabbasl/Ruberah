@@ -21,6 +21,17 @@ function MobileMenu({
   handleTabClick,
   handleLogout,
 }) {
+  // Define navigation items to reduce repetition
+  const navItems = [
+    { label: "صفحه اصلی", tab: "firstPage", icon: <IoIosHome className="text-xl ml-2" /> },
+    { label: "دوره ها", tab: "courses", icon: <FaListUl className="text-xl ml-2" /> },
+    { label: "رزرو شده ها", tab: "reserve", icon: <FaRegCalendarCheck className="text-xl ml-2" /> },
+    { label: "پرداخت ها", tab: "payments", icon: <MdOutlinePayment className="text-xl ml-2" /> },
+    { label: "فرآیند ثبت نام", tab: "signup", icon: <VscSignIn className="text-xl ml-2" /> },
+    { label: "کودکان", tab: "children", icon: <FaChildren className="text-2xl ml-2" /> },
+    { label: "کاربران", tab: "users", icon: <FaUser className="text-xl ml-2" /> },
+  ];
+
   return (
     <AnimatePresence>
       {isMenuOpen && (
@@ -29,20 +40,15 @@ function MobileMenu({
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
-          transition={{
-            type: "spring",
-            stiffness: 200,
-            damping: 25,
-            duration: 0.15,
-          }}
-          className="fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out"
+          transition={{ type: "spring", stiffness: 200, damping: 25 }}
+          className="fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-2xl z-30"
         >
           <div className="p-4">
             {/* Close Button */}
             <div className="flex justify-start mb-4">
               <button
                 onClick={toggleMenu}
-                className="bg-gray-800/90 backdrop-blur-md text-white p-2 rounded-md shadow-md hover:bg-gray-700 transition-colors"
+                className="bg-gray-800/90 text-white p-2 rounded-md shadow-md hover:bg-gray-700 transition-colors"
                 aria-label="Close Menu"
               >
                 <BiExit className="text-2xl" />
@@ -54,48 +60,15 @@ function MobileMenu({
 
             {/* Navigation Links */}
             <nav className="flex flex-col gap-3 font-semibold items-end pr-2 w-full">
-              <NavItem
-                label="صفحه اصلی"
-                icon={<IoIosHome className="text-xl ml-2" />}
-                onClick={() => handleTabClick("firstPage")}
-                isActive={activeTab === "firstPage"}
-              />
-              <NavItem
-                label="دوره ها"
-                icon={<FaListUl className="text-xl ml-2" />}
-                onClick={() => handleTabClick("courses")}
-                isActive={activeTab === "courses"}
-              />
-              <NavItem
-                label="رزرو شده ها"
-                icon={<FaRegCalendarCheck className="text-xl ml-2" />}
-                onClick={() => handleTabClick("reserve")}
-                isActive={activeTab === "reserve"}
-              />
-              <NavItem
-                label="پرداخت ها"
-                icon={<MdOutlinePayment className="text-xl ml-2" />}
-                onClick={() => handleTabClick("payments")}
-                isActive={activeTab === "payments"}
-              />
-              <NavItem
-                label="فرآیند ثبت نام"
-                icon={<VscSignIn className="text-xl ml-2" />}
-                onClick={() => handleTabClick("signup")}
-                isActive={activeTab === "signup"}
-              />
-              <NavItem
-                label="کودکان"
-                icon={<FaChildren className="text-2xl ml-2" />}
-                onClick={() => handleTabClick("children")}
-                isActive={activeTab === "children"}
-              />
-              <NavItem
-                label="کاربران"
-                icon={<FaUser className="text-xl ml-2" />}
-                onClick={() => handleTabClick("users")}
-                isActive={activeTab === "users"}
-              />
+              {navItems.map((item) => (
+                <NavItem
+                  key={item.tab}
+                  label={item.label}
+                  icon={item.icon}
+                  onClick={() => handleTabClick(item.tab)}
+                  isActive={activeTab === item.tab}
+                />
+              ))}
             </nav>
 
             {/* Home and Logout Buttons */}
