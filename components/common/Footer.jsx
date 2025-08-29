@@ -43,7 +43,7 @@ function Footer() {
   }, []);
 
   return (
-    <div className="flex flex-col font-mitra lg:flex-row-reverse items-center lg:items-start justify-center lg:justify-between pt-10 px-6 lg:pr-[200px] w-full bg-[#2A2B2D] text-white space-y-8 lg:space-y-0 h-auto lg:h-[350px]">
+    <div className="flex flex-col font-mitra md:flex-row-reverse items-center lg:items-start justify-center lg:justify-between pt-10 px-6 lg:pr-[200px] w-full bg-[#2A2B2D] text-white space-y-8 lg:space-y-0 h-auto lg:h-[350px]">
       {/* Right Side - Description and Location */}
       <div className="w-full lg:w-1/2 flex flex-col gap-6 text-right select-none">
         <div className="flex items-center justify-end space-x-3 text-3xl">
@@ -87,6 +87,13 @@ function Footer() {
           <FaTelegramPlane className="text-2xl" />
           <span>{telegramLink}</span>
         </div>
+      </div>
+      <div>
+      <img
+            src="logo-white.png"
+            alt="Logo"
+            className="h-40 w-40  mt-10 ml-30 max-lg:hidden rounded-lg"
+          />
       </div>
     </div>
   );
