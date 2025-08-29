@@ -10,7 +10,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Menu from "./Menu";
 import { useAuth } from "@/context/AuthContext";
-import { getUserMe } from "@/lib/api/api";
 import { VscSignIn } from "react-icons/vsc";
 
 
@@ -64,16 +63,10 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <motion.div
               className="flex items-center gap-2 cursor-pointer"
-              onClick={async () => {
-                try {
-                  const userInfo = await getUserMe();
-                  if (userInfo.groups && userInfo.groups.includes("manager")) {
-                    router.push("/admin/dashboard");
-                  } else {
-                    router.push("/profile");
-                  }
-                } catch (error) {
-                  console.error("Error fetching user info:", error);
+              onClick={() => {
+                if (user.groups && user.groups.includes("manager")) {
+                  router.push("/admin/dashboard");
+                } else {
                   router.push("/profile");
                 }
               }}

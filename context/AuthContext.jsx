@@ -1,8 +1,6 @@
-"use client"
+"use client";
 
-// AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import { getToken, removeToken, setToken } from "@/lib/utils/token";
 
 const AuthContext = createContext();
 
@@ -12,13 +10,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const verifyUser = async (token) => {
+  const verifyUser = async () => {
     try {
-      console.log("Verifying user with token:", token); // Debug log
+      console.log("Verifying user");
       const response = await fetch("/api/proxy/users/me/", {
-        headers: {
-          Authorization: token,
-        },
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) throw new Error("Failed to verify user");
@@ -41,8 +38,6 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
       setIsAdmin(false);
       setUser(null);
-      removeToken();
-      // Do NOT redirect here to avoid interfering with login page
       throw error;
     } finally {
       setLoading(false);
@@ -51,28 +46,38 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const token = getToken();
-    if (token) {
-      console.log("Initial token check:", token);
-      verifyUser(token).catch(() => {
-        console.log("Initial verification failed, staying on current page");
-      });
-    } else {
-      setLoading(false);
-      console.log("No token found, loading set to false");
-    }
+    verifyUser().catch(() => {
+      console.log("Initial verification failed, staying on current page");
+    });
   }, []);
 
-  const login = async (token) => {
-    console.log("AuthContext login called with token:", token);
-    setToken(token);
-    const userData = await verifyUser(`Bearer ${token}`);
-    return userData;
+  const login = async (credentials) => {
+    console.log("AuthContext login called with credentials");
+    try {
+      const response = await fetch("/api/proxy/users/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+
+      const userData = await verifyUser();
+      return userData; // Ensure userData is returned
+    } catch (error) {
+      console.error("Login error:", error.message);
+      throw error;
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
     console.log("Logging out user");
-    removeToken();
+    await fetch("/api/logout", { method: "POST", credentials: "include" });
     setIsAuthenticated(false);
     setIsAdmin(false);
     setUser(null);
