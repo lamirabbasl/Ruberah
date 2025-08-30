@@ -31,8 +31,17 @@ export default function SessionsPage() {
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return {
-      date: date.toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric" }),
-      time: date.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" }),
+      date: date.toLocaleDateString("fa-IR", { 
+        year: "numeric", 
+        month: "long", 
+        day: "numeric", 
+        timeZone: 'UTC' 
+      }),
+      time: date.toLocaleTimeString("fa-IR", { 
+        hour: "2-digit", 
+        minute: "2-digit", 
+        timeZone: 'UTC' 
+      }),
     };
   };
 
@@ -85,7 +94,6 @@ export default function SessionsPage() {
     );
   }
 
-
   return (
     <div dir="rtl" className="min-h-screen p-6 font-mitra bg-gradient-to-b from-primary to-gray-600 pt-30 ">
       <motion.h1
@@ -130,7 +138,7 @@ export default function SessionsPage() {
                 onClick={() => handleSelect(s)}
                 whileHover={!isFull ? { scale: 1.02 } : {}}
               >
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 text-lg sm:text-xl text-black">
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-4 text-lg sm:text-xl text-black">
                   <div className="flex items-center sm:block gap-1">
                     <span className="text-gray-500 sm:hidden">🗓 تاریخ:</span>
                     <span>{date}</span>

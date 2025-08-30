@@ -33,8 +33,12 @@ export default function SessionDetail() {
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return {
-      date: date.toLocaleDateString('fa-IR'),
-      time: date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+      date: date.toLocaleDateString('fa-IR', { timeZone: 'UTC' }),
+      time: date.toLocaleTimeString('fa-IR', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        timeZone: 'UTC' 
+      })
     };
   };
 

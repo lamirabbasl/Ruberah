@@ -169,8 +169,9 @@ const RemoveMissingReceiptModal = ({ isOpen, onClose, batchId }) => {
                     <span className="font-medium"> : شماره</span>
                   </div>
                   <div>
+                   
+                    <span className="font-medium">نام کودک : </span>
                     {item.child_full_name || item.child__full_name}
-                    <span className="font-medium"> : نام کودک</span>
                   </div>
                   <div>
                     <span className="font-medium"> روش پرداخت : </span>

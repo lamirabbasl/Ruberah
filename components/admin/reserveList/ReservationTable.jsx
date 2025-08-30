@@ -82,7 +82,24 @@ function ReservationTable({ reservations, handleToggleActivation, openConfirmDel
                 {item.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
-                {item.sessionData ? new Date(item.sessionData.date_time).toLocaleString("fa-IR") : "Unknown"}
+                {item.sessionData ? (
+                  <>
+                    {new Date(item.sessionData.date_time).toLocaleDateString("fa-IR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      timeZone: "UTC"
+                    })}
+                    {" - "}
+                    {new Date(item.sessionData.date_time).toLocaleTimeString("fa-IR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "UTC"
+                    })}
+                  </>
+                ) : (
+                  "Unknown"
+                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <motion.button

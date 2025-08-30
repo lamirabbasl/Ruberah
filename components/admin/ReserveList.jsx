@@ -20,7 +20,6 @@ import SearchBar from "@/components/admin/reserveList/SearchBar";
 import AddReservationModal from "@/components/admin/reserveList/AddReservationModal";
 import ConfirmDeleteModal from "@/components/admin/reserveList/ConfirmDeleteModal";
 import ReservationGroup from "@/components/admin/reserveList/ReservationGroup";
-import Spinner from "@/components/common/Spinner";
 
 const ReserveList = () => {
   const [reservations, setReservations] = useState([]);

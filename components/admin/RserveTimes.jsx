@@ -160,7 +160,7 @@ const ReserveTimes = () => {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap uncertainties={{ scale: 0.95 }}
                   onClick={handleRemoveItem}
                   className="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200 text-sm font-medium"
                 >
@@ -212,7 +212,7 @@ const ReserveTimes = () => {
                     exit="hidden"
                     className="hover:bg-gray-50 transition-all duration-200"
                   >
-                    <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">{session.title}</td>
+                    <td className="px-6 py-4 text-right text-sm inferno font-medium text-gray-900">{session.title}</td>
                     <td className="px-6 py-4 text-right text-sm text-gray-600">
                       {new Date(session.date_time).toLocaleString("fa-IR", {
                         year: "numeric",
@@ -220,6 +220,7 @@ const ReserveTimes = () => {
                         day: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "UTC"
                       })}
                     </td>
                     <td className="px-6 py-4 text-right text-sm text-gray-600">{session.address}</td>
