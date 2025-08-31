@@ -9,7 +9,6 @@ export default function HomePageEvents() {
   const [itemsPerView, setItemsPerView] = useState(5);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const sliderRef = useRef(null);
-  const router = useRouter();
 
   const images = [
     "/hero/n1.jpg",
@@ -122,7 +121,6 @@ export default function HomePageEvents() {
               >
                 <div
                   className="relative group cursor-pointer overflow-hidden rounded-xl shadow-lg bg-white"
-                  onClick={() => router.push("/courses")}
                 >
                   <img
                     src={src}

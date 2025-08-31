@@ -9,11 +9,25 @@ export default function CoursesInformation() {
   const [courses, setCourses] = useState([]);
   const [seasons, setSeasons] = useState([]);
   const [expandedCourseId, setExpandedCourseId] = useState(null);
+  const [expandedDescriptionId, setExpandedDescriptionId] = useState(null); // Track expanded description
   const [batchesByCourse, setBatchesByCourse] = useState({});
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingBatches, setLoadingBatches] = useState({});
   const [error, setError] = useState(null);
+  const [isMobile, setIsMobile] = useState(false); // Track mobile screen size
 
+  // Detect mobile screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // max-md breakpoint
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch courses and seasons
   useEffect(() => {
     async function fetchCoursesAndSeasons() {
       try {
@@ -55,6 +69,11 @@ export default function CoursesInformation() {
     }
   };
 
+  // Toggle description for a specific course
+  const toggleDescription = (courseId) => {
+    setExpandedDescriptionId(expandedDescriptionId === courseId ? null : courseId);
+  };
+
   const getSeasonById = (id) => {
     return seasons.find((season) => season.id === id);
   };
@@ -72,16 +91,8 @@ export default function CoursesInformation() {
   }
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto p-8 min-h-screen font-mitra">
-      <motion.h1
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="text-5xl md:text-6xl font-extrabold mb-12 text-center text-gray-900 bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent"
-      >
-        اطلاعات دوره‌ها
-      </motion.h1>
-      <div className="space-y-6">
+    <div dir="rtl" className="max-w-6xl mx-auto pt-40 px-2 min-h-screen font-mitra">
+      <div className="space-y-8">
         {courses.map((course) => (
           <motion.div
             key={course.id}
@@ -94,7 +105,7 @@ export default function CoursesInformation() {
               className="cursor-pointer p-6 hover:bg-gray-50 transition-colors duration-200"
               onClick={() => handleCourseClick(course.id)}
             >
-              <div className="flex items-center gap-6">
+              <div className="flex flex-row-reverse items-center max-md:items-start gap-6">
                 {course.image && (
                   <motion.img
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -102,11 +113,11 @@ export default function CoursesInformation() {
                     transition={{ duration: 0.5 }}
                     src={`${process.env.NEXT_PUBLIC_API_URL}${course.image}`}
                     alt={course.name}
-                    className="w-24 h-24 object-cover rounded-xl shadow-sm"
+                    className="w-24 h-24 object-cover rounded-xl shadow-sm max-md:mt-4"
                   />
                 )}
                 <div className="flex-1">
-                  <div className="flex flex-row-reverse justify-between items-center">
+                  <div className="flex  justify-between items-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
                       {course.name}
                     </h2>
@@ -131,9 +142,26 @@ export default function CoursesInformation() {
                     </motion.div>
                   </div>
                   {course.description && (
-                    <p className="text-gray-600 mt-3 text-right text-base md:text-lg leading-relaxed">
-                      {course.description}
-                    </p>
+                    <div>
+                      <p
+                        className={`text-gray-600 mt-3 text-right text-base md:text-lg leading-relaxed ${
+                          isMobile && expandedDescriptionId !== course.id ? "line-clamp-3" : ""
+                        }`}
+                      >
+                        {course.description}
+                      </p>
+                      {isMobile && course.description.length > 150 && (
+                        <button
+                          className="text-blue-600 hover:underline mt-2 text-base"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent course expansion when clicking button
+                            toggleDescription(course.id);
+                          }}
+                        >
+                          {expandedDescriptionId === course.id ? "نمایش کمتر" : "نمایش بیشتر"}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -175,19 +203,21 @@ export default function CoursesInformation() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="grid grid-cols-1 md:grid-cols-5  gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-base text-gray-700"
+                                className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 text-base text-gray-700"
                               >
                                 <span className="md:text-center">
                                   <span className="md:hidden font-semibold">عنوان: </span>
                                   {batch.title}
                                 </span>
                                 <span className="md:text-center">
-                                  <span className="md:hidden font-semibold ">فصل: </span>
+                                  <span className="md:hidden font-semibold">فصل: </span>
                                   {season ? (
                                     <div>
-                                        <p>{season.name} </p>
-                                        <p>({convertToJalali(season.start_date)} - {convertToJalali(season.end_date)})</p>
-
+                                      <p>{season.name}</p>
+                                      <p>
+                                        ({convertToJalali(season.start_date)} -{" "}
+                                        {convertToJalali(season.end_date)})
+                                      </p>
                                     </div>
                                   ) : (
                                     "-"
