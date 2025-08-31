@@ -134,7 +134,7 @@ const AdminSignupQuiz = () => {
       />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-          سوالات فرآیند ثبت‌نام
+          سوالات فرآیند پیش ثبت‌نام
         </h1>
         <motion.button
           whileHover={{ scale: 1.05 }}

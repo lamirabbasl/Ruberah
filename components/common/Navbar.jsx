@@ -120,7 +120,7 @@ export default function Navbar() {
             variants={itemVariants}
             whileHover="hover"
           >
-            <span>فرآیند ثبت نام</span>
+            <span>فرآیند پیش ثبت نام</span>
             <VscSignIn className="text-xl" />
           </motion.div>
           </Link>

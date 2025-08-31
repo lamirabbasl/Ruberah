@@ -100,7 +100,7 @@ function Hero() {
       >
         <Link href="/enroll">
           <button className="flex items-center cursor-pointer gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-mitra text-xl md:text-2xl py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-shadow">
-            <span>فرآیند ثبت نام</span>
+            <span>فرآیند پیش ثبت نام</span>
             <AiOutlineImport className="text-xl" />
           </button>
         </Link>

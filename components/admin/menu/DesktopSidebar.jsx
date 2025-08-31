@@ -16,7 +16,7 @@ function DesktopSidebar({ user, profilePhotoUrl, activeTab, handleTabClick, hand
     { label: "دوره ها", tab: "courses", icon: <FaListUl className="text-xl ml-2" /> },
     { label: "رزرو شده ها", tab: "reserve", icon: <FaRegCalendarCheck className="text-xl ml-2" /> },
     { label: "پرداخت ها", tab: "payments", icon: <MdOutlinePayment className="text-xl ml-2" /> },
-    { label: "فرآیند ثبت نام", tab: "signup", icon: <VscSignIn className="text-xl ml-2" /> },
+    { label: "فرآیند پیش ثبت نام", tab: "signup", icon: <VscSignIn className="text-xl ml-2" /> },
     { label: "کودکان", tab: "children", icon: <FaChildren className="text-2xl ml-2" /> },
     { label: "کاربران", tab: "users", icon: <FaUser className="text-xl ml-2" /> },
   ];

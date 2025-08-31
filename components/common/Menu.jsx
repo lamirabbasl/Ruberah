@@ -111,7 +111,7 @@ function Menu() {
 
             <Link href="/enroll" onClick={() => setIsOpen(false)}>
               <div className="flex text-white items-center cursor-pointer gap-2 py-4 transition hover:text-secondery">
-                <span>فرآیند ثبت نام</span>
+                <span>فرآیند پیش ثبت نام</span>
                 <VscSignIn className="text-2xl" />
               </div>
             </Link>
