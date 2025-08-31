@@ -7,7 +7,7 @@ function SearchBar({ searchTerm, setSearchTerm, setCurrentPage }) {
   };
 
   return (
-    <div className="mb-6 text-black">
+    <div className="mb-6 w-78 text-black">
       <input
         type="text"
         placeholder="جستجو بر اساس نام کاربری یا شماره تلفن"

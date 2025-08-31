@@ -8,7 +8,10 @@ import {
   getSeasons,
   searchBatches,
   getRegistrationSummary,
+  getRegistrationExport,
 } from "@/lib/api/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import BatchSearch from "../../../../components/admin/batches/BatchSearch";
 import BatchListRegistration from "@/components/admin/BatchListRegistration";
@@ -19,6 +22,7 @@ const RegistrationsBatchesTab = () => {
   const [seasons, setSeasons] = useState([]);
   const [registrationSummary, setRegistrationSummary] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false); // New state for export loading
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -60,9 +64,65 @@ const RegistrationsBatchesTab = () => {
     fetchInitialData();
   }, []);
 
+  // New function to handle Excel export
+  const handleExportExcel = async () => {
+    setExporting(true);
+    setError(null);
+    try {
+      const response = await getRegistrationExport();
+      if (!(response instanceof Blob)) {
+        throw new Error("دریافت پاسخ نامعتبر از سرور");
+      }
+      const blob = new Blob([response], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "batches_export.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success("فایل اکسل با موفقیت دریافت شد.");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "خطا در دریافت اکسل";
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="p-6 bg-gradient-to-b text-black text-right w-5/6 max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra">
-      <h1 className="text-4xl mb-10">پرداخت ها</h1>
+    <div
+      className="p-6 bg-gradient-to-b text-black text-right w-5/6 max-md:w-screen from-gray-50 to-gray-100 min-h-screen font-mitra"
+      dir="rtl"
+    >
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+        rtl={true}
+      />
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 space-y-4 sm:space-y-0">
+        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">پرداخت ها</h1>
+        <button
+          onClick={handleExportExcel}
+          disabled={exporting}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            exporting
+              ? "bg-gray-400 text-white cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700"
+          }`}
+        >
+          {exporting ? "در حال دریافت..." : "دریافت اکسل"}
+        </button>
+      </div>
 
       <BatchSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 

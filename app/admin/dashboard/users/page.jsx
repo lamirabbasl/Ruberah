@@ -21,6 +21,7 @@ const UsersPage = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [groupFilter, setGroupFilter] = useState(""); // New state for group filter
   const [exporting, setExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
@@ -29,7 +30,7 @@ const UsersPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getUsers(currentPage, searchTerm);
+      const data = await getUsers(currentPage, searchTerm, groupFilter); // Pass groupFilter to getUsers
       setUsers(data.results);
       setIsLastPage(data.is_last_page);
     } catch (err) {
@@ -43,7 +44,7 @@ const UsersPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, groupFilter]); // Add groupFilter to dependencies
 
   const handleAddUser = () => {
     setShowAddForm(true);
@@ -66,9 +67,9 @@ const UsersPage = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      toast.success("فایل اکسل با موفقیت صادر شد.");
+      toast.success("فایل اکسل با موفقیت دریافت شد.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "خطا در صادرات به اکسل";
+      const errorMessage = err.response?.data?.message || "خطا در دریافت اکسل";
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {
@@ -87,23 +88,18 @@ const UsersPage = () => {
       setCurrentPage(1);
       await fetchUsers();
     } catch (err) {
-      // Handle error response with multiple messages
       if (err.response?.data) {
         const errorData = err.response.data;
-        // Iterate through each field in the error response
         Object.keys(errorData).forEach((field) => {
-          // Handle array of error messages for each field
           if (Array.isArray(errorData[field])) {
             errorData[field].forEach((message) => {
               toast.error(message);
             });
           } else {
-            // Handle single error message
             toast.error(errorData[field]);
           }
         });
       } else {
-        // Fallback for generic error
         const errorMessage = err.response?.data?.message || "خطا در افزودن کاربر";
         toast.error(errorMessage);
       }
@@ -172,6 +168,11 @@ const UsersPage = () => {
     }
   };
 
+  const handleGroupFilterChange = (group) => {
+    setGroupFilter(group);
+    setCurrentPage(1); // Reset to first page when group filter changes
+  };
+
   return (
     <div className="p-6 bg-gradient-to-b text-black from-gray-50 w-5/6 max-md:w-screen to-gray-100 min-h-screen font-mitra text-right" dir="rtl">
       <ToastContainer
@@ -188,7 +189,27 @@ const UsersPage = () => {
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">مدیریت کاربران</h1>
         <ActionButtons handleAddUser={handleAddUser} handleExportExcel={handleExportExcel} exporting={exporting} />
       </div>
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} setCurrentPage={setCurrentPage} />
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} setCurrentPage={setCurrentPage} />
+        <div className="flex items-center mt-1   h-10 gap-2">
+          <button
+            onClick={() => handleGroupFilterChange(groupFilter === "manager" ? "" : "manager")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              groupFilter === "manager" ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
+          >
+            مدیران
+          </button>
+          <button
+            onClick={() => handleGroupFilterChange(groupFilter === "parent" ? "" : "parent")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              groupFilter === "parent" ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
+          >
+            والدین
+          </button>
+        </div>
+      </div>
       {showAddForm && <AddUserForm onSave={handleSaveNewUser} onCancel={handleCancelAdd} />}
       <ConfirmDeleteModal
         showConfirmDelete={showConfirmDelete}
@@ -206,9 +227,9 @@ const UsersPage = () => {
           ></motion.div>
         </div>
       )}
-      {users.length === 0 && !loading && searchTerm === "" ? (
+      {users.length === 0 && !loading && searchTerm === "" && groupFilter === "" ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری وجود ندارد</p>
-      ) : users.length === 0 && !loading && searchTerm !== "" ? (
+      ) : users.length === 0 && !loading && (searchTerm !== "" || groupFilter !== "") ? (
         <p className="text-center text-gray-600 font-medium bg-white p-4 rounded-lg shadow">هیچ کاربری با این مشخصات یافت نشد.</p>
       ) : (
         <>
