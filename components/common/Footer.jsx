@@ -57,8 +57,8 @@ function Footer() {
             className="h-10 w-10 rounded-full"
           />
         </div>
-        <div className="flex flex-col text-xl leading-relaxed">
-          <span>{presentationText}</span>
+        <div className="flex flex-col text-xl items-end leading-relaxed">
+          <span className="md:w-90">{presentationText}</span>
         </div>
         {showAddress && address && (
           <div className="flex flex-row-reverse items-center gap-2 text-md">
@@ -92,7 +92,7 @@ function Footer() {
       <img
             src="logo-white.png"
             alt="Logo"
-            className="h-40 w-40  mt-10 ml-30 max-lg:hidden rounded-lg"
+            className="h-40 w-40  mt-8 ml-40 max-lg:hidden rounded-lg"
           />
       </div>
     </div>
