@@ -10,6 +10,7 @@ export default function HomePageCourses() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
   const [isTransitioning, setIsTransitioning] = useState(true);
+  const [expandedDescription, setExpandedDescription] = useState(null); // Track expanded description
   const sliderRef = useRef(null);
   const router = useRouter();
 
@@ -58,12 +59,17 @@ export default function HomePageCourses() {
     };
   };
 
+  // Toggle description for a specific course
+  const toggleDescription = (index) => {
+    setExpandedDescription(expandedDescription === index ? null : index);
+  };
+
   // Determine if sliding should be enabled and if items should be centered
   const canSlide = courses.length > itemsPerView;
   const shouldCenter = courses.length <= itemsPerView;
 
   return (
-    <div className="flex flex-col items-center justify-center pt-4 border-b border-white">
+    <div className="flex flex-col font-mitra items-center justify-center pt-4 border-b border-white">
       <div className="text-center select-none">
         <h1 className="font-mitra text-5xl font-bold mt-4">دوره‌ها</h1>
       </div>
@@ -131,8 +137,25 @@ export default function HomePageCourses() {
                   </div>
                   {/* Text section */}
                   <div className="p-4 flex flex-col items-end text-right rtl">
-                    <h3 className="text-lg font-semibold text-gray-800 truncate">{course.name}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">{course.description}</p>
+                    <h3 className="text-2xl font-semibold text-gray-800 truncate">{course.name}</h3>
+                    <p
+                      className={`text-md text-gray-600 ${
+                        expandedDescription === index ? "" : "line-clamp-2"
+                      }`}
+                    >
+                      {course.description}
+                    </p>
+                    {course.description && course.description.length > 100 && (
+                      <button
+                        className="text-black cursor-pointer hover:underline mt-2 text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent router navigation when clicking button
+                          toggleDescription(index);
+                        }}
+                      >
+                        {expandedDescription === index ? "نمایش کمتر" : "نمایش بیشتر"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
