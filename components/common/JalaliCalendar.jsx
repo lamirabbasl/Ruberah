@@ -83,10 +83,9 @@ const JalaliCalendar = ({ onDateSelect }) => {
     }
   };
 
-  // Generate a range of years for the year picker (current year ± 10)
-  const systemCurrentYear = moment().jYear(); // always current system year
-  const years = Array.from({ length: 80 }, (_, i) => systemCurrentYear - 40 + i);
-
+  // Generate a range of years for the year picker (current year - 70 to current year)
+  const systemCurrentYear = moment().jYear();
+  const years = Array.from({ length: 71 }, (_, i) => systemCurrentYear - 70 + i);
 
   return (
     <div className="flex flex-col text-black relative items-center gap-3 w-full h-[460px] max-w-md mx-auto p-5 bg-white rounded-lg shadow-lg border border-gray-200">

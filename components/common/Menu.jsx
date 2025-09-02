@@ -75,11 +75,11 @@ function Menu() {
       </button>
 
       {isOpen && (
-        <div className="fixed top-0 left-0 w-1/2 h-screen bg-primary z-50 flex flex-col items-center justify-between py-8">
+        <div className="fixed top-0 left-0 w-1/2 h-[100%] bg-primary z-50 flex flex-col items-center justify-between pt-4 ">
           <div className="w-full flex justify-end pr-4">
             <button
               onClick={toggleMenu}
-              className="text-white absolute text-2xl focus:outline-none"
+              className="text-white text-2xl focus:outline-none"
             >
               <IoClose />
             </button>
