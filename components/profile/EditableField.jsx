@@ -21,8 +21,6 @@ const EditableField = ({ label, value, onChange, type = "text", options = [] }) 
     marital_status: {
       single: "مجرد",
       married: "متأهل",
-      divorced: "طلاق گرفته",
-      widowed: "بیوه",
     },
   };
 

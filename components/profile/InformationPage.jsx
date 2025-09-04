@@ -177,8 +177,6 @@ const InformationPage = () => {
     marital_status: {
       single: "مجرد",
       married: "متأهل",
-      divorced: "طلاق گرفته",
-      widowed: "بیوه",
     },
   };
 
@@ -232,8 +230,6 @@ const InformationPage = () => {
       return [
         { value: "single", label: "مجرد" },
         { value: "married", label: "متأهل" },
-        { value: "divorced", label: "طلاق گرفته" },
-        { value: "widowed", label: "بیوه" },
       ];
     }
     if (key === "gender") {
